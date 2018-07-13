@@ -124,6 +124,6 @@ class TranscriptionInterface(object):
                                   text_direction=self.text_direction).encode('utf-8'))
         #
         for page in self.pages:
-            fname = self.imsave_path + page["index"] + "." + page["img_format"]
+            fname = self.imsave_path + str(page["index"]) + "." + page["img_format"]
             with open(fname, "wb") as imd:
                 imd.write(page["img_data"])

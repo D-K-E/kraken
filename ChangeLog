@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Added the functions for image folder creation
 * Added real coordinates lines
 * New elements to widgets added
 * Arranged the aspect ratio of the image
