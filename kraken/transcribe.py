@@ -34,7 +34,9 @@ logger = logging.getLogger()
 
 class TranscriptionInterface(object):
 
-    def __init__(self, font=None, font_style=None):
+    def __init__(self,
+                 font=None,
+                 font_style=None):
         logging.info(u'Initializing transcription object.')
         logger.debug(u'Initializing jinja environment.')
         env = Environment(loader=PackageLoader('kraken', 'templates'))
@@ -46,6 +48,7 @@ class TranscriptionInterface(object):
         self.page_idx = 1
         self.line_idx = 1
         self.seg_idx = 1
+        self.imsave_path = "./images/"
 
     def add_page(self, im, segmentation=None, records=None):
         """
@@ -66,6 +69,8 @@ class TranscriptionInterface(object):
         self.page_idx += 1
         logger.debug(u'Base64 encoding image')
         page['img'] = 'data:image/png;base64,' + base64.b64encode(fd.getvalue()).decode('ascii')
+        page["img_data"] = fd.getvalue()
+        page["img_format"] = "png"
         page['lines'] = []
         if records:
             logger.debug(u'Adding records.')
@@ -117,3 +122,8 @@ class TranscriptionInterface(object):
         fd.write(self.tmpl.render(uuid=str(uuid.uuid4()), pages=self.pages,
                                   font=self.font,
                                   text_direction=self.text_direction).encode('utf-8'))
+        #
+        for page in self.pages:
+            fname = self.imsave_path + page["index"] + "." + page["img_format"]
+            with open(fname, "wb") as imd:
+                imd.write(page["img_data"])

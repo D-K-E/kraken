@@ -466,6 +466,8 @@ def transcription(ctx, text_direction, scale, bw, maxcolseps,
             fp.close()
     logger.info('Writing transcription to {}'.format(output.name))
     message('Writing output', nl=False)
+    if not os.path.isdir('./images'):
+        os.mkdir('./images')
     ti.write(output)
     message('\u2713', fg='green')
 
