@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Fixing minor bug in int > str conversion
 * Added the functions for image folder creation
 * Added real coordinates lines
 * New elements to widgets added
