@@ -4,13 +4,15 @@
 		    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 		    <meta name="uuid" content="{{ uuid }}"/>
 		    <meta itemprop="text_direction" content="{{ text_direction }}"/>
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
 		    <style>
 			   {% include 'style.css' %}
 		    </style>
 	  </head>
 	  <body>
-		    <script language="javascript" type="text/javascript">
-			   {% include 'jquery-1.11.3.min.js' %}
+		    <script language="javascript"
+                type="text/javascript"
+                src="js/jquery-1.11.3.min.js">
 		    </script>
 		    <script>
 			   $(document).ready(function() {
@@ -82,7 +84,7 @@
 		    <section class="page container" id="page-{{ page.index }}">
 			      <div class="column">
 				        <div class="img-container" id="page-image-div">
-					          <img style="width: 100%;" src="images/{{ page.index }}.{{ page.img_format }}"
+					          <img style="width: 100%;" src="images/page_{{ page.index }}.{{ page.img_format }}"
                          alt="photo"
                          id="page-image"/>
                     <canvas style="width: 100%" id="image-canvas"></canvas>
