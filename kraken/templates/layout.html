@@ -10,10 +10,11 @@
 		    </style>
 	  </head>
 	  <body>
-		    <script language="javascript"
-                type="text/javascript"
-                src="js/jquery-1.11.3.min.js">
-		    </script>
+        <script src="https://code.jquery.com/jquery-1.12.4.min.js"
+			          integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+			          crossorigin="anonymous">
+        </script>
+
 		    <script>
 			   $(document).ready(function() {
 				     var uuid = $('meta[name=uuid]').attr('content');
@@ -86,7 +87,7 @@
 				        <div class="img-container" id="page-image-div">
 					          <img style="width: 100%;" src="images/page_{{ page.index }}.{{ page.img_format }}"
                          alt="photo"
-                         id="page-image"/>
+                         id="image-page"/>
                     <canvas style="width: 100%" id="image-canvas"></canvas>
                     <script>var lines = [];</script>
 					          {% for line in page.lines %}
@@ -228,6 +229,7 @@
          }
 
         </script>
+        
 
 	  </body>
 </html>

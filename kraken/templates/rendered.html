@@ -4,14 +4,17 @@
 		    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 		    <meta name="uuid" content="d8a347b2-1dc1-4f8b-b7bb-f09ff07f5989"/>
 		    <meta itemprop="text_direction" content="horizontal-tb"/>
-        <link rel="stylesheet" type="text/css" href="css/style.css" />
+        <link rel="stylesheet" type="text/css" href="css/style.css"/>
         <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous"> -->
 		</head>
 	  <body>
-		    <script language="javascript" type="text/javascript" src="js/jquery-1.11.3.min.js">
-				    </script>
-	          <script src="js/widgets.js">
-                </script>
+		    <!-- <script language="javascript" type="text/javascript" src="js/jquery-1.11.3.min.js"> -->
+        <script
+			      src="https://code.jquery.com/jquery-1.12.4.min.js"
+			      integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+			      crossorigin="anonymous">
+        </script>
+	      <script src="js/widgets.js"></script>
 		    <script>
 			   $(document).ready(function() {
 				     var uuid = $('meta[name=uuid]').attr('content');
@@ -76,8 +79,6 @@
 			      </ul>
 			      <a id="download_button" href="#">Download</a>
 		    </nav>
-
-		    
 		    <section class="page container" id="page_1">
 			      <div class="column" id="image-col">
 				        <div class="img_container" id="page-image">
@@ -85,157 +86,163 @@
                      var imgPath = "images/page_1.png";
                     </script>
 					          <img style="width: 100%;" src="images/page_1.png" alt="photo" id="image-page"/>
-                    <canvas id="image-canvas">
-					          
+                    <canvas id="image-canvas"
+                            onmousedown="canvasMouseDown(event)"
+                            onmouseup="canvasMouseUp(event)"
+                            onmousemove="canvasMouseMove(event)">
+                        
                     </canvas>
-						        <a class="rect"
-                       alt="line-1"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 0.0%; width: 99.16666666666667%; height: 6.709558823529412%; z-index: 2;"
-                       id="1"></a>
-					          
-						        <a class="rect"
-                       alt="line-2"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.5555555555555556%; top: 4.595588235294118%; width: 98.24074074074075%; height: 8.547794117647058%; z-index: 2;"
-                       id="2"></a>
-					          
-						        <a class="rect"
-                       alt="line-3"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.18518518518518517%; top: 11.029411764705882%; width: 99.81481481481481%; height: 7.9963235294117645%; z-index: 2;"
-                       id="3"></a>
-					          
-						        <a class="rect"
-                       alt="line-4"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.18518518518518517%; top: 16.544117647058822%; width: 99.81481481481481%; height: 7.904411764705882%; z-index: 2;"
-                       id="4"></a>
-					          
-						        <a class="rect"
-                       alt="line-5"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.2777777777777778%; top: 22.794117647058822%; width: 99.25925925925925%; height: 7.444852941176471%; z-index: 2;"
-                       id="5"></a>
-					          
-						        <a class="rect"
-                       alt="line-6"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.18518518518518517%; top: 28.676470588235293%; width: 99.81481481481481%; height: 8.547794117647058%; z-index: 2;"
-                       id="6"></a>
-					          
-						        <a class="rect"
-                       alt="line-7"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 2.4074074074074074%; top: 34.83455882352941%; width:97.22222222222223%; height: 8.088235294117647%; z-index: 2;"
-                       id="7"></a>
-					          
-						        <a class="rect"
-                       alt="line-8"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 40.900735294117645%; width: 99.16666666666667%; height: 7.9963235294117645%; z-index: 2;"
-                       id="8"></a>
-					          
-						        <a class="rect"
-                       alt="line-9"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 47.150735294117645%; width: 99.07407407407408%; height: 8.180147058823529%; z-index: 2;"
-                       id="9"></a>
-					          
-						        <a class="rect"
-                       alt="line-10"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 53.58455882352941%; width: 98.24074074074075%; height: 6.985294117647059%; z-index: 2;"
-                       id="10"></a>
-					          
-						        <a class="rect"
-                       alt="line-11"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 58.8235294117647%; width: 99.9074074074074%; height: 7.352941176470588%; z-index: 2;"
-                       id="11"></a>
-					          
-						        <a class="rect"
-                       alt="line-12"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 64.24632352941177%; width: 98.98148148148148%; height: 8.180147058823529%; z-index: 2;"
-                       id="12"></a>
-					          
-						        <a class="rect"
-                       alt="line-13"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 70.58823529411765%; width: 99.9074074074074%; height: 7.8125%; z-index: 2;"
-                       id="13"></a>
-					          
-						        <a class="rect"
-                       alt="line-14"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.18518518518518517%; top: 76.5625%; width: 99.25925925925925%; height: 8.363970588235293%; z-index: 2;"
-                       id="14"></a>
-					          
-						        <a class="rect"
-                       alt="line-15"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.18518518518518517%; top: 83.63970588235294%; width: 99.25925925925925%; height: 8.731617647058824%; z-index: 2;"
-                       id="15"></a>
-					          
-						        <a class="rect"
-                       alt="line-16"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 88.87867647058823%; width: 99.81481481481481%; height: 9.099264705882353%; z-index: 2;"
-                       id="16"></a>
+						        <!-- <a class="rect" -->
+                    <!-- alt="line-1" -->
+                    <!-- href="" -->
+                    <!-- title="" -->
+                    <!-- 
+						             <a class="rect"
+                         alt="line-2"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.5555555555555556%; top: 4.595588235294118%; width: 98.24074074074075%; height: 8.547794117647058%; z-index: 2;"
+                         id="2"></a>
+
+						             <a class="rect"
+                         alt="line-3"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.18518518518518517%; top: 11.029411764705882%; width: 99.81481481481481%; height: 7.9963235294117645%; z-index: 2;"
+                         id="3"></a>
+
+						             <a class="rect"
+                         alt="line-4"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.18518518518518517%; top: 16.544117647058822%; width: 99.81481481481481%; height: 7.904411764705882%; z-index: 2;"
+                         id="4"></a>
+
+						             <a class="rect"
+                         alt="line-5"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.2777777777777778%; top: 22.794117647058822%; width: 99.25925925925925%; height: 7.444852941176471%; z-index: 2;"
+                         id="5"></a>
+
+						             <a class="rect"
+                         alt="line-6"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.18518518518518517%; top: 28.676470588235293%; width: 99.81481481481481%; height: 8.547794117647058%; z-index: 2;"
+                         id="6"></a>
+
+						             <a class="rect"
+                         alt="line-7"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 2.4074074074074074%; top: 34.83455882352941%; width:97.22222222222223%; height: 8.088235294117647%; z-index: 2;"
+                         id="7"></a>
+
+						             <a class="rect"
+                         alt="line-8"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 40.900735294117645%; width: 99.16666666666667%; height: 7.9963235294117645%; z-index: 2;"
+                         id="8"></a>
+					               
+						             <a class="rect"
+                         alt="line-9"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 47.150735294117645%; width: 99.07407407407408%; height: 8.180147058823529%; z-index: 2;"
+                         id="9"></a>
+					               
+						             <a class="rect"
+                         alt="line-10"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 53.58455882352941%; width: 98.24074074074075%; height: 6.985294117647059%; z-index: 2;"
+                         id="10"></a>
+					               
+						             <a class="rect"
+                         alt="line-11"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 58.8235294117647%; width: 99.9074074074074%; height: 7.352941176470588%; z-index: 2;"
+                         id="11"></a>
+					               
+						             <a class="rect"
+                         alt="line-12"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 64.24632352941177%; width: 98.98148148148148%; height: 8.180147058823529%; z-index: 2;"
+                         id="12"></a>
+					               
+						             <a class="rect"
+                         alt="line-13"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 70.58823529411765%; width: 99.9074074074074%; height: 7.8125%; z-index: 2;"
+                         id="13"></a>
+					               
+						             <a class="rect"
+                         alt="line-14"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.18518518518518517%; top: 76.5625%; width: 99.25925925925925%; height: 8.363970588235293%; z-index: 2;"
+                         id="14"></a>
+					               
+						             <a class="rect"
+                         alt="line-15"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.18518518518518517%; top: 83.63970588235294%; width: 99.25925925925925%; height: 8.731617647058824%; z-index: 2;"
+                         id="15"></a>
+					               
+						             <a class="rect"
+                         alt="line-16"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 88.87867647058823%; width: 99.81481481481481%; height: 9.099264705882353%; z-index: 2;"
+                         id="16"></a> -->
 				        </div>
 			      </div>
             <script>
                 var line1 = {
-                    "left" : "0.0",
-                    "width" : "99.1",
-                    "top" : "0.0",
-                    "height" : "6.7",
-                    "index" : "1"
+                "left" : "12",
+                "width" : "1059",
+                "top" : "0",
+                "height" : "73",
+                "index" : "1",
+                "bbox" : "12, 0, 1071, 73"
                 };
                 var line2 = {
-                    "left" : "0.5",
-                    "width" : "98.2",
-                    "top" : "4.5",
-                    "height" : "8.5",
-                    "index" : "2"
+                "left" : "6",
+                "width" : "1061",
+                "top" : "50",
+                "height" : "93",
+                "index" : "2",
+                "bbox" : "6, 50, 1067, 143"
                 };
                 var line3 = {
-                    "left" : "0.1",
-                    "width" : "99.0",
-                    "top" : "11",
-                    "height" : "8",
-                    "index" : "3"
+                "left" : "2",
+                "width" : "1078",
+                "top" : "120",
+                "height" : "87",
+                "index" : "3",
+                "bbox" : "2, 120, 1080, 207"
                 };
                 var line4 = {
-                    "left" : "0.1",
-                    "width" : "99.8",
-                    "top" : "16",
-                    "height" : "7",
-                    "index" : "4"
+                "left" : "2",
+                "width" : "1078",
+                "top" : "180",
+                "height" : "86",
+                "index" : "4",
+                "bbox" : "2, 180, 1080, 266"
                 };
                 var line5 = {
-                    "left" : "0.2",
-                    "width" : "99",
-                    "top" : "22.7",
-                    "height" : "7",
-                    "index" : "5"
+                "left" : "3",
+                "width" : "1072",
+                "top" : "248",
+                "height" : "81",
+                "index" : "5",
+                "bbox" : "3, 248, 1075, 329"
                 };
              var lines = [ line1, line2, line3, line4, line5 ];
             </script>
@@ -512,7 +519,6 @@
                             </li>
                         </ul>
 					          </li>
-					          
 	                  <li class="item-group" id="9">
                         <ul class="item-list" id="9">
 			                      
@@ -767,6 +773,5 @@
 				        </ol>
 			      </div>
 		    </section>
-
 	  </body>
 </html>
