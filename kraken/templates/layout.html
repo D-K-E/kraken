@@ -118,9 +118,12 @@
                     <button onclick="sortLines()" id="sortButton">
                         Sort Lines
                     </button>
-                    <!-- <button onclick="addLines()" id="addLineButton"> -->
-                    <!-- Add Lines -->
-                    <!-- </button> -->
+                    <button onclick="resetRect()" id="resetRectButton">
+                        Reset Selection
+                        </button>
+                        <button onclick="addTranscription()" id="addTranscriptionButton">
+                            Add Transcription
+                        </button>
                 </fieldset>
 				        <ol id="text-line-list">
                     <!-- Contains the lines -->
@@ -135,22 +138,10 @@
                             </li>
                             <li class="line-widget" id="{{ line.index }}">
                                 <label class="lbl-container">
-                                    Mark as deleted
+                                    Mark for deletion
                                     <input type="checkbox" id="{{ line.index }}" class="delete-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="{{ line.index }}" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                    </label>
-                                    <label class="lbl-container">
-
-                                        Add Line Above
-                                        <input type="checkbox" id="{{ line.index }}" class="above-checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-
 					                  </li>
                         </ul>
                     </li>

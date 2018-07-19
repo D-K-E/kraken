@@ -90,13 +90,11 @@
                             onmousedown="canvasMouseDown(event)"
                             onmouseup="canvasMouseUp(event)"
                             onmousemove="canvasMouseMove(event)">
-                        
                     </canvas>
 						        <!-- <a class="rect" -->
                     <!-- alt="line-1" -->
                     <!-- href="" -->
                     <!-- title="" -->
-                    <!-- 
 						             <a class="rect"
                          alt="line-2"
                          href=""
@@ -200,7 +198,7 @@
                          href=""
                          title=""
                          style="position: absolute; left: 0.0%; top: 88.87867647058823%; width: 99.81481481481481%; height: 9.099264705882353%; z-index: 2;"
-                         id="16"></a> -->
+                         id="16"></a>
 				        </div>
 			      </div>
             <script>
@@ -257,13 +255,16 @@
                     <button onclick="sortLines()" id="sortButton">
                         Sort Lines
                     </button>
+                    <button onclick="resetRect()" id="resetRectButton">
+                        Reset Selection
+                    </button>
+                    <button onclick="addTranscription()" id="addTranscriptionButton">
+                        Add Transcription
+                    </button>
                     <!-- <button onclick="addLines()" id="addLineButton">
                          Add Lines
                          </button>
                     -->
-                    <button>
-                        <i class="fas fa-map-marker"></i>
-                    </button>
                 </fieldset>
 				        <ol id="text-line-list">
 				            <li class="item-group" id="1">
@@ -276,8 +277,8 @@
                                 class="editable-line">
 					                  </li>
                             <li class="line-widget" id="1">
-                                <label class="container">
-                                    Mark as deleted
+                                <label class="lbl-container">
+                                    Mark for deletion
                                     <input type="checkbox"
                                            id="1"
                                            class="delete-checkbox">

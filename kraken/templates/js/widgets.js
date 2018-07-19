@@ -9,7 +9,7 @@ window.onload = function(){
     // End of mouse tracking
     };
 
-var inCanvas=false;
+var mousePress=false;
 var pageImage;
 var xcoord=0;
 var ycoord=0;
@@ -25,7 +25,23 @@ var currentRect = {
     "vratio" : "",
     "top_real" : "",
     "left_real" : "",
+    "width_real" : "",
+    "height_real" : "",
 };
+
+var hoveringRect = {
+    "top" : "",
+    "left" : "",
+    "width" : "",
+    "height" : "",
+    "hratio": "",
+    "vratio" : "",
+    "top_real" : "",
+    "left_real" : "",
+    "width_real" : "",
+    "height_real" : ""
+};
+
 var hratio=1;
 var vratio=1;
 var ratio=1;
@@ -69,7 +85,7 @@ function imageLoad(){
                       imnwidth*ratio, // destination width
                       imnwidth*ratio // destination height
                      );
-    // drawNewImage(image, context, canvas);
+    // redrawPageImage(image, context, canvas);
     pageImage = image.cloneNode(true);
     pageImage.width = canvas.width;
     pageImage.height = canvas.height;
@@ -128,18 +144,17 @@ function canvasMouseDown(event){
     // mouseY = Math.floor(mouseY*vratio);
     //
     // store the starting mouse position
-    inCanvas=true;
+    mousePress=true;
 }
 
 function canvasMouseUp(event){
-    inCanvas=false;
+    mousePress=false;
     console.log("in mouse up");
 }
 
 function canvasMouseMove(event){
-    if(inCanvas === false){
-        return;
-    }
+    // regroups functions that activates with
+    // mouse move on canvas
     var imcanvas = document.getElementById("image-canvas");
     var context = imcanvas.getContext('2d');
     var canvasOffsetX = imcanvas.offsetLeft;
@@ -148,8 +163,6 @@ function canvasMouseMove(event){
     var mouseY=parseInt(event.layerY - canvasOffsetY);
     var mouseXTrans = (mouseX) / hratio; // real coordinates
     var mouseYTrans = (mouseY) / vratio; // real coordinates
-    // mouseX = Math.floor(mouseXTrans);
-    // mouseY = Math.floor(mouseYTrans);
     //
     console.log("moving");
     console.log("in mouse move");
@@ -163,54 +176,145 @@ function canvasMouseMove(event){
     console.log("ytransformed");
     console.log(mouseYTrans);
     //
-    context.strokeStyle = "lightgray";
-    context.lineWidth=2;
-    console.log(event);
-    context.clearRect(0,0,
-                      imcanvas.width,
-                      imcanvas.height);
-    drawNewImage(context, imcanvas);
-    // drawRectangleSelection(mouseXTrans,
-    //                        mouseYTrans,
-    //                        context);
-    drawRectangleSelection(mouseX,
-                           mouseY,
-                           mouseXTrans,
-                           mouseYTrans,
-                           hratio,
-                           vratio,
-                           context);
-
+    if(mousePress === false){
+        return;
+    }
+    if(mousePress === true){
+        context.strokeStyle = "lightgray";
+        context.lineWidth=2;
+        console.log(event);
+        context.clearRect(0,0,
+                          imcanvas.width,
+                          imcanvas.height);
+        redrawPageImage(context, imcanvas);
+        // drawRectangleSelection(mouseXTrans,
+        //                        mouseYTrans,
+        //                        context);
+        drawRectangle(mouseX,
+                      mouseY,
+                      mouseXTrans,
+                      mouseYTrans,
+                      xcoord,
+                      ycoord,
+                      hratio,
+                      vratio,
+                      context,
+                      currentRect);
+    }
     console.log("drawn");
 }
 
-function drawRectangleSelection(mouseX,
-                                mouseY,
-                                mouseXTrans,
-                                mouseYTrans,
-                                hratio,
-                                vratio,
-                                context){
+function drawRectangle(mouseX2,
+                       mouseY2,
+                       mouseX2Trans,
+                       mouseY2Trans,
+                       x1coord,
+                       y1coord,
+                       hratio,
+                       vratio,
+                       context,
+                       rectUpdate){
     // Rectangle draw function
-    var rectW = mouseX - xcoord;
-    var rectH = mouseY - ycoord;
-    currentRect["top"] = mouseY;
-    currentRect["left"] = mouseX;
-    currentRect["width"] = rectW;
-    currentRect["height"] = rectH;
-    currentRect["left_real"] = Math.floor(mouseXTrans);
-    currentRect["top_real"] = Math.floor(mouseYTrans);
+    var rectW = mouseX2 - x1coord;
+    var rectH = mouseY2 - y1coord;
+    var x_real = x1coord / hratio;
+    var y_real = y1coord / vratio;
+    var width_real = Math.floor(mouseX2Trans - x_real);
+    var height_real = Math.floor(mouseY2Trans - y_real);
     //
-    console.log(currentRect);
+    rectUpdate["top"] = y1coord;
+    rectUpdate["left"] = x1coord;
+    rectUpdate["width"] = rectW;
+    rectUpdate["height"] = rectH;
+    rectUpdate["hratio"] = hratio;
+    rectUpdate["vratio"] = vratio;
+    rectUpdate["left_real"] = Math.floor(x_real);
+    rectUpdate["top_real"] = Math.floor(y_real);
+    rectUpdate["width_real"] = width_real;
+    rectUpdate["height_real"] = height_real;
+    //
+    console.log(rectUpdate);
     context.beginPath();
-    context.rect(xcoord,
-                 ycoord,
+    context.rect(x1coord,
+                 y1coord,
                  rectW,
                  rectH);
     context.stroke();
 }
 
-function drawNewImage(context, canvas){
+function checkLineBound(mX,
+                        mY,
+                        line){
+    // check if the line contains the mX and mY
+    var linetop = parseInt(line["top"], 10);
+    var lineleft = parseInt(line["left"], 10);
+    var linetop2 = linetop + parseInt(line["height"], 10);
+    var lineleft2 = lineleft + parseInt(line["width"], 10);
+    var check = false;
+    //
+    if(
+        (linetop <= mX) && (mX <= linetop2) &&
+            (lineleft <= mY) && (mY <= lineleft2)
+    ){
+        check=true;
+    }
+    return check;
+}
+
+function getLineBound(mXcoord, mYcoord){
+    // get the line that is to be drawn based on the
+    // coordinates provided
+    var lineInBound = [];
+    //
+    for(i=0; i<lines.length; i++){
+        var aLine = lines[i];
+        if(checkLineBound(mXcoord, mYcoord, aLine) === true){
+            lineInBound.push(aLine);
+        }
+    }
+    //
+    return lineInBound[0];
+}
+
+function drawLineBounds(event){
+    // makes the line bounding box
+    // visible if the mouse is
+    // in its coordinates
+    var imcanvas = document.getElementById("image-canvas");
+    var context = imcanvas.getContext('2d');
+    var canvasOffsetX = imcanvas.offsetLeft;
+    var canvasOffsetY = imcanvas.offsetTop;
+    var mouseX2=parseInt(event.layerX - canvasOffsetX);
+    var mouseY2=parseInt(event.layerY - canvasOffsetY);
+    var mouseX2Trans = (mouseX2) / hratio; // real coordinates
+    var mouseY2Trans = (mouseY2) / vratio; // real coordinates
+    context.clearRect(0,0,
+                      imcanvas.width,
+                      imcanvas.height);
+    redrawPageImage(context, imcanvas);
+    var lineDraw = getLineBound(mouseX2Trans,
+                                mouseY2Trans);
+    var y1_real = parseInt(lineDraw["top"], 10);
+    var x1_real = parseInt(lineDraw["left"], 10);
+    var x1coord = x1_real * hratio;
+    var y1coord = y1_real * vratio;
+    context.strokeStyle = "red";
+    context.lineWidth=1;
+    //
+    // draw the rectangle
+    drawRectangle(mouseX2,
+                  mouseY2,
+                  mouseX2Trans,
+                  mouseY2Trans,
+                  x1coord,
+                  y1coord,
+                  hratio,
+                  vratio,
+                  context,
+                  hoveringRect);
+}
+
+function redrawPageImage(context, canvas){
     // set canvas width and height
     // Get client width/height, that is after styling
     console.log("new image being drawn");
@@ -244,6 +348,173 @@ function drawNewImage(context, canvas){
                       imnwidth*ratio // destination height
                      );
 }
+
+function redrawRect(context, rectObj){
+    // redraw the last hovering rectangle
+    var x1coord = rectObj["left"];
+    var y1coord = rectObj["top"];
+    var nwidth = rectObj["width"];
+    var nheight = rectObj["height"];
+    // draw
+    context.strokeStyle = "red";
+    context.lineWidth=1;
+    context.beginPath();
+    context.rect(x1coord,
+                 y1coord,
+                 nwidth,
+                 nheight);
+    context.stroke();
+}
+function restoreOldCanvas(){
+    // restore canvas to its old state
+    var imcanvas = document.getElementById("image-canvas");
+    var context = imcanvas.getContext('2d');
+    context.clearRect(0,0,
+                      imcanvas.width,
+                      imcanvas.height);
+    redrawPageImage(context, imcanvas);
+    redrawRect(context, hoveringRect);
+
+}
+//
+function resetRect(){
+    // Clears canvas and redraws the original image
+        currentRect = {
+        "top" : "",
+        "left" : "",
+        "width" : "",
+        "height" : "",
+        "hratio": "",
+        "vratio" : "",
+        "top_real" : "",
+        "left_real" : "",
+        "width_real" : "",
+        "height_real" : "",
+    };
+    restoreOldCanvas();
+    console.log(currentRect);
+}
+
+function createItemId(){
+    // creates the id of item group based on the
+    // the number of elements the text-line-list has
+    var orList = document.getElementById("text-line-list");
+    var listlen = orList.childNodes.length;
+    var newId = listlen + 1;
+    return newId;
+}
+
+function checkRectangle(){
+    // check if the selection rectangle is empty
+    var emptyRect = {
+        "top" : "",
+        "left" : "",
+        "width" : "",
+        "height" : "",
+        "hratio": "",
+        "vratio" : "",
+        "top_real" : "",
+        "left_real" : "",
+        "width_real" : "",
+        "height_real" : "",
+    };
+    var result = false;
+    if(currentRect === emptyRect){
+        result = true;
+    }else{
+        result = false;
+    }
+    //
+    return result;
+}
+function createIGroup(idstr){
+    // create the list element that will hold the group
+    var listItem = document.createElement("li");
+    listItem.setAttribute("class", "item-group");
+    listItem.setAttribute("id", idstr);
+    //
+    return listItem;
+}
+
+function createItList(idstr){
+    // Unordered list that would hold the checkbox
+    // and the transcription line
+    var ulList = document.createElement("ul");
+    ulList.setAttribute("class", "item-list");
+    ulList.setAttribute("id", idstr);
+    //
+    return ulList;
+}
+
+function createTLine(idstr){
+    // transcription line
+    var transLine = document.createElement("li");
+    transLine.setAttribute("id", idstr);
+    transLine.setAttribute("contenteditable", "true");
+    transLine.setAttribute("spellcheck", "true");
+    transLine.setAttribute("class", "editable-line");
+    var placeholder = "Enter text for line ";
+    placeholder.concat(idstr);
+    transLine.setAttribute("data-placeholder", placeholder);
+    var bbox = "";
+    bbox.concat(currentRect["left_real"]);
+    bbox.concat(", ");
+    bbox.concat(currentRect["top_real"]);
+    bbox.concat(", ");
+    bbox.concat(currentRect["width_real"]);
+    bbox.concat(", ");
+    bbox.concat(currentRect["height_real"]);
+    transLine.setAttribute("data-bbox", bbox);
+    //
+    return transLine;
+}
+
+function createLineWidget(idstr){
+    // Create the line widget that holds
+    // checkboxes and other functionality
+    var lineWidget = document.createElement("li");
+    lineWidget.setAttribute("id", idstr);
+    var labelContainer = document.createElement("label");
+    labelContainer.setAttribute("class", "lbl-container");
+    var textNode = document.createTextNode("Mark for deletion");
+    labelContainer.appendChild(textNode);
+    var delInput = document.createElement("input");
+    delInput.setAttribute("id", idstr);
+    delInput.setAttribute("type","checkbox");
+    delInput.setAttribute("class", "delete-checkbox");
+    labelContainer.appendChild(delInput);
+    var spanElement = document.createElement("span");
+    spanElement.setAttribute("class", "checkmark");
+    labelContainer.appendChild(spanElement);
+    lineWidget.appendChild(labelContainer);
+    //
+    return lineWidget;
+}
+
+function addTranscription(){
+    // adds a transcription box to item list
+    var check = checkRectangle();
+    if( check === true){
+        alert("Please select an area before adding a transcription");
+    }
+    var orList = document.getElementById("text-line-list");
+    // create the new line id
+    var newListId = createItemId();
+    //
+    var listItem = createIGroup(newListId);
+    var ulList = createItList(newListId);
+    var transLine = createTLine(newListId);
+    var lineWidget = createLineWidget(newListId);
+    //
+    // transline and linewidget goes into ullist
+    ulList.appendChild(transLine);
+    ulList.appendChild(lineWidget);
+    // ul list goes into list item
+    listItem.appendChild(ulList);
+    // list item goes into or list
+    orList.appendChild(listItem);
+   }
+
 
 // sort function for lists
 var deletedNodes = [];
@@ -310,9 +581,46 @@ function undoDeletion(){
 }
 function sortLines() {
     var lineList = document.querySelectorAll(".item-group");
-    var itemparent = document.querySelector("#text-line-list");
+    var itemparent = document.getElementById("text-line-list");
     var linearr = Array.from(lineList).sort(
-        (a,b) => parseInt(a.id, 10) - parseInt(b.id, 10)
+        sortOnBbox
     );
     linearr.forEach(el => itemparent.appendChild(el) );
+}
+
+function sortOnBbox(a, b){
+    // Sorts the list elements according to
+    // their placement on the image
+    // get editable lines
+    var eline1 = a.getElementsByClassName("editable-line");// returns a list 
+    var eline2 = b.getElementsByClassName("editable-line");// with single element
+    eline1 = eline1[0]; //  get the single element
+    eline2 = eline2[0];
+    //
+    // get bbox
+    var bbox1 = eline1.getAttribute("data-bbox");
+    var bbox2 = eline2.getAttribute("data-bbox");
+    // split the string
+    var bbox1_split = bbox1.split(",");
+    var bbox2_split = bbox2.split(",");
+    // second element is the top value
+    // get top value
+    var bbox1_top = bbox1_split[1];
+    var bbox2_top = bbox2_split[1];
+    bbox1_top = bbox1_top.trim();
+    bbox2_top = bbox2_top.trim();
+    //
+    bbox1_top = parseInt(bbox1_top, 10);
+    bbox2_top = parseInt(bbox2_top, 10);
+    //
+    // compare:
+    // if the the top value is higher
+    // that means the line is at a lower section
+    // of the page image
+    // so that which has a high value
+    // should be placed after it is a simple ascending
+    // numbers comparison
+    //
+    return bbox1_top - bbox2_top;
+
 }
