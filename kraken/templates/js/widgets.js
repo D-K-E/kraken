@@ -7,8 +7,10 @@ window.onload = function(){
         "onload", imageLoad()
     );
     // End of mouse tracking
-    };
+};
 
+// Canvas related functions
+//
 var mousePress=false;
 var pageImage;
 var xcoord=0;
@@ -16,6 +18,7 @@ var ycoord=0;
 var shiftx;
 var shifty;
 
+// For storing current selection
 var currentRect = {
     "top" : "",
     "left" : "",
@@ -29,6 +32,7 @@ var currentRect = {
     "height_real" : "",
 };
 
+// For storing hovering rectangle that represents the detected line
 var hoveringRect = {
     "top" : "",
     "left" : "",
@@ -49,6 +53,12 @@ var Tmatrix=[1,0,0,1,0,0];
 
 
 function imageLoad(){
+    /*
+      Load the page image to the canvas
+      with proper scaling and store
+      the scaling ratios for drawing rectangles afterwards
+
+     */
     // Canvas load image
     var canvas = document.getElementById("image-canvas");
     var context = canvas.getContext('2d');
@@ -97,6 +107,7 @@ function getScaleFactor(destWidth,
                         destHeight,
                         srcWidth,
                         srcHeight) {
+    // Get scale factor for correctly drawing rectangle
     var hRatio = destWidth / srcWidth;
     var vRatio = destHeight / srcHeight;
     var ratio = Math.min(hRatio, vRatio);
@@ -129,12 +140,6 @@ function canvasMouseDown(event){
     var mouseY=parseInt(event.layerY - canvasOffsetY);
     var mouseXTrans = mouseX  / hratio;
     var mouseYTrans = mouseY / vratio ;
-    console.log("m down");
-    console.log("mouytrans");
-    console.log(mouseYTrans);
-    console.log("mo y");
-    console.log(mouseY);
-    console.log(event);
 
     // xcoord = mouseXTrans; // real coordinates
     // ycoord = mouseYTrans; // real coordinates
@@ -164,17 +169,7 @@ function canvasMouseMove(event){
     var mouseXTrans = (mouseX) / hratio; // real coordinates
     var mouseYTrans = (mouseY) / vratio; // real coordinates
     //
-    console.log("moving");
-    console.log("in mouse move");
-    console.log(mouseX);
-    console.log("xcoord");
-    console.log(xcoord);
-    console.log("client x");
-    console.log(event.clientX);
-    console.log("xtransformed");
-    console.log(mouseXTrans);
-    console.log("ytransformed");
-    console.log(mouseYTrans);
+    drawLineBounds(event);
     //
     if(mousePress === false){
         return;
@@ -294,6 +289,10 @@ function drawLineBounds(event){
     redrawPageImage(context, imcanvas);
     var lineDraw = getLineBound(mouseX2Trans,
                                 mouseY2Trans);
+    console.log("linedraw");
+    console.log(lineDraw);
+    // TODO add the x2, y2 as well
+    // instead of taking them from mouse positions
     var y1_real = parseInt(lineDraw["top"], 10);
     var x1_real = parseInt(lineDraw["left"], 10);
     var x1coord = x1_real * hratio;
@@ -399,8 +398,16 @@ function createItemId(){
     // creates the id of item group based on the
     // the number of elements the text-line-list has
     var orList = document.getElementById("text-line-list");
-    var listlen = orList.childNodes.length;
-    var newId = listlen + 1;
+    var children = orList.childNodes;
+    var childArray = [];
+    for(var i=0; i < children.length; i++){
+        var newchild = children[i];
+        if(newchild.className === "item-group"){
+            childArray.push(newchild);
+        }
+    }
+    //
+    var newId = childArray.length + 1;
     return newId;
 }
 
@@ -457,13 +464,13 @@ function createTLine(idstr){
     placeholder.concat(idstr);
     transLine.setAttribute("data-placeholder", placeholder);
     var bbox = "";
-    bbox.concat(currentRect["left_real"]);
-    bbox.concat(", ");
-    bbox.concat(currentRect["top_real"]);
-    bbox.concat(", ");
-    bbox.concat(currentRect["width_real"]);
-    bbox.concat(", ");
-    bbox.concat(currentRect["height_real"]);
+    bbox = bbox.concat(currentRect["left_real"]);
+    bbox = bbox.concat(", ");
+    bbox = bbox.concat(currentRect["top_real"]);
+    bbox = bbox.concat(", ");
+    bbox = bbox.concat(currentRect["width_real"]);
+    bbox = bbox.concat(", ");
+    bbox = bbox.concat(currentRect["height_real"]);
     transLine.setAttribute("data-bbox", bbox);
     //
     return transLine;
@@ -516,7 +523,9 @@ function addTranscription(){
    }
 
 
+// Functions related transcription boxes
 // sort function for lists
+//
 var deletedNodes = [];
 function deleteBoxes(){
     /*
@@ -585,6 +594,8 @@ function sortLines() {
     var linearr = Array.from(lineList).sort(
         sortOnBbox
     );
+    //
+    //
     linearr.forEach(el => itemparent.appendChild(el) );
 }
 

@@ -14,7 +14,6 @@
 			      integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
 			      crossorigin="anonymous">
         </script>
-	      <script src="js/widgets.js"></script>
 		    <script>
 			   $(document).ready(function() {
 				     var uuid = $('meta[name=uuid]').attr('content');
@@ -37,7 +36,7 @@
 
 				     // create mouseover effect on text fields
 				     $('li[contenteditable=true], span').mouseover(function(e) {
-					       console.log(this.id);
+					       /* console.log(this.id); */
 					       $('a.rect[alt=' + this.id + ']').addClass("hovered");
 				     }).mouseout(function(e) {
 					       $('a.rect[alt=' + this.id + ']').removeClass("hovered");
@@ -284,18 +283,6 @@
                                            class="delete-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="1"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="1" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
                             </li>
                         </ul>
 				            </li>
@@ -310,21 +297,10 @@
 					                  </li>
                             <li class="line-widget" id="2">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="2"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="2"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="2" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -340,21 +316,10 @@
 						                </li>
                             <li class="line-widget" id="3">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="3"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="3"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="3" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -372,22 +337,11 @@
                             <li class="line-widget" id="4">
 
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="4"
                                            class="delete-checkbox">
 
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="4"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="4" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -405,21 +359,10 @@
 							              </li>
                             <li class="line-widget" id="5">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="5"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="5"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="5" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -436,21 +379,10 @@
 							              </li>
                             <li class="line-widget" id="6">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="6"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="6"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="6" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -467,21 +399,10 @@
 							              </li>
                             <li class="line-widget" id="7">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="7"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="7"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="7" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -498,23 +419,10 @@
 							              </li>
                             <li class="line-widget" id="8">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="8"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="8"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox"
-                                           id="8"
-                                           class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -522,7 +430,6 @@
 					          </li>
 	                  <li class="item-group" id="9">
                         <ul class="item-list" id="9">
-			                      
 					                  <li id="9"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -532,21 +439,10 @@
 							              </li>
                             <li class="line-widget" id="9">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="9"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="9"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="9" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -563,21 +459,10 @@
 							              </li>
                             <li class="line-widget" id="10">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id=10"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="10"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="10" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -594,21 +479,10 @@
 							              </li>
                             <li class="line-widget" id="11">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="11"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="11"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="11" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -625,21 +499,10 @@
 							              </li>
                             <li class="line-widget" id="12">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="12"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="12"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="12" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -656,21 +519,10 @@
 							              </li>
                             <li class="line-widget" id="13">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="13"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="13"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="13" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -687,21 +539,10 @@
 							              </li>
                             <li class="line-widget" id="14">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="14"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="14"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="14" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -718,21 +559,10 @@
 							              </li>
                             <li class="line-widget" id="15">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="15"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="15"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox" id="15" class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -749,23 +579,10 @@
                             </li>
                             <li class="line-widget" id="16">
                                 <label class="container">
-                                    Mark as deleted
+                                    Mark for Deletion
                                     <input type="checkbox"
                                            id="16"
                                            class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="16"
-                                           class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Above
-                                    <input type="checkbox"
-                                           id="16"
-                                           class="above-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
@@ -774,5 +591,6 @@
 				        </ol>
 			      </div>
 		    </section>
+	      <script src="js/widgets.js"></script>
 	  </body>
 </html>
