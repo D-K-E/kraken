@@ -1,64 +1,76 @@
-// load image to canvas
 
-window.onload = function(){
-    // Mouse tracking to image
-    var imcanvas = document.getElementById("image-canvas");
-    document.getElementById("image-page").addEventListener(
-        "onload", imageLoad()
-    );
-    // End of mouse tracking
+// CanvasRelated object regrouping
+// methods related to drawing and keeping track of the
+// objects on the canvas
+
+var CanvasRelated = function() {
+    var obj = Object.create(CanvasRelated.prototype);
+    obj.mousePress = false;
+    obj.inhover = false;
+    obj.selectInProcess = false;
+    obj.outOfBounds = false;
+    // image related
+    obj.image = {};
+    var pageImage;
+    obj.image.pageImage = pageImage;
+    obj.image.xcoord = 0;
+    obj.image.ycoord = 0;
+    var shiftx;
+    var shifty;
+    obj.image.shiftx = shiftx;
+    obj.image.shifty = shifty;
+    obj.image.hratio = 1;
+    obj.image.vratio = 1;
+    obj.image.ratio = 1;
+    // current selection
+    obj.image.currentRect = {
+        "y1" : "",
+        "x1" : "",
+        "x2" : "",
+        "y2" : "",
+        "width" : "",
+        "height" : "",
+        "hratio": "",
+        "vratio" : "",
+        "x1_real" : "",
+        "y1_real" : "",
+        "x2_real" : "",
+        "y2_real" : "",
+        "width_real" : "",
+        "height_real" : "",
+    };
+    // For storing hovering rectangle that represents the detected line
+    obj.image.hoveringRect = {
+        "y1" : "",
+        "x1" : "",
+        "x2" : "",
+        "y2" : "",
+        "width" : "",
+        "height" : "",
+        "hratio": "",
+        "vratio" : "",
+        "y1_real" : "",
+        "x1_real" : "",
+        "y2_real" : "",
+        "x2_real" : "",
+        "width_real" : "",
+        "height_real" : ""
+    };
+    // Store lines detected in the image
+    obj.image.lines = [];
+    //
+    return obj;
 };
 
-// Canvas related functions
-//
-var mousePress=false;
-var pageImage;
-var xcoord=0;
-var ycoord=0;
-var shiftx;
-var shifty;
-
-// For storing current selection
-var currentRect = {
-    "top" : "",
-    "left" : "",
-    "width" : "",
-    "height" : "",
-    "hratio": "",
-    "vratio" : "",
-    "top_real" : "",
-    "left_real" : "",
-    "width_real" : "",
-    "height_real" : "",
-};
-
-// For storing hovering rectangle that represents the detected line
-var hoveringRect = {
-    "top" : "",
-    "left" : "",
-    "width" : "",
-    "height" : "",
-    "hratio": "",
-    "vratio" : "",
-    "top_real" : "",
-    "left_real" : "",
-    "width_real" : "",
-    "height_real" : ""
-};
-
-var hratio=1;
-var vratio=1;
-var ratio=1;
-var Tmatrix=[1,0,0,1,0,0];
-
-
-function imageLoad(){
+// Canvas Related methods
+// methods
+CanvasRelated.prototype.imageLoad = function(){
     /*
       Load the page image to the canvas
       with proper scaling and store
       the scaling ratios for drawing rectangles afterwards
 
-     */
+    */
     // Canvas load image
     var canvas = document.getElementById("image-canvas");
     var context = canvas.getContext('2d');
@@ -77,45 +89,43 @@ function imageLoad(){
     var imnwidth = image.naturalWidth;
     var imnheight = image.naturalHeight;
     //
-    var ratiolist  = getScaleFactor(cwidth, //dest width
-                                cheight, // dest height
-                                imnwidth, // src width
-                                imnheight); // src height
-    ratio = ratiolist[2];
-    hratio = ratiolist[0];
-    vratio = ratiolist[1];
-    shiftx = ( cwidth - imcwidth * ratio ) / 2;
-    shifty = ( cheight - imcheight * ratio ) / 2;
+    this.getScaleFactor(cwidth, //dest width
+                        cheight, // dest height
+                        imnwidth, // src width
+                        imnheight); // src height
+    this.image.shiftx = ( cwidth - imcwidth * this.image.ratio ) / 2;
+    this.image.shifty = ( cheight - imcheight * this.image.ratio ) / 2;
     context.drawImage(image,
                       0,0,// coordinate source
                       imnwidth, // source rectangle width
                       imnheight, // source rectangle height
                       // centerShift_x, centerShift_y, // destination coordinate
                       0,0,
-                      imnwidth*ratio, // destination width
-                      imnwidth*ratio // destination height
+                      imnwidth*this.image.ratio, // destination width
+                      imnwidth*this.image.ratio // destination height
                      );
     // redrawPageImage(image, context, canvas);
-    pageImage = image.cloneNode(true);
-    pageImage.width = canvas.width;
-    pageImage.height = canvas.height;
-    console.log(pageImage);
+    this.image.pageImage = image.cloneNode(true);
+    this.image.pageImage.width = canvas.width;
+    this.image.pageImage.height = canvas.height;
     document.getElementById("image-page").remove();
 };
-
-function getScaleFactor(destWidth,
-                        destHeight,
-                        srcWidth,
-                        srcHeight) {
+//
+CanvasRelated.prototype.getScaleFactor = function(destWidth,
+                                                  destHeight,
+                                                  srcWidth,
+                                                  srcHeight) {
     // Get scale factor for correctly drawing rectangle
-    var hRatio = destWidth / srcWidth;
-    var vRatio = destHeight / srcHeight;
-    var ratio = Math.min(hRatio, vRatio);
+    var hratio = destWidth / srcWidth;
+    this.image.hratio = hratio;
+    var vratio = destHeight / srcHeight;
+    this.image.vratio = vratio;
+    this.image.ratio = Math.min(hratio, vratio);
     //
-    return [hRatio, vRatio, ratio];
-}
-
-function getLine(lineObj){
+    return;
+};
+//
+CanvasRelated.prototype.getLine = function(lineObj){
     // get line coordinates from line object
     var leftInt = parseInt(lineObj.left, 10);
     leftInt = Math.floor(leftInt);
@@ -126,11 +136,121 @@ function getLine(lineObj){
     var heightInt = parseInt(lineObj.height, 10);
     heightInt = Math.floor(heightInt);
     //
-    var results = [leftInt, topInt, widthInt, heightInt];
-    return results;
-}
-
-function canvasMouseDown(event){
+    var line = {};
+    line.x1 = leftInt;
+    line.y1 = topInt;
+    line.width = widthInt;
+    line.height = heightInt;
+    return line;
+};
+//
+CanvasRelated.prototype.getLines = function(){
+    for(var i=0; i < lines.length; i++){
+        var lineObj = lines[i];
+        var lineInts = this.getLine(lineObj);
+        this.image.lines.push(lineInts);
+    }
+};
+// Event handlers
+// Checks for event locations
+CanvasRelated.prototype.checkLineBound = function(mX,
+                                                  mY,
+                                                  x1, // real coordinate no scaling
+                                                  y1,
+                                                  x2, // real coordinates no scaling
+                                                  y2){
+    // check if the line contains the mX and mY
+    var check = false;
+    //
+    if(
+        (y1 <= mY) && (mY <= y2) &&
+            (x1 <= mX) && (mX <= x2)
+    ){
+        check=true;
+    }
+    return check;
+};
+//
+CanvasRelated.prototype.checkEventRectBound = function(event,
+                                                       rectName,
+                                                       eventBool){
+    /*
+      Check if the event is in the given rectangle
+      event: a mouse event
+      eventName: is the boolean variable
+      that would be changed with the check
+      rectName: is the reference rectangle*/
+    var imcanvas = document.getElementById("image-canvas");
+    var context = imcanvas.getContext('2d');
+    var canvasOffsetX = imcanvas.offsetLeft;
+    var canvasOffsetY = imcanvas.offsetTop;
+    var mouseX2=parseInt(event.layerX - canvasOffsetX);
+    var mouseY2=parseInt(event.layerY - canvasOffsetY);
+    var mouseX2Trans = (mouseX2) / this.image.hratio; // real coordinates
+    var mouseY2Trans = (mouseY2) / this.image.vratio; // real coordinates
+    //
+    var x1 = parseInt(rectName["x1_real"], 10);
+    var y1 = parseInt(rectName["y1_real"], 10);
+    var x2 = parseInt(rectName["x2_real"], 10);
+    var y2 = parseInt(rectName["y2_real"], 10);
+    //
+    if(this.checkLineBound(mouseX2Trans, mouseY2Trans,
+                           x1, y1,
+                           x2, y2) === true){
+        eventBool=true;
+        console.log("eventchecked");
+    }
+};
+//
+CanvasRelated.prototype.checkRectContained = function(rect1, rect2){
+    // Check if rect1 contains rect2
+    var rect1_x1 = rect1["x1"];
+    var rect1_y1 = rect1["x1"];
+    var rect1_x2 = rect1["x2"];
+    var rect1_y2 = rect1["y2"];
+    //
+    var rect2_x1 = rect1["x1"];
+    var rect2_y1 = rect1["x1"];
+    var rect2_x2 = rect1["x2"];
+    var rect2_y2 = rect1["y2"];
+    //
+    var check = false;
+    console.log("contain check");
+    //
+    if((rect2_x1 >= rect1_x1) &&
+       (rect2_x2 <= rect1_x2) &&
+       (rect2_y1 >= rect1_y1) &&
+       (rect2_y2 <= rect1_y2)
+      ){
+        check = true;
+        console.log("contains");
+    }
+    return check;
+};
+// Get lines based on event locations
+CanvasRelated.prototype.getLineBound = function(mXcoord,
+                                                mYcoord){
+    // get the line that is to be drawn based on the
+    // coordinates provided
+    var lineInBound = [];
+    //
+    for(var i=0; i<this.image.lines.length; i++){
+        var aLine = this.image.lines[i];
+        var x1 = parseInt(aLine["x1"], 10);
+        var y1 = parseInt(aLine["y1"], 10);
+        var x2 = x1 + parseInt(aLine["width"], 10);
+        var y2 = y1 + parseInt(aLine["height"], 10);
+        if(this.checkLineBound(mXcoord, mYcoord,
+                               x1, y1,
+                               x2, y2) === true){
+            lineInBound.push(aLine);
+        }
+    }
+    //
+    return lineInBound[0];
+};
+// Controling the mouse movements in canvas
+CanvasRelated.prototype.canvasMouseDown = function(event){
     // handling canvas mouse button pressed
     var imcanvas = document.getElementById("image-canvas");
     var canvasOffsetX = imcanvas.offsetLeft;
@@ -138,77 +258,86 @@ function canvasMouseDown(event){
 
     var mouseX=parseInt(event.layerX - canvasOffsetX);
     var mouseY=parseInt(event.layerY - canvasOffsetY);
-    var mouseXTrans = mouseX  / hratio;
-    var mouseYTrans = mouseY / vratio ;
+    var mouseXTrans = mouseX  / this.image.hratio;
+    var mouseYTrans = mouseY / this.image.vratio ;
 
-    // xcoord = mouseXTrans; // real coordinates
-    // ycoord = mouseYTrans; // real coordinates
-    xcoord = mouseX;
-    ycoord = mouseY;
-    // mouseX = Math.floor(mouseX/shiftx);
-    // mouseY = Math.floor(mouseY*vratio);
+    this.image.xcoord = mouseX;
+    this.image.ycoord = mouseY;
     //
     // store the starting mouse position
-    mousePress=true;
-}
-
-function canvasMouseUp(event){
-    mousePress=false;
+    this.mousePress=true;
+};
+CanvasRelated.prototype.canvasMouseUp = function(event){
+    this.mousePress=false;
     console.log("in mouse up");
-}
-
-function canvasMouseMove(event){
+};
+CanvasRelated.prototype.canvasMouseMove = function(event){
     // regroups functions that activates with
     // mouse move on canvas
     var imcanvas = document.getElementById("image-canvas");
     var context = imcanvas.getContext('2d');
     var canvasOffsetX = imcanvas.offsetLeft;
     var canvasOffsetY = imcanvas.offsetTop;
-    var mouseX=parseInt(event.layerX - canvasOffsetX);
-    var mouseY=parseInt(event.layerY - canvasOffsetY);
-    var mouseXTrans = (mouseX) / hratio; // real coordinates
-    var mouseYTrans = (mouseY) / vratio; // real coordinates
+    var mouseX = parseInt(event.layerX - canvasOffsetX);
+    var mouseY = parseInt(event.layerY - canvasOffsetY);
+    var mouseXTrans = mouseX / this.image.hratio; // real coordinates
+    var mouseYTrans = mouseY / this.image.vratio; // real coordinates
     //
-    drawLineBounds(event);
+    var currentRect = this.image.currentRect;
+    var hoveringRect = this.image.hoveringRect;
+    var contains = this.checkRectContained(currentRect,
+                                           hoveringRect);
+    this.checkEventRectBound(event, hoveringRect, this.inhover);
+    if((this.inhover === false) &&
+       (this.selectInProcess === false) &&
+       (contains === false)){
+        this.drawLineBounds(event);
+    }
     //
-    if(mousePress === false){
+    if(this.mousePress === false){
         return;
     }
-    if(mousePress === true){
+    if(this.mousePress === true){
+        this.selectInProcess = true;
         context.strokeStyle = "lightgray";
         context.lineWidth=2;
         console.log(event);
         context.clearRect(0,0,
                           imcanvas.width,
                           imcanvas.height);
-        redrawPageImage(context, imcanvas);
+        this.redrawPageImage(context, imcanvas);
         // drawRectangleSelection(mouseXTrans,
         //                        mouseYTrans,
         //                        context);
-        drawRectangle(mouseX,
-                      mouseY,
-                      mouseXTrans,
-                      mouseYTrans,
-                      xcoord,
-                      ycoord,
-                      hratio,
-                      vratio,
-                      context,
-                      currentRect);
+        var rect1 = this.image.currentRect;
+        console.log("currentrect");
+        console.log(rect1);
+        this.drawRectangle(mouseX,
+                           mouseY,
+                           mouseXTrans,
+                           mouseYTrans,
+                           this.image.xcoord,
+                           this.image.ycoord,
+                           this.image.hratio,
+                           this.image.vratio,
+                           context,
+                           rect1);
+        this.selectInProcess = false;
     }
     console.log("drawn");
-}
-
-function drawRectangle(mouseX2,
-                       mouseY2,
-                       mouseX2Trans,
-                       mouseY2Trans,
-                       x1coord,
-                       y1coord,
-                       hratio,
-                       vratio,
-                       context,
-                       rectUpdate){
+};
+// General Drawing Methods
+//
+CanvasRelated.prototype.drawRectangle = function(mouseX2,
+                                                 mouseY2,
+                                                 mouseX2Trans,
+                                                 mouseY2Trans,
+                                                 x1coord,
+                                                 y1coord,
+                                                 hratio,
+                                                 vratio,
+                                                 context,
+                                                 rectUpdate){
     // Rectangle draw function
     var rectW = mouseX2 - x1coord;
     var rectH = mouseY2 - y1coord;
@@ -217,14 +346,24 @@ function drawRectangle(mouseX2,
     var width_real = Math.floor(mouseX2Trans - x_real);
     var height_real = Math.floor(mouseY2Trans - y_real);
     //
-    rectUpdate["top"] = y1coord;
-    rectUpdate["left"] = x1coord;
+    rectUpdate["y1"] = y1coord;
+    rectUpdate["x1"] = x1coord;
+    //
+    rectUpdate["y2"] = mouseY2;
+    rectUpdate["x2"] = mouseX2;
+    //
     rectUpdate["width"] = rectW;
     rectUpdate["height"] = rectH;
+    //
     rectUpdate["hratio"] = hratio;
     rectUpdate["vratio"] = vratio;
-    rectUpdate["left_real"] = Math.floor(x_real);
-    rectUpdate["top_real"] = Math.floor(y_real);
+    //
+    rectUpdate["x1_real"] = Math.floor(x_real);
+    rectUpdate["y1_real"] = Math.floor(y_real);
+    //
+    rectUpdate["x2_real"] = mouseX2Trans,
+    rectUpdate["y2_real"] = mouseY2Trans;
+    //
     rectUpdate["width_real"] = width_real;
     rectUpdate["height_real"] = height_real;
     //
@@ -235,43 +374,9 @@ function drawRectangle(mouseX2,
                  rectW,
                  rectH);
     context.stroke();
-}
-
-function checkLineBound(mX,
-                        mY,
-                        line){
-    // check if the line contains the mX and mY
-    var linetop = parseInt(line["top"], 10);
-    var lineleft = parseInt(line["left"], 10);
-    var linetop2 = linetop + parseInt(line["height"], 10);
-    var lineleft2 = lineleft + parseInt(line["width"], 10);
-    var check = false;
-    //
-    if(
-        (linetop <= mX) && (mX <= linetop2) &&
-            (lineleft <= mY) && (mY <= lineleft2)
-    ){
-        check=true;
-    }
-    return check;
-}
-
-function getLineBound(mXcoord, mYcoord){
-    // get the line that is to be drawn based on the
-    // coordinates provided
-    var lineInBound = [];
-    //
-    for(i=0; i<lines.length; i++){
-        var aLine = lines[i];
-        if(checkLineBound(mXcoord, mYcoord, aLine) === true){
-            lineInBound.push(aLine);
-        }
-    }
-    //
-    return lineInBound[0];
-}
-
-function drawLineBounds(event){
+};
+// Draw Line Bounding Boxes
+CanvasRelated.prototype.drawLineBounds = function(event){
     // makes the line bounding box
     // visible if the mouse is
     // in its coordinates
@@ -279,79 +384,48 @@ function drawLineBounds(event){
     var context = imcanvas.getContext('2d');
     var canvasOffsetX = imcanvas.offsetLeft;
     var canvasOffsetY = imcanvas.offsetTop;
-    var mouseX2=parseInt(event.layerX - canvasOffsetX);
-    var mouseY2=parseInt(event.layerY - canvasOffsetY);
+    var mouseX2 = parseInt(event.layerX - canvasOffsetX);
+    var mouseY2 = parseInt(event.layerY - canvasOffsetY);
     var mouseX2Trans = (mouseX2) / hratio; // real coordinates
     var mouseY2Trans = (mouseY2) / vratio; // real coordinates
     context.clearRect(0,0,
                       imcanvas.width,
                       imcanvas.height);
-    redrawPageImage(context, imcanvas);
-    var lineDraw = getLineBound(mouseX2Trans,
-                                mouseY2Trans);
+    this.redrawPageImage(context, imcanvas);
+    var lineDraw =  this.getLineBound(mouseX2Trans,
+                                      mouseY2Trans);
     console.log("linedraw");
     console.log(lineDraw);
-    // TODO add the x2, y2 as well
-    // instead of taking them from mouse positions
-    var y1_real = parseInt(lineDraw["top"], 10);
-    var x1_real = parseInt(lineDraw["left"], 10);
-    var x1coord = x1_real * hratio;
-    var y1coord = y1_real * vratio;
+    var y1_real = parseInt(lineDraw["y1"], 10);
+    var x1_real = parseInt(lineDraw["x1"], 10);
+    var x1coord1 = x1_real * this.image.hratio;
+    var y1coord1 = y1_real * this.image.vratio;
+    var width = parseInt(lineDraw["width"]);
+    var height = parseInt(lineDraw["height"]);
+    var x2_real = x1_real + width;
+    var y2_real = y1_real + height;
+    var x2 = x2_real * this.image.hratio;
+    var y2 = y2_real * this.image.vratio;
     context.strokeStyle = "red";
     context.lineWidth=1;
     //
     // draw the rectangle
-    drawRectangle(mouseX2,
-                  mouseY2,
-                  mouseX2Trans,
-                  mouseY2Trans,
-                  x1coord,
-                  y1coord,
-                  hratio,
-                  vratio,
-                  context,
-                  hoveringRect);
-}
-
-function redrawPageImage(context, canvas){
-    // set canvas width and height
-    // Get client width/height, that is after styling
-    console.log("new image being drawn");
-    var imcwidth = pageImage.width;
-    var imcheight = pageImage.height;
-    // set client width of the canvas to image
-    canvas.width = imcwidth;
-    canvas.height = imcheight;
-    var cwidth = canvas.clientWidth;
-    var cheight = canvas.clientHeight;
-    // Get natural width and height
-    var imnwidth = pageImage.naturalWidth;
-    var imnheight = pageImage.naturalHeight;
-    //
-    var ratiolist  = getScaleFactor(cwidth, //dest width
-                                cheight, // dest height
-                                imnwidth, // src width
-                                imnheight); // src height
-    var ratio = ratiolist[2];
-    hratio = ratiolist[0];
-    vratio = ratiolist[1];
-    var centerShift_x = ( cwidth - imcwidth * ratio ) / 2;
-    var centerShift_y = ( cheight - imcheight * ratio ) / 2;
-    context.drawImage(pageImage,
-                      0,0,// coordinate source
-                      imnwidth, // source rectangle width
-                      imnheight, // source rectangle height
-                      // centerShift_x, centerShift_y, // destination coordinate
-                      0,0,
-                      imnwidth*ratio, // destination width
-                      imnwidth*ratio // destination height
-                     );
-}
-
-function redrawRect(context, rectObj){
+    this.drawRectangle(x2,
+                       y2,
+                       x2_real,
+                       y2_real,
+                       x1coord1,
+                       y1coord1,
+                       this.image.hratio,
+                       this.image.vratio,
+                       context,
+                       this.image.hoveringRect);
+};
+//
+CanvasRelated.prototype.redrawRect = function(context, rectObj){
     // redraw the last hovering rectangle
-    var x1coord = rectObj["left"];
-    var y1coord = rectObj["top"];
+    var x1coord = rectObj["x1"];
+    var y1coord = rectObj["y1"];
     var nwidth = rectObj["width"];
     var nheight = rectObj["height"];
     // draw
@@ -363,38 +437,159 @@ function redrawRect(context, rectObj){
                  nwidth,
                  nheight);
     context.stroke();
-}
-function restoreOldCanvas(){
+};
+//
+CanvasRelated.prototype.redrawPageImage = function(context, canvas){
+    // set canvas width and height
+    // Get client width/height, that is after styling
+    console.log("new image being drawn");
+    var imcwidth = this.image.pageImage.width;
+    var imcheight = this.image.pageImage.height;
+    // set client width of the canvas to image
+    canvas.width = imcwidth;
+    canvas.height = imcheight;
+    var cwidth = canvas.clientWidth;
+    var cheight = canvas.clientHeight;
+    // Get natural width and height
+    var imnwidth = this.image.pageImage.naturalWidth;
+    var imnheight = this.image.pageImage.naturalHeight;
+    //
+    var ratiolist  = this.getScaleFactor(cwidth, //dest width
+                                         cheight, // dest height
+                                         imnwidth, // src width
+                                         imnheight); // src height
+    var centerShift_x = ( cwidth - imcwidth * this.image.ratio ) / 2;
+    var centerShift_y = ( cheight - imcheight * this.image.ratio ) / 2;
+    context.drawImage(this.image.pageImage,
+                      0,0,// coordinate source
+                      imnwidth, // source rectangle width
+                      imnheight, // source rectangle height
+                      // centerShift_x, centerShift_y, // destination coordinate
+                      0,0,
+                      imnwidth*this.image.ratio, // destination width
+                      imnwidth*this.image.ratio // destination height
+                     );
+};
+//
+CanvasRelated.prototype.restoreOldCanvas = function(){
     // restore canvas to its old state
     var imcanvas = document.getElementById("image-canvas");
     var context = imcanvas.getContext('2d');
     context.clearRect(0,0,
                       imcanvas.width,
                       imcanvas.height);
-    redrawPageImage(context, imcanvas);
-    redrawRect(context, hoveringRect);
-
-}
-//
-function resetRect(){
+    this.redrawPageImage(context, imcanvas);
+    this.redrawRect(context, this.image.hoveringRect);
+};
+CanvasRelated.prototype.resetRect = function(){
     // Clears canvas and redraws the original image
-        currentRect = {
-        "top" : "",
-        "left" : "",
+    // Reset checks
+    this.selectInProcess = false;
+    //
+    this.image.currentRect = {
+        "y1" : "",
+        "x1" : "",
+        "y2" : "",
+        "x2" : "",
         "width" : "",
         "height" : "",
         "hratio": "",
         "vratio" : "",
-        "top_real" : "",
-        "left_real" : "",
+        "y1_real" : "",
+        "x1_real" : "",
+        "y2_real" : "",
+        "x2_real" : "",
         "width_real" : "",
         "height_real" : "",
     };
-    restoreOldCanvas();
-    console.log(currentRect);
-}
+    this.image.hoveringRect = {
+        "y1" : "",
+        "x1" : "",
+        "y2" : "",
+        "x2" : "",
+        "width" : "",
+        "height" : "",
+        "hratio": "",
+        "vratio" : "",
+        "y1_real" : "",
+        "x1_real" : "",
+        "y2_real" : "",
+        "x2_real" : "",
+        "width_real" : "",
+        "height_real" : "",
+    };
+    this.restoreOldCanvas();
+    console.log(this.image.currentRect);
+};
 
-function createItemId(){
+
+// Transcription Column Related
+
+var TransColumn = function(){
+    var obj = Object.create(TransColumn.prototype);
+    obj.currentRect = {
+        "y1" : "",
+        "x1" : "",
+        "y2" : "",
+        "x2" : "",
+        "width" : "",
+        "height" : "",
+        "hratio": "",
+        "vratio" : "",
+        "y1_real" : "",
+        "x1_real" : "",
+        "y2_real" : "",
+        "x2_real" : "",
+        "width_real" : "",
+        "height_real" : "",
+        "index" : "",
+    };
+    obj.lines = [];
+    obj.deletedNodes = [];
+    return obj;
+};
+// methods
+TransColumn.prototype.getLine = function(lineObj){
+    // get line coordinates from line object
+    var leftInt = parseInt(lineObj.x1, 10);
+    leftInt = Math.floor(leftInt);
+    var topInt = parseInt(lineObj.y1, 10);
+    topInt = Math.floor(topInt);
+    var widthInt = parseInt(lineObj.width, 10);
+    widthInt = Math.floor(widthInt);
+    var heightInt = parseInt(lineObj.height, 10);
+    heightInt = Math.floor(heightInt);
+    //
+    var line = {};
+    line.x1 = leftInt;
+    line.y1 = topInt;
+    line.width = widthInt;
+    line.height = heightInt;
+    line.index = lineObj.index;
+    line.bbox = lineObj.bbox;
+    return line;
+};
+//
+TransColumn.prototype.getLines = function(){
+    var getLine = TransColumn.prototype.getLine;
+    for(var i=0; i < lines.length; i++){
+        var lineObj = lines[i];
+        var lineInts = getLine(lineObj);
+        this.lines.push(lineInts);
+    }
+    console.log(this.lines);
+};
+//
+TransColumn.prototype.getLineById = function(idstr){
+    for(var i=0; i < this.lines.length; i++){
+        var line = this.lines[i];
+        if(line.index === idstr){
+            return line;
+        }
+    }
+};
+//
+TransColumn.prototype.createItemId = function(){
     // creates the id of item group based on the
     // the number of elements the text-line-list has
     var orList = document.getElementById("text-line-list");
@@ -409,41 +604,46 @@ function createItemId(){
     //
     var newId = childArray.length + 1;
     return newId;
-}
-
-function checkRectangle(){
+};
+//
+TransColumn.prototype.checkRectangle = function(){
     // check if the selection rectangle is empty
-    var emptyRect = {
-        "top" : "",
-        "left" : "",
-        "width" : "",
-        "height" : "",
-        "hratio": "",
-        "vratio" : "",
-        "top_real" : "",
-        "left_real" : "",
-        "width_real" : "",
-        "height_real" : "",
-    };
+    console.log("inside checkrect");
+    console.log(this);
     var result = false;
-    if(currentRect === emptyRect){
+    if(
+        (this.currentRect["x1"] === "") &&
+            (this.currentRect["y1"] === "") &&
+            (this.currentRect["x2"] === "") &&
+            (this.currentRect["y2"] === "") &&
+            (this.currentRect["width"] === "") &&
+            (this.currentRect["height"] === "") &&
+            (this.currentRect["hratio"] === "") &&
+            (this.currentRect["vratio"] === "") &&
+            (this.currentRect["x1_real"] === "") &&
+            (this.currentRect["y1_real"] === "") &&
+            (this.currentRect["x2_real"] === "") &&
+            (this.currentRect["y2_real"] === "") &&
+            (this.currentRect["width_real"] === "") &&
+            (this.currentRect["height_real"] === "") &&
+            (this.currentRect["index"] === "")
+    ){
         result = true;
-    }else{
-        result = false;
     }
     //
     return result;
-}
-function createIGroup(idstr){
+};
+    //
+TransColumn.prototype.createIGroup = function(idstr){
     // create the list element that will hold the group
     var listItem = document.createElement("li");
     listItem.setAttribute("class", "item-group");
     listItem.setAttribute("id", idstr);
     //
     return listItem;
-}
-
-function createItList(idstr){
+};
+    //
+TransColumn.prototype.createItList = function(idstr){
     // Unordered list that would hold the checkbox
     // and the transcription line
     var ulList = document.createElement("ul");
@@ -451,9 +651,8 @@ function createItList(idstr){
     ulList.setAttribute("id", idstr);
     //
     return ulList;
-}
-
-function createTLine(idstr){
+};
+TransColumn.prototype.createTLine = function(idstr){
     // transcription line
     var transLine = document.createElement("li");
     transLine.setAttribute("id", idstr);
@@ -461,22 +660,22 @@ function createTLine(idstr){
     transLine.setAttribute("spellcheck", "true");
     transLine.setAttribute("class", "editable-line");
     var placeholder = "Enter text for line ";
-    placeholder.concat(idstr);
+    placeholder = placeholder.concat(idstr);
     transLine.setAttribute("data-placeholder", placeholder);
     var bbox = "";
-    bbox = bbox.concat(currentRect["left_real"]);
+    bbox = bbox.concat(this.currentRect["x1_real"]);
     bbox = bbox.concat(", ");
-    bbox = bbox.concat(currentRect["top_real"]);
+    bbox = bbox.concat(this.currentRect["y1_real"]);
     bbox = bbox.concat(", ");
-    bbox = bbox.concat(currentRect["width_real"]);
+    bbox = bbox.concat(this.currentRect["width_real"]);
     bbox = bbox.concat(", ");
-    bbox = bbox.concat(currentRect["height_real"]);
+    bbox = bbox.concat(this.currentRect["height_real"]);
     transLine.setAttribute("data-bbox", bbox);
     //
     return transLine;
-}
-
-function createLineWidget(idstr){
+};
+//
+TransColumn.prototype.createLineWidget = function(idstr){
     // Create the line widget that holds
     // checkboxes and other functionality
     var lineWidget = document.createElement("li");
@@ -496,22 +695,27 @@ function createLineWidget(idstr){
     lineWidget.appendChild(labelContainer);
     //
     return lineWidget;
-}
-
-function addTranscription(){
+};
+//
+TransColumn.prototype.addTranscription = function(){
     // adds a transcription box to item list
-    var check = checkRectangle();
+    console.log("inside add transcription");
+    var funcThis = this;
+    console.log(funcThis);
+    var check = funcThis.checkRectangle();
     if( check === true){
         alert("Please select an area before adding a transcription");
+        return;
     }
     var orList = document.getElementById("text-line-list");
     // create the new line id
-    var newListId = createItemId();
+    var newListId = this.createItemId();
+    this.currentRect["index"] = newListId;
     //
-    var listItem = createIGroup(newListId);
-    var ulList = createItList(newListId);
-    var transLine = createTLine(newListId);
-    var lineWidget = createLineWidget(newListId);
+    var listItem = this.createIGroup(newListId);
+    var ulList = this.createItList(newListId);
+    var transLine = this.createTLine(newListId);
+    var lineWidget = this.createLineWidget(newListId);
     //
     // transline and linewidget goes into ullist
     ulList.appendChild(transLine);
@@ -520,14 +724,19 @@ function addTranscription(){
     listItem.appendChild(ulList);
     // list item goes into or list
     orList.appendChild(listItem);
-   }
-
-
-// Functions related transcription boxes
-// sort function for lists
-//
-var deletedNodes = [];
-function deleteBoxes(){
+    // add the line to the lines list as well
+    var newline = {
+        "x1" : this.currentRect["x1_real"],
+        "y1" : this.currentRect["y1_real"],
+        "width" : this.currentRect["width_real"],
+        "height" : this.currentRect["height_real"],
+        "bbox" : transLine.getAttribute("data-bbox"),
+        "index" : newListId
+    };
+    this.lines.push(newline);
+};
+    //
+TransColumn.prototype.deleteBoxes = function(){
     /*
       Simple function for deleting lines whose checkboxes are selected
       Description:
@@ -550,20 +759,18 @@ function deleteBoxes(){
             var itemgroupNode = itemlistNode.parentNode;
             var lineId = itemgroupNode.id;
             // get the image line from the other column
-            var imageLineSelector = "a.rect[id='".concat(lineId,
-                                                         "']");
-            var imageLine = document.querySelector(imageLineSelector);
+            var imageLine = this.getLineById(lineId);//
             //
-            var imageparent = imageLine.parentNode;
             var itemparent = itemgroupNode.parentNode;
             var deleted = {"imageline" : imageLine,
                            "itemgroup" : itemgroupNode,
-                           "imageparent" : imageparent,
+                           "imageparent" : this.lines,
                            "itemparent" : itemparent};
-            deletedNodes.push(deleted);
+            this.deletedNodes.push(deleted);
             // remove both from the page
             itemparent.removeChild(itemgroupNode);
-            imageparent.removeChild(imageLine);
+            var lineindex = this.lines.indexOf(imageLine);
+            this.lines.splice(lineindex,1);
             deletedboxlength +=1;
         }
         i+=1;
@@ -571,35 +778,36 @@ function deleteBoxes(){
     if(deletedboxlength === 0){
         alert("Please select lines for deletion");
     }
-}
-//
-function undoDeletion(){
-    if (deletedNodes.length === 0){
+};
+    //
+TransColumn.prototype.undoDeletion = function(){
+    if (this.deletedNodes.length === 0){
         alert("Deleted line information is not found");
     }
-    var lastObject = deletedNodes.pop();
+    var lastObject = this.deletedNodes.pop();
     //
     var imageLine = lastObject["imageline"];
     var itemgroup = lastObject["itemgroup"];
-    var imageparent = lastObject["imageparent"];
+    var imageparent = lastObject["imageparent"]; // this.lines
     var itemparent = lastObject["itemparent"];
     //
-    imageparent.appendChild(imageLine);
+    imageparent.push(imageLine);
     itemparent.appendChild(itemgroup);
     //
-}
-function sortLines() {
+};
+    // sorting lines
+TransColumn.prototype.sortLines = function() {
     var lineList = document.querySelectorAll(".item-group");
     var itemparent = document.getElementById("text-line-list");
     var linearr = Array.from(lineList).sort(
-        sortOnBbox
+        this.sortOnBbox
     );
     //
     //
-    linearr.forEach(el => itemparent.appendChild(el) );
-}
-
-function sortOnBbox(a, b){
+    linearr.forEach( el => itemparent.appendChild(el) );
+};
+    //
+TransColumn.prototype.sortOnBbox = function(a, b){
     // Sorts the list elements according to
     // their placement on the image
     // get editable lines
@@ -633,5 +841,71 @@ function sortOnBbox(a, b){
     // numbers comparison
     //
     return bbox1_top - bbox2_top;
+};
 
+
+// Done Classes
+
+// Instances
+let canvasDraw = new CanvasRelated();
+console.log("canvas lines");
+canvasDraw.getLines(); // populating canvas with lines
+console.log(canvasDraw);
+
+let transLine = new TransColumn();
+console.log("trans lines");
+transLine.getLines(); // populating transcription column with lines
+// load image to canvas
+
+// Interfacing with html
+
+window.onload = function(){
+    // Mouse tracking to image
+    var imcanvas = document.getElementById("image-canvas");
+    document.getElementById("image-page").addEventListener(
+        "onload", canvasDraw.imageLoad()
+    );
+    // End of mouse tracking
+};
+
+// Transcription Related Functions
+
+function deleteBoxes(){
+    transLine.deleteBoxes();
+}
+
+function undoDeletion(){
+    transLine.undoDeletion();
+}
+function sortLines(){
+    transLine.sortLines();
+}
+
+function addTranscription(){
+    console.log("setting currentrect");
+    console.log("canvas current");
+    console.log(canvasDraw.currentRect);
+    console.log("transline current");
+    console.log(transLine.currentRect);
+    transLine.currentRect = canvasDraw.image.currentRect;
+    transLine.addTranscription();
+}
+
+// Canvas Related functions
+
+function resetRect(){
+    canvasDraw.resetRect();
+}
+
+function canvasMouseDown(event){
+    canvasDraw.canvasMouseDown(event);
+}
+
+function canvasMouseUp(event){
+    canvasDraw.canvasMouseUp(event);
+}
+
+function canvasMouseMove(event){
+    transLine.currentRect = canvasDraw.image.currentRect;
+    canvasDraw.canvasMouseMove(event);
 }
