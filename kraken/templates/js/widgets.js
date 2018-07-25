@@ -76,11 +76,9 @@ CanvasRelated.prototype.imageLoad = function(){
     var context = canvas.getContext('2d');
     // set canvas width and height
     var image = document.getElementById("image-page");
-    console.log(image);
     var imcwidth = image.clientWidth;
     var imcheight = image.clientHeight;
     // set client width of the canvas to image
-    console.log(canvas);
     canvas.width = imcwidth;
     canvas.height = imcheight;
     var cwidth = canvas.clientWidth;
@@ -127,9 +125,9 @@ CanvasRelated.prototype.getScaleFactor = function(destWidth,
 //
 CanvasRelated.prototype.getLine = function(lineObj){
     // get line coordinates from line object
-    var leftInt = parseInt(lineObj.left, 10);
+    var leftInt = parseInt(lineObj.x1, 10);
     leftInt = Math.floor(leftInt);
-    var topInt = parseInt(lineObj.top, 10);
+    var topInt = parseInt(lineObj.y1, 10);
     topInt = Math.floor(topInt);
     var widthInt = parseInt(lineObj.width, 10);
     widthInt = Math.floor(widthInt);
@@ -198,7 +196,6 @@ CanvasRelated.prototype.checkEventRectBound = function(event,
                            x1, y1,
                            x2, y2) === true){
         eventBool=true;
-        console.log("eventchecked");
     }
 };
 //
@@ -209,21 +206,19 @@ CanvasRelated.prototype.checkRectContained = function(rect1, rect2){
     var rect1_x2 = rect1["x2"];
     var rect1_y2 = rect1["y2"];
     //
-    var rect2_x1 = rect1["x1"];
-    var rect2_y1 = rect1["x1"];
-    var rect2_x2 = rect1["x2"];
-    var rect2_y2 = rect1["y2"];
+    var rect2_x1 = rect2["x1"];
+    var rect2_y1 = rect2["x1"];
+    var rect2_x2 = rect2["x2"];
+    var rect2_y2 = rect2["y2"];
     //
     var check = false;
-    console.log("contain check");
     //
-    if((rect2_x1 >= rect1_x1) &&
-       (rect2_x2 <= rect1_x2) &&
-       (rect2_y1 >= rect1_y1) &&
-       (rect2_y2 <= rect1_y2)
+    if((rect2_x1 > rect1_x1) ||
+       (rect2_x2 < rect1_x2) ||
+       (rect2_y1 > rect1_y1) ||
+       (rect2_y2 < rect1_y2)
       ){
         check = true;
-        console.log("contains");
     }
     return check;
 };
@@ -234,7 +229,7 @@ CanvasRelated.prototype.getLineBound = function(mXcoord,
     // coordinates provided
     var lineInBound = [];
     //
-    for(var i=0; i<this.image.lines.length; i++){
+    for(var i=0; i< this.image.lines.length; i++){
         var aLine = this.image.lines[i];
         var x1 = parseInt(aLine["x1"], 10);
         var y1 = parseInt(aLine["y1"], 10);
@@ -266,10 +261,10 @@ CanvasRelated.prototype.canvasMouseDown = function(event){
     //
     // store the starting mouse position
     this.mousePress=true;
+    this.selectInProcess = true;
 };
 CanvasRelated.prototype.canvasMouseUp = function(event){
     this.mousePress=false;
-    console.log("in mouse up");
 };
 CanvasRelated.prototype.canvasMouseMove = function(event){
     // regroups functions that activates with
@@ -285,8 +280,9 @@ CanvasRelated.prototype.canvasMouseMove = function(event){
     //
     var currentRect = this.image.currentRect;
     var hoveringRect = this.image.hoveringRect;
-    var contains = this.checkRectContained(currentRect,
-                                           hoveringRect);
+    // var contains = this.checkRectContained(hoveringRect,// checks if first
+    // currentRect);// contains the second
+    var contains = false;
     this.checkEventRectBound(event, hoveringRect, this.inhover);
     if((this.inhover === false) &&
        (this.selectInProcess === false) &&
@@ -301,7 +297,6 @@ CanvasRelated.prototype.canvasMouseMove = function(event){
         this.selectInProcess = true;
         context.strokeStyle = "lightgray";
         context.lineWidth=2;
-        console.log(event);
         context.clearRect(0,0,
                           imcanvas.width,
                           imcanvas.height);
@@ -310,8 +305,6 @@ CanvasRelated.prototype.canvasMouseMove = function(event){
         //                        mouseYTrans,
         //                        context);
         var rect1 = this.image.currentRect;
-        console.log("currentrect");
-        console.log(rect1);
         this.drawRectangle(mouseX,
                            mouseY,
                            mouseXTrans,
@@ -322,9 +315,7 @@ CanvasRelated.prototype.canvasMouseMove = function(event){
                            this.image.vratio,
                            context,
                            rect1);
-        this.selectInProcess = false;
     }
-    console.log("drawn");
 };
 // General Drawing Methods
 //
@@ -367,7 +358,6 @@ CanvasRelated.prototype.drawRectangle = function(mouseX2,
     rectUpdate["width_real"] = width_real;
     rectUpdate["height_real"] = height_real;
     //
-    console.log(rectUpdate);
     context.beginPath();
     context.rect(x1coord,
                  y1coord,
@@ -386,16 +376,15 @@ CanvasRelated.prototype.drawLineBounds = function(event){
     var canvasOffsetY = imcanvas.offsetTop;
     var mouseX2 = parseInt(event.layerX - canvasOffsetX);
     var mouseY2 = parseInt(event.layerY - canvasOffsetY);
-    var mouseX2Trans = (mouseX2) / hratio; // real coordinates
-    var mouseY2Trans = (mouseY2) / vratio; // real coordinates
+    var mouseX2Trans = (mouseX2) / this.image.hratio; // real coordinates
+    var mouseY2Trans = (mouseY2) / this.image.vratio; // real coordinates
     context.clearRect(0,0,
                       imcanvas.width,
                       imcanvas.height);
     this.redrawPageImage(context, imcanvas);
-    var lineDraw =  this.getLineBound(mouseX2Trans,
-                                      mouseY2Trans);
-    console.log("linedraw");
-    console.log(lineDraw);
+    var funcThis = this;
+    var lineDraw =  funcThis.getLineBound(mouseX2Trans,
+                                          mouseY2Trans);
     var y1_real = parseInt(lineDraw["y1"], 10);
     var x1_real = parseInt(lineDraw["x1"], 10);
     var x1coord1 = x1_real * this.image.hratio;
@@ -442,7 +431,6 @@ CanvasRelated.prototype.redrawRect = function(context, rectObj){
 CanvasRelated.prototype.redrawPageImage = function(context, canvas){
     // set canvas width and height
     // Get client width/height, that is after styling
-    console.log("new image being drawn");
     var imcwidth = this.image.pageImage.width;
     var imcheight = this.image.pageImage.height;
     // set client width of the canvas to image
@@ -519,9 +507,17 @@ CanvasRelated.prototype.resetRect = function(){
         "height_real" : "",
     };
     this.restoreOldCanvas();
-    console.log(this.image.currentRect);
 };
-
+CanvasRelated.prototype.saveCoordinates = function(){
+    // opens up a window with line coordinates in it
+    var lines = this.image.lines;
+    var strjson = JSON.stringify(lines);
+    window.open("data:application/json; charset=utf-8," + strjson);
+};
+CanvasRelated.prototype.getCoordinates = function(){
+    // gets lines which contain coordinates
+    return this.image.lines;
+};
 
 // Transcription Column Related
 
@@ -577,7 +573,6 @@ TransColumn.prototype.getLines = function(){
         var lineInts = getLine(lineObj);
         this.lines.push(lineInts);
     }
-    console.log(this.lines);
 };
 //
 TransColumn.prototype.getLineById = function(idstr){
@@ -608,8 +603,6 @@ TransColumn.prototype.createItemId = function(){
 //
 TransColumn.prototype.checkRectangle = function(){
     // check if the selection rectangle is empty
-    console.log("inside checkrect");
-    console.log(this);
     var result = false;
     if(
         (this.currentRect["x1"] === "") &&
@@ -633,7 +626,7 @@ TransColumn.prototype.checkRectangle = function(){
     //
     return result;
 };
-    //
+//
 TransColumn.prototype.createIGroup = function(idstr){
     // create the list element that will hold the group
     var listItem = document.createElement("li");
@@ -642,7 +635,7 @@ TransColumn.prototype.createIGroup = function(idstr){
     //
     return listItem;
 };
-    //
+//
 TransColumn.prototype.createItList = function(idstr){
     // Unordered list that would hold the checkbox
     // and the transcription line
@@ -699,9 +692,7 @@ TransColumn.prototype.createLineWidget = function(idstr){
 //
 TransColumn.prototype.addTranscription = function(){
     // adds a transcription box to item list
-    console.log("inside add transcription");
     var funcThis = this;
-    console.log(funcThis);
     var check = funcThis.checkRectangle();
     if( check === true){
         alert("Please select an area before adding a transcription");
@@ -735,7 +726,7 @@ TransColumn.prototype.addTranscription = function(){
     };
     this.lines.push(newline);
 };
-    //
+//
 TransColumn.prototype.deleteBoxes = function(){
     /*
       Simple function for deleting lines whose checkboxes are selected
@@ -779,7 +770,7 @@ TransColumn.prototype.deleteBoxes = function(){
         alert("Please select lines for deletion");
     }
 };
-    //
+//
 TransColumn.prototype.undoDeletion = function(){
     if (this.deletedNodes.length === 0){
         alert("Deleted line information is not found");
@@ -795,7 +786,7 @@ TransColumn.prototype.undoDeletion = function(){
     itemparent.appendChild(itemgroup);
     //
 };
-    // sorting lines
+// sorting lines
 TransColumn.prototype.sortLines = function() {
     var lineList = document.querySelectorAll(".item-group");
     var itemparent = document.getElementById("text-line-list");
@@ -806,7 +797,7 @@ TransColumn.prototype.sortLines = function() {
     //
     linearr.forEach( el => itemparent.appendChild(el) );
 };
-    //
+//
 TransColumn.prototype.sortOnBbox = function(a, b){
     // Sorts the list elements according to
     // their placement on the image
@@ -842,18 +833,52 @@ TransColumn.prototype.sortOnBbox = function(a, b){
     //
     return bbox1_top - bbox2_top;
 };
+TransColumn.prototype.saveTranscription = function(){
+    // Opens up a transcription window with
+    // transcription text in it.
+    var translines = document.getElementsByClassName("editable-line");
+    var texts = "";
+    var textlist = [];
+    //
+    for(var i=0; i < translines.length; i++){
+        //
+        var line = translines[i];
+        var text = line.innerText;
+        var linetext = "".concat(i);
+        linetext = linetext.concat(". ");
+        linetext = linetext.concat(text);
+        textlist.push(linetext);
+        linetext = linetext.concat("%0d%0a");
+        texts = texts.concat(linetext);
+    }
+    //
+    var stringfied = JSON.stringify(textlist);
+    window.open('data:application/json; charset=utf-8,' + stringfied);
+    window.open('data:text/.txt; charset=utf-8,' + texts);
+};
+
+TransColumn.prototype.getTranscriptions = function(){
+    // gets the text in transcription column
+    var translines = document.getElementsByClassName("editable-line");
+    var textlist = [];
+    for(var i=0; i < translines.length; i++){
+        var lineObj = {'index': i};
+        var line = translines[i];
+        var text = line.innerText;
+        lineObj.lineText = text;
+        textlist.push(lineObj);
+    }
+    return textlist;
+};
 
 
 // Done Classes
 
 // Instances
 let canvasDraw = new CanvasRelated();
-console.log("canvas lines");
 canvasDraw.getLines(); // populating canvas with lines
-console.log(canvasDraw);
 
 let transLine = new TransColumn();
-console.log("trans lines");
 transLine.getLines(); // populating transcription column with lines
 // load image to canvas
 
@@ -882,14 +907,14 @@ function sortLines(){
 }
 
 function addTranscription(){
-    console.log("setting currentrect");
-    console.log("canvas current");
-    console.log(canvasDraw.currentRect);
-    console.log("transline current");
-    console.log(transLine.currentRect);
     transLine.currentRect = canvasDraw.image.currentRect;
     transLine.addTranscription();
+    canvasDraw.image.lines = transLine.lines;
 }
+function saveTranscription(){
+    transLine.saveTranscription();
+}
+
 
 // Canvas Related functions
 
@@ -909,3 +934,25 @@ function canvasMouseMove(event){
     transLine.currentRect = canvasDraw.image.currentRect;
     canvasDraw.canvasMouseMove(event);
 }
+function saveCoordinates(){
+    canvasDraw.saveCoordinates();
+}
+function saveEverything(){
+    // Saves the lines for transcribed coordinates
+    var textlines = transLine.getTranscriptions();
+    var coordinates = canvasDraw.getCoordinates();
+    var savelines = [];
+    // TODO change coordinates.length to textlines.length
+    // since we have less coordinates than transcriptions
+    // for now, we need to deal with undefined objects this way
+    for(var i=0; i < coordinates.length; i++){
+        var tline = textlines[i];
+        var cline = coordinates[i];
+        var newcline = Object.assign(cline);
+        newcline.index = tline.index;
+        newcline.text = tline.lineText;
+        savelines.push(newcline);
+    }
+    var stringfied = JSON.stringify(savelines);
+    window.open('data:application/json; charset=utf-8,' + stringfied);
+};

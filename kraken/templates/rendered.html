@@ -8,13 +8,14 @@
         <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous"> -->
 		</head>
 	  <body>
-		    <!-- <script language="javascript" type="text/javascript" src="js/jquery-1.11.3.min.js"> -->
-        <script
-			      src="https://code.jquery.com/jquery-1.12.4.min.js"
+		    <script language="javascript" type="text/javascript" src="js/jquery-1.11.3.min.js">
+         <!--        <script
+			   src="https://code.jquery.com/jquery-1.12.4.min.js"
 			      integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
 			      crossorigin="anonymous">
-        </script>
+        </script> -->
 		    <script>
+
 			   $(document).ready(function() {
 				     var uuid = $('meta[name=uuid]').attr('content');
 				     if (localStorage) {
@@ -55,7 +56,6 @@
 				     }).keyup(function () {
 					       localStorage[uuid + this.id] = $(this).text();
 				     });
-				     
 				     // smooth scrolling
 				     $('.page_anchor').click(function(e) {
 					       e.preventDefault();
@@ -260,6 +260,15 @@
                     </button>
                     <button onclick="addTranscription()" id="addTranscriptionButton">
                         Add Transcription
+                    </button>
+                    <button onclick="saveTranscription()" id="saveTranscriptionButton">
+                        Save Transcription
+                    </button>
+                    <button onclick="saveCoordinates()" id="saveCoordinatesButton">
+                        Save Selected Coordinates
+                    </button>
+                    <button onclick="saveEverything()" id="saveEverythingButton">
+                        Save Coordinates and Transcriptions
                     </button>
                     <!-- <button onclick="addLines()" id="addLineButton">
                          Add Lines
