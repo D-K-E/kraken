@@ -410,6 +410,30 @@ CanvasRelated.prototype.drawLineBounds = function(event){
                        context,
                        this.image.hoveringRect);
 };
+CanvasRelated.prototype.drawAllLines = function(event){
+    // Draw all detected lines at the same time
+    // on the image. This function should be controlled by a checkbox
+    var imcanvas = document.getElementById("image-canvas");
+    var context = imcanvas.getContext('2d');
+    var canvasOffsetX = imcanvas.offsetLeft;
+    var canvasOffsetY = imcanvas.offsetTop;
+    var mouseX2 = parseInt(event.layerX - canvasOffsetX);
+    var mouseY2 = parseInt(event.layerY - canvasOffsetY);
+    var mouseX2Trans = (mouseX2) / this.image.hratio; // real coordinates
+    var mouseY2Trans = (mouseY2) / this.image.vratio; // real coordinates
+    context.clearRect(0,0,
+                      imcanvas.width,
+                      imcanvas.height);
+    this.redrawPageImage(context, imcanvas);
+    for(var i=0; i< this.image.lines.length; i++){
+        var aLine = this.image.lines[i];
+        var x1 = parseInt(aLine["x1"], 10);
+        var y1 = parseInt(aLine["y1"], 10);
+        var x2 = x1 + parseInt(aLine["width"], 10);
+        var y2 = y1 + parseInt(aLine["height"], 10);
+
+
+};
 //
 CanvasRelated.prototype.redrawRect = function(context, rectObj){
     // redraw the last hovering rectangle
@@ -725,6 +749,7 @@ TransColumn.prototype.addTranscription = function(){
         "index" : newListId
     };
     this.lines.push(newline);
+    this.sortLines();
 };
 //
 TransColumn.prototype.deleteBoxes = function(){
@@ -766,6 +791,7 @@ TransColumn.prototype.deleteBoxes = function(){
         }
         i+=1;
     }
+    this.sortLines();
     if(deletedboxlength === 0){
         alert("Please select lines for deletion");
     }
@@ -784,6 +810,7 @@ TransColumn.prototype.undoDeletion = function(){
     //
     imageparent.push(imageLine);
     itemparent.appendChild(itemgroup);
+    this.sortLines();
     //
 };
 // sorting lines
@@ -882,6 +909,26 @@ let transLine = new TransColumn();
 transLine.getLines(); // populating transcription column with lines
 // load image to canvas
 
+
+// keyboard events triggering functions in classes
+
+function globalKeyFuncs(event){
+    // Functions that are triggered with
+    // keystrocks within global window
+    if(event.defaultPrevented){
+        return;
+    }
+    switch(event.key){
+    case "Escape": // Trigger reset rect with escape
+        canvasDraw.resetRect();
+        break;
+        // Add other keystrockes if they become necessary
+    default:
+        return;
+    }
+    event.preventDefault();
+}
+
 // Interfacing with html
 
 window.onload = function(){
@@ -892,6 +939,8 @@ window.onload = function(){
     );
     // End of mouse tracking
 };
+
+window.onkeyup = globalKeyFuncs;
 
 // Transcription Related Functions
 
@@ -934,9 +983,11 @@ function canvasMouseMove(event){
     transLine.currentRect = canvasDraw.image.currentRect;
     canvasDraw.canvasMouseMove(event);
 }
+
 function saveCoordinates(){
     canvasDraw.saveCoordinates();
 }
+
 function saveEverything(){
     // Saves the lines for transcribed coordinates
     var textlines = transLine.getTranscriptions();
@@ -956,3 +1007,14 @@ function saveEverything(){
     var stringfied = JSON.stringify(savelines);
     window.open('data:application/json; charset=utf-8,' + stringfied);
 };
+//
+// rouge vert pour toutes les rectangles detecté +1
+// checkbox pour effacer à coté des chiffres +1
+// les correspondances entre l'image et la transcription soit aligné, et s'allume en meme temps +1
+// preserver l'espace dans les lignes +1
+// remplacer l'ecriture des boutons avec icons + 1
+// l'affichage de l'ecriture de droit à gauche pour des langues comme hebreu
+// le texte doit être colé à droit pour des langues comme hebreu
+// renommer les fichiers
+// Change Add Transcription to Add line then associate the line with the region
+// 
