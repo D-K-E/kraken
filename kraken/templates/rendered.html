@@ -245,7 +245,7 @@
              var lines = [ line1, line2, line3, line4, line5 ];
             </script>
 			      <div class="column">
-                <fieldset>
+                <fieldset id="button-set">
                     <button onclick="deleteBoxes()" value="" id="deleteButton">
                         Delete Marked Lines
                     </button>
@@ -253,17 +253,45 @@
                         Undo Deletion
                     </button>
                     <button onclick="addTranscription()" id="addTranscriptionButton">
-                        Add Transcription
-                    </button>
-                    <button onclick="saveTranscription()" id="saveTranscriptionButton">
-                        Save Transcription
-                    </button>
-                    <button onclick="saveCoordinates()" id="saveCoordinatesButton">
-                        Save Selected Coordinates
+                        Add Selection
                     </button>
                     <button onclick="saveEverything()" id="saveEverythingButton">
                         Save Coordinates and Transcriptions
                     </button>
+                    <!-- <button onclick="addLines()" id="addLineButton">
+                         Add Lines
+                         </button>
+                    -->
+                </fieldset>
+                <fieldset id="box-set">
+                    <label class="lbl-rbox-container">
+                        Character
+                        <input type="radio"
+                               id="char-rbox"
+                               value="char"
+                               name="selected-region">
+                    </label>
+                    <label class="lbl-rbox-container">
+                        Line
+                        <input type="radio"
+                               value="line"
+                               name="selected-region"
+                               id="line-rbox">
+                    </label>
+                    <label class="lbl-rbox-container">
+                        Column
+                        <input type="radio"
+                               value="column"
+                               name="selected-region"
+                               id="column-rbox">
+                    </label>
+                    <label class="lbl-rbox-container">
+                        Region
+                        <input type="radio"
+                               value="region"
+                               name="selected-region"
+                               id="region-rbox">
+                    </label>
                     <label class="lbl-showall">
                         Show All Detected Lines
                         <input type="checkbox"
@@ -271,15 +299,19 @@
                                class="showall-checkbox">
                         <span class="checkmark"></span>
                     </label>
-
-                    <!-- <button onclick="addLines()" id="addLineButton">
-                         Add Lines
-                         </button>
-                    -->
                 </fieldset>
+
 				        <ol id="text-line-list">
 				            <li class="item-group" id="1">
                         <ul class="item-list" id="1">
+                            <li class="line-widget" id="1">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="1"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="1"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -287,19 +319,18 @@
                                 data-placeholder="Enter text for line 1"
                                 class="editable-line">
 					                  </li>
-                            <li class="line-widget" id="1">
-                                <label class="lbl-container">
-                                    Mark for deletion
-                                    <input type="checkbox"
-                                           id="1"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 				            </li>
                     <li class="item-group" id="2">
                         <ul class="item-list" id="2">
+                            <li class="line-widget" id="2">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="2"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="2"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -307,61 +338,54 @@
                                 data-placeholder="Enter text for line 2"
                                 class="editable-line">
 					                  </li>
-                            <li class="line-widget" id="2">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="2"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
                     </li>
                     <li class="item-group" id="3">
                         <ul class="item-list" id="3">
-					                  <li id="3" contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="2, 120, 1080, 207"
-                                data-placeholder="Enter text for line 3"
-                                class="editable-line">
-						                </li>
                             <li class="line-widget" id="3">
-                                <label class="container">
-                                    Mark for Deletion
+                                <label class="del-cbox-container">
                                     <input type="checkbox"
                                            id="3"
                                            class="delete-checkbox">
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
+					                  <li id="3" contenteditable="true"
+                                spellcheck="true"
+                                data-bbox="2, 120, 1080, 207"
+                                data-placeholder="Enter text for line 3"
+                                class="editable-line">
+						                </li>
                         </ul>
 					          </li>
 				            <li class="item-group" id="4">
                         <ul class="item-list" id="4">
+                            <li class="line-widget" id="4">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="4"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="4" contenteditable="true"
                                 spellcheck="true"
                                 data-bbox="2, 180, 1080, 266"
                                 data-placeholder="Enter text for line 4"
                                 class="editable-line">
 						                </li>
-
-                            <li class="line-widget" id="4">
-
-                                <label class="container">
-                                    Mark for Deletion
+                        </ul>
+					          </li>
+	                  <li class="item-group" id="5">
+                        <ul class="item-list" id="5">
+                            <li class="line-widget" id="5">
+                                <label class="del-cbox-container">
                                     <input type="checkbox"
-                                           id="4"
+                                           id="5"
                                            class="delete-checkbox">
-
                                     <span class="checkmark"></span>
                                 </label>
                             </li>
-                        </ul>
-					          </li>
-
-	                  <li class="item-group" id="5">
-                        <ul class="item-list" id="5">
 					                  <li id="5"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -369,19 +393,18 @@
                                 data-placeholder="Enter text for line 5"
                                 class="editable-line">
 							              </li>
-                            <li class="line-widget" id="5">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="5"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 					          </li>
 	                  <li class="item-group" id="6">
                         <ul class="item-list" id="6">
+                            <li class="line-widget" id="6">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="6"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="6"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -389,19 +412,18 @@
                                 data-placeholder="Enter text for line 6"
                                 class="editable-line">
 							              </li>
-                            <li class="line-widget" id="6">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="6"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 					          </li>
 	                  <li class="item-group" id="7">
                         <ul class="item-list" id="7">
+                            <li class="line-widget" id="7">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="7"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="7"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -409,19 +431,18 @@
                                 data-placeholder="Enter text for line 7"
                                 class="editable-line">
 							              </li>
-                            <li class="line-widget" id="7">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="7"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 					          </li>
 	                  <li class="item-group" id="8">
                         <ul class="item-list" id="8">
+                            <li class="line-widget" id="8">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="8"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="8"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -429,19 +450,19 @@
                                 data-placeholder="Enter text for line 8"
                                 class="editable-line">
 							              </li>
-                            <li class="line-widget" id="8">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="8"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 					          </li>
 	                  <li class="item-group" id="9">
                         <ul class="item-list" id="9">
+                            <li class="line-widget" id="9">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="9"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
+
 					                  <li id="9"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -449,19 +470,18 @@
                                 data-placeholder="Enter text for line 9"
                                 class="editable-line">
 							              </li>
-                            <li class="line-widget" id="9">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="9"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 					          </li>
 	                  <li class="item-group" id="10">
                         <ul class="item-list" id="10">
+                            <li class="line-widget" id="10">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id=10"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="10"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -469,19 +489,19 @@
                                 data-placeholder="Enter text for line 10"
                                 class="editable-line">
 							              </li>
-                            <li class="line-widget" id="10">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id=10"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 					          </li>
 	                  <li class="item-group" id="11">
                         <ul class="item-list" id="11">
+                            <li class="line-widget" id="11">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="11"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
+
 					                  <li id="11"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -489,19 +509,18 @@
                                 data-placeholder="Enter text for line 11"
                                 class="editable-line">
 							              </li>
-                            <li class="line-widget" id="11">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="11"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 					          </li>
 	                  <li class="item-group" id="12">
                         <ul class="item-list" id="12">
+                            <li class="line-widget" id="12">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="12"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="12"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -509,19 +528,18 @@
                                 data-placeholder="Enter text for line 12"
                                 class="editable-line">
 							              </li>
-                            <li class="line-widget" id="12">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="12"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 					          </li>
 	                  <li class="item-group" id="13">
                         <ul class="item-list" id="13">
+                            <li class="line-widget" id="13">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="13"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="13"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -529,19 +547,18 @@
                                 data-placeholder="Enter text for line 13"
                                 class="editable-line">
 							              </li>
-                            <li class="line-widget" id="13">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="13"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 					          </li>
 	                  <li class="item-group" id="14">
                         <ul class="item-list" id="14">
+                            <li class="line-widget" id="14">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="14"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="14"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -549,19 +566,18 @@
                                 data-placeholder="Enter text for line 14"
                                 class="editable-line">
 							              </li>
-                            <li class="line-widget" id="14">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="14"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 					          </li>
 	                  <li class="item-group" id="15">
                         <ul class="item-list" id="15">
+                            <li class="line-widget" id="15">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="15"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="15"
                                 contenteditable="true"
                                 spellcheck="true"
@@ -569,34 +585,24 @@
                                 data-placeholder="Enter text for line 15"
                                 class="editable-line">
 							              </li>
-                            <li class="line-widget" id="15">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="15"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
                         </ul>
 					          </li>
 	                  <li class="item-group" id="16">
                         <ul class="item-list" id="16">
+                            <li class="line-widget" id="16">
+                                <label class="del-cbox-container">
+                                    <input type="checkbox"
+                                           id="16"
+                                           class="delete-checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </li>
 					                  <li id="16"
                                 contenteditable="true"
                                 spellcheck="true"
                                 data-bbox="0, 967, 1078, 1066"
                                 data-placeholder="Enter text for line 16"
                                 class="editable-line">
-                            </li>
-                            <li class="line-widget" id="16">
-                                <label class="container">
-                                    Mark for Deletion
-                                    <input type="checkbox"
-                                           id="16"
-                                           class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
                             </li>
                         </ul>
 					          </li>

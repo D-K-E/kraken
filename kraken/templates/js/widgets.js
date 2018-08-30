@@ -434,6 +434,7 @@ CanvasRelated.prototype.drawAllLines = function(event){
         }else{
             context.strokeStyle = "green";
         }
+        context.lineWidth=1;
         var aLine = this.image.lines[i];
         var x1_real = parseInt(aLine["x1"], 10);
         var y1_real = parseInt(aLine["y1"], 10);
@@ -849,7 +850,7 @@ TransColumn.prototype.sortOnBbox = function(a, b){
     // Sorts the list elements according to
     // their placement on the image
     // get editable lines
-    var eline1 = a.getElementsByClassName("editable-line");// returns a list 
+    var eline1 = a.getElementsByClassName("editable-line");// returns a list
     var eline2 = b.getElementsByClassName("editable-line");// with single element
     eline1 = eline1[0]; //  get the single element
     eline2 = eline2[0];
@@ -879,6 +880,37 @@ TransColumn.prototype.sortOnBbox = function(a, b){
     // numbers comparison
     //
     return bbox1_top - bbox2_top;
+};
+TransColumn.prototype.checkBbox = function(bbox, hoverRect){
+    // Check if given bbox corresponds to hover rect coordinates
+    var bboxsplit = bbox.split(",");
+    var bbox_x = parseInt(bboxsplit[0], 10);
+    var bbox_y = parseInt(bboxsplit[1], 10);
+    var bbox_width = parseInt(bboxsplit[2], 10);
+    var bbox_height = parseInt(bboxsplit[3], 10);
+    var hov_x = hoverRect["x1_real"];
+    var hov_y = hoverRect["y1_real"];
+    var check = false;
+    if((bbox_x === hov_x) && (bbox_y === hov_y)){
+        check = true;
+    }
+    return check;
+};
+TransColumn.prototype.emphTransRegion = function(hoverRect){
+    // Highlight transcription rectangle which
+    // correspond to hovering rect coordinates
+    var linelist = document.getElementsByClassName("editable-line");
+    //
+    for(var i=0; i < linelist.length; i++){
+        //
+        var line = linelist[i];
+        var bbox = line.getAttribute("data-bbox");
+        if(this.checkBbox(bbox, hoverRect) === true){
+            line.setAttribute("style", "border-color: red;border-style: solid;");
+        }else{
+            line.setAttribute("style", "border-color: black;border-style: dashed;");
+        }
+    }
 };
 TransColumn.prototype.saveTranscription = function(){
     // Opens up a transcription window with
@@ -1017,6 +1049,7 @@ function canvasMouseMove(event){
     }else{
         transLine.currentRect = canvasDraw.image.currentRect;
         canvasDraw.canvasMouseMove(event);
+        transLine.emphTransRegion(canvasDraw.image.hoveringRect);
     }
 }
 
@@ -1034,23 +1067,30 @@ function saveEverything(){
     // for now, we need to deal with undefined objects this way
     for(var i=0; i < coordinates.length; i++){
         var tline = textlines[i];
+        console.log(tline);
         var cline = coordinates[i];
         var newcline = Object.assign(cline);
         newcline.index = tline.index;
         newcline.text = tline.lineText;
         savelines.push(newcline);
     }
-    var stringfied = JSON.stringify(savelines);
-    window.open('data:application/json; charset=utf-8,' + stringfied);
+    var stringfied = JSON.stringify(savelines, null, 4);
+    var w = window.innerWidth.toString();
+    var h = window.innerHeight.toString();
+    w = "width=".concat(w);
+    h = "height=".concat(h);
+    var spec = w.concat(",");
+    spec = spec.concat(h);
+    var saveWindow = window.open("", "Save Window", spec);
+    saveWindow.document.write("<pre>");
+    saveWindow.document.write(stringfied);
+    saveWindow.document.write("</pre>");
 };
 //
 // rouge vert pour toutes les rectangles detecté +1
-// checkbox pour effacer à coté des chiffres +1
-// les correspondances entre l'image et la transcription soit aligné, et s'allume en meme temps +1
-// preserver l'espace dans les lignes +1
 // remplacer l'ecriture des boutons avec icons + 1
 // l'affichage de l'ecriture de droit à gauche pour des langues comme hebreu
 // le texte doit être colé à droit pour des langues comme hebreu
 // renommer les fichiers
 // Change Add Transcription to Add line then associate the line with the region
-// 
+//

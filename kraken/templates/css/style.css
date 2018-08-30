@@ -95,25 +95,29 @@ nav a:hover {
 	background-color: #73AD21;
 }
 
-li.line-widget label.lbl-container {
+
+ul.item-list {
+    width: 90%;
     position: relative;
-    text-align: center;
-    width: 30%;
+    white-space: nowrap;
+
 }
 
-
-li.line-widget button.add-below-button {
-    position: relative;
-    text-align: center;
-    width: 35%;
+li.editable-line {
+    display: inline-block;
 }
 
-
-li.line-widget button.add-above-button {
-    position: relative;
-    text-align: center;
-    width: 35%;
+li.line-widget {
+    display: inline-block;
 }
+
+/* li.line-widget label.del-cbox-container { */
+/*     position: relative; */
+/*     text-align: center; */
+/*     width: 30%; */
+/* } */
+
+
 
 i.fa-map-marker {
     position: absolute;
