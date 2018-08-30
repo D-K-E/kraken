@@ -3,6 +3,13 @@
 // methods related to drawing and keeping track of the
 // objects on the canvas
 
+// Utils funcs
+
+function isOdd(nb){
+    var res = nb % 2;
+    return res === 1;
+}
+
 var CanvasRelated = function() {
     var obj = Object.create(CanvasRelated.prototype);
     obj.mousePress = false;
@@ -417,22 +424,35 @@ CanvasRelated.prototype.drawAllLines = function(event){
     var context = imcanvas.getContext('2d');
     var canvasOffsetX = imcanvas.offsetLeft;
     var canvasOffsetY = imcanvas.offsetTop;
-    var mouseX2 = parseInt(event.layerX - canvasOffsetX);
-    var mouseY2 = parseInt(event.layerY - canvasOffsetY);
-    var mouseX2Trans = (mouseX2) / this.image.hratio; // real coordinates
-    var mouseY2Trans = (mouseY2) / this.image.vratio; // real coordinates
     context.clearRect(0,0,
                       imcanvas.width,
                       imcanvas.height);
     this.redrawPageImage(context, imcanvas);
     for(var i=0; i< this.image.lines.length; i++){
+        if(isOdd(i) === true){
+            context.strokeStyle = "red";
+        }else{
+            context.strokeStyle = "green";
+        }
         var aLine = this.image.lines[i];
-        var x1 = parseInt(aLine["x1"], 10);
-        var y1 = parseInt(aLine["y1"], 10);
-        var x2 = x1 + parseInt(aLine["width"], 10);
-        var y2 = y1 + parseInt(aLine["height"], 10);
-
-
+        var x1_real = parseInt(aLine["x1"], 10);
+        var y1_real = parseInt(aLine["y1"], 10);
+        var x2_real = x1_real + parseInt(aLine["width"], 10);
+        var y2_real = y1_real + parseInt(aLine["height"], 10);
+        var x1coord = x1_real * this.image.hratio;
+        var y1coord = y1_real * this.image.vratio;
+        var x2 = x1_real * this.image.hratio;
+        var y2 = y1_real * this.image.vratio;
+        //
+        var width = x2 - x1coord;
+        var height = y2 - y1coord;
+        context.beginPath();
+        context.rect(x1coord,
+                     y1coord,
+                     width,
+                     height);
+        context.stroke();
+    };
 };
 //
 CanvasRelated.prototype.redrawRect = function(context, rectObj){
@@ -942,6 +962,19 @@ window.onload = function(){
 
 window.onkeyup = globalKeyFuncs;
 
+var allLinesCheck = true;
+
+document.getElementById("showall-checkbox").onclick = function(event){
+    if(this.checked){
+        canvasDraw.drawAllLines(event);
+        allLinesCheck = true;
+    }else{
+        allLinesCheck = false;
+        return;
+    }
+};
+
+
 // Transcription Related Functions
 
 function deleteBoxes(){
@@ -964,7 +997,6 @@ function saveTranscription(){
     transLine.saveTranscription();
 }
 
-
 // Canvas Related functions
 
 function resetRect(){
@@ -980,8 +1012,12 @@ function canvasMouseUp(event){
 }
 
 function canvasMouseMove(event){
-    transLine.currentRect = canvasDraw.image.currentRect;
-    canvasDraw.canvasMouseMove(event);
+    if(allLinesCheck === true){
+        return;
+    }else{
+        transLine.currentRect = canvasDraw.image.currentRect;
+        canvasDraw.canvasMouseMove(event);
+    }
 }
 
 function saveCoordinates(){
