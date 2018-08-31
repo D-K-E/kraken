@@ -436,15 +436,14 @@ CanvasRelated.prototype.drawAllLines = function(event){
         }
         context.lineWidth=1;
         var aLine = this.image.lines[i];
-        console.log(aLine);
         var x1_real = parseInt(aLine["x1"], 10);
         var y1_real = parseInt(aLine["y1"], 10);
         var x2_real = x1_real + parseInt(aLine["width"], 10);
         var y2_real = y1_real + parseInt(aLine["height"], 10);
         var x1coord = x1_real * this.image.hratio;
         var y1coord = y1_real * this.image.vratio;
-        var x2 = x1_real * this.image.hratio;
-        var y2 = y1_real * this.image.vratio;
+        var x2 = x2_real * this.image.hratio;
+        var y2 = y2_real * this.image.vratio;
         //
         var width = x2 - x1coord;
         var height = y2 - y1coord;
@@ -664,8 +663,7 @@ TransColumn.prototype.checkRectangle = function(){
             (this.currentRect["x2_real"] === "") &&
             (this.currentRect["y2_real"] === "") &&
             (this.currentRect["width_real"] === "") &&
-            (this.currentRect["height_real"] === "") &&
-            (this.currentRect["index"] === "")
+            (this.currentRect["height_real"] === "")
     ){
         result = true;
     }
@@ -720,9 +718,7 @@ TransColumn.prototype.createLineWidget = function(idstr){
     var lineWidget = document.createElement("li");
     lineWidget.setAttribute("id", idstr);
     var labelContainer = document.createElement("label");
-    labelContainer.setAttribute("class", "lbl-container");
-    var textNode = document.createTextNode("Mark for deletion");
-    labelContainer.appendChild(textNode);
+    labelContainer.setAttribute("class", "del-cbox-container");
     var delInput = document.createElement("input");
     delInput.setAttribute("id", idstr);
     delInput.setAttribute("type","checkbox");
@@ -740,12 +736,11 @@ TransColumn.prototype.addTranscription = function(){
     // adds a transcription box to item list
     var funcThis = this;
     var check = funcThis.checkRectangle();
-    if( check === true){
+    if(check === true){
         alert("Please select an area before adding a transcription");
         return;
     }
     var rbuttons = document.querySelector("input[name='selected-region-rbutton']:checked");
-    var rbtnval = rbuttons[0].value;
     check = false;
     if(rbuttons != null){
         check = true;
@@ -753,6 +748,7 @@ TransColumn.prototype.addTranscription = function(){
     if(check === false){
         alert("Please Select the Region Type before adding the selection");
     }
+    var rbtnval = rbuttons.value;
     var orList = document.getElementById("text-line-list");
     // create the new line id
     var newListId = this.createItemId();
@@ -764,11 +760,11 @@ TransColumn.prototype.addTranscription = function(){
     var lineWidget = this.createLineWidget(newListId);
     //
     // transline and linewidget goes into ullist
-    ulList.appendChild(transLine);
     ulList.appendChild(lineWidget);
+    ulList.appendChild(transLine);
     // ul list goes into list item
     listItem.appendChild(ulList);
-    // list item goes into or list
+    // list item goes into ol list
     orList.appendChild(listItem);
     // add the line to the lines list as well
     var newline = {
@@ -1078,7 +1074,6 @@ function saveEverything(){
     // for now, we need to deal with undefined objects this way
     for(var i=0; i < coordinates.length; i++){
         var tline = textlines[i];
-        console.log(tline);
         var cline = coordinates[i];
         var newcline = Object.assign(cline);
         newcline.index = tline.index;
@@ -1098,7 +1093,6 @@ function saveEverything(){
     saveWindow.document.write("</pre>");
 };
 //
-// rouge vert pour toutes les rectangles detecté +1
 // l'affichage de l'ecriture de droit à gauche pour des langues comme hebreu
 // le texte doit être colé à droit pour des langues comme hebreu
 // renommer les fichiers
