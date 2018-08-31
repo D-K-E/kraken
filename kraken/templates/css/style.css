@@ -111,17 +111,7 @@ li.line-widget {
     display: inline-block;
 }
 
-/* li.line-widget label.del-cbox-container { */
-/*     position: relative; */
-/*     text-align: center; */
-/*     width: 30%; */
-/* } */
 
-
-
-i.fa-map-marker {
-    position: absolute;
-}
 canvas#image-canvas {
     position: relative;
     width: 100%;

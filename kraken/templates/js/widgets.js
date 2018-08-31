@@ -436,6 +436,7 @@ CanvasRelated.prototype.drawAllLines = function(event){
         }
         context.lineWidth=1;
         var aLine = this.image.lines[i];
+        console.log(aLine);
         var x1_real = parseInt(aLine["x1"], 10);
         var y1_real = parseInt(aLine["y1"], 10);
         var x2_real = x1_real + parseInt(aLine["width"], 10);
@@ -743,6 +744,15 @@ TransColumn.prototype.addTranscription = function(){
         alert("Please select an area before adding a transcription");
         return;
     }
+    var rbuttons = document.querySelector("input[name='selected-region-rbutton']:checked");
+    var rbtnval = rbuttons[0].value;
+    check = false;
+    if(rbuttons != null){
+        check = true;
+    }
+    if(check === false){
+        alert("Please Select the Region Type before adding the selection");
+    }
     var orList = document.getElementById("text-line-list");
     // create the new line id
     var newListId = this.createItemId();
@@ -767,7 +777,8 @@ TransColumn.prototype.addTranscription = function(){
         "width" : this.currentRect["width_real"],
         "height" : this.currentRect["height_real"],
         "bbox" : transLine.getAttribute("data-bbox"),
-        "index" : newListId
+        "index" : newListId,
+        "type" : rbtnval
     };
     this.lines.push(newline);
     this.sortLines();
@@ -1088,7 +1099,6 @@ function saveEverything(){
 };
 //
 // rouge vert pour toutes les rectangles detecté +1
-// remplacer l'ecriture des boutons avec icons + 1
 // l'affichage de l'ecriture de droit à gauche pour des langues comme hebreu
 // le texte doit être colé à droit pour des langues comme hebreu
 // renommer les fichiers
