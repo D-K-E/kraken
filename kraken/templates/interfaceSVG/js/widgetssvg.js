@@ -1,5 +1,5 @@
 
-// CanvasRelated object regrouping
+// SvgRelated object regrouping
 // methods related to drawing and keeping track of the
 // objects on the canvas
 
@@ -79,20 +79,24 @@ CanvasRelated.prototype.imageLoad = function(){
 
     */
     // Canvas load image
-    var canvas = document.getElementById("image-canvas");
-    var context = canvas.getContext('2d');
+    var canvas = document.getElementById("image-screen");
+    // var context = canvas.getContext('2d');
     // set canvas width and height
-    var image = document.getElementById("image-page");
-    var imcwidth = image.clientWidth;
-    var imcheight = image.clientHeight;
+    var imagej = document.getElementById("image-page");
+    var imagesvg = document.getElementById("image-page-svg");
+    console.log(imagesvg);
+    var imcwidth = imagej.clientWidth;
+    var imcheight = imagej.clientHeight;
     // set client width of the canvas to image
-    canvas.width = imcwidth;
-    canvas.height = imcheight;
+    canvas.setAttribute("width", imcwidth);
+    canvas.setAttribute("height", imcheight);
+    imagesvg.setAttribute("width", imcwidth);
+    imagesvg.setAttribute("height", imcheight);
     var cwidth = canvas.clientWidth;
     var cheight = canvas.clientHeight;
     // Get natural width and height
-    var imnwidth = image.naturalWidth;
-    var imnheight = image.naturalHeight;
+    var imnwidth = imagej.naturalWidth;
+    var imnheight = imagej.naturalHeight;
     //
     this.getScaleFactor(cwidth, //dest width
                         cheight, // dest height
@@ -100,17 +104,7 @@ CanvasRelated.prototype.imageLoad = function(){
                         imnheight); // src height
     this.image.shiftx = ( cwidth - imcwidth * this.image.ratio ) / 2;
     this.image.shifty = ( cheight - imcheight * this.image.ratio ) / 2;
-    context.drawImage(image,
-                      0,0,// coordinate source
-                      imnwidth, // source rectangle width
-                      imnheight, // source rectangle height
-                      // centerShift_x, centerShift_y, // destination coordinate
-                      0,0,
-                      imnwidth*this.image.ratio, // destination width
-                      imnwidth*this.image.ratio // destination height
-                     );
-    // redrawPageImage(image, context, canvas);
-    this.image.pageImage = image.cloneNode(true);
+    this.image.pageImage = imagej.cloneNode(true);
     this.image.pageImage.width = canvas.width;
     this.image.pageImage.height = canvas.height;
     document.getElementById("image-page").remove();
@@ -185,7 +179,7 @@ CanvasRelated.prototype.checkEventRectBound = function(event,
       eventName: is the boolean variable
       that would be changed with the check
       rectName: is the reference rectangle*/
-    var imcanvas = document.getElementById("image-canvas");
+    var imcanvas = document.getElementById("image-screen");
     var context = imcanvas.getContext('2d');
     var canvasOffsetX = imcanvas.offsetLeft;
     var canvasOffsetY = imcanvas.offsetTop;
@@ -254,7 +248,7 @@ CanvasRelated.prototype.getLineBound = function(mXcoord,
 // Controling the mouse movements in canvas
 CanvasRelated.prototype.canvasMouseDown = function(event){
     // handling canvas mouse button pressed
-    var imcanvas = document.getElementById("image-canvas");
+    var imcanvas = document.getElementById("image-screen");
     var canvasOffsetX = imcanvas.offsetLeft;
     var canvasOffsetY = imcanvas.offsetTop;
 
@@ -276,8 +270,8 @@ CanvasRelated.prototype.canvasMouseUp = function(event){
 CanvasRelated.prototype.canvasMouseMove = function(event){
     // regroups functions that activates with
     // mouse move on canvas
-    var imcanvas = document.getElementById("image-canvas");
-    var context = imcanvas.getContext('2d');
+    var imcanvas = document.getElementById("image-screen");
+    // var context = imcanvas.getContext('2d');
     var canvasOffsetX = imcanvas.offsetLeft;
     var canvasOffsetY = imcanvas.offsetTop;
     var mouseX = parseInt(event.layerX - canvasOffsetX);
@@ -377,7 +371,7 @@ CanvasRelated.prototype.drawLineBounds = function(event){
     // makes the line bounding box
     // visible if the mouse is
     // in its coordinates
-    var imcanvas = document.getElementById("image-canvas");
+    var imcanvas = document.getElementById("image-screen");
     var context = imcanvas.getContext('2d');
     var canvasOffsetX = imcanvas.offsetLeft;
     var canvasOffsetY = imcanvas.offsetTop;
@@ -420,7 +414,7 @@ CanvasRelated.prototype.drawLineBounds = function(event){
 CanvasRelated.prototype.drawAllLines = function(event){
     // Draw all detected lines at the same time
     // on the image. This function should be controlled by a checkbox
-    var imcanvas = document.getElementById("image-canvas");
+    var imcanvas = document.getElementById("image-screen");
     var context = imcanvas.getContext('2d');
     var canvasOffsetX = imcanvas.offsetLeft;
     var canvasOffsetY = imcanvas.offsetTop;
@@ -431,10 +425,8 @@ CanvasRelated.prototype.drawAllLines = function(event){
     for(var i=0; i< this.image.lines.length; i++){
         if(isOdd(i) === true){
             context.strokeStyle = "red";
-            context.fillStyle = "rgba(255, 0, 0, 0.2)";
         }else{
             context.strokeStyle = "green";
-            context.fillStyle = "rgba(0, 255, 0, 0.2)";
         }
         context.lineWidth=1;
         var aLine = this.image.lines[i];
@@ -455,7 +447,6 @@ CanvasRelated.prototype.drawAllLines = function(event){
                      width,
                      height);
         context.stroke();
-        context.fill();
     };
 };
 //
@@ -509,7 +500,7 @@ CanvasRelated.prototype.redrawPageImage = function(context, canvas){
 //
 CanvasRelated.prototype.restoreOldCanvas = function(){
     // restore canvas to its old state
-    var imcanvas = document.getElementById("image-canvas");
+    var imcanvas = document.getElementById("image-screen");
     var context = imcanvas.getContext('2d');
     context.clearRect(0,0,
                       imcanvas.width,
@@ -995,7 +986,7 @@ function globalKeyFuncs(event){
 
 window.onload = function(){
     // Mouse tracking to image
-    var imcanvas = document.getElementById("image-canvas");
+    var imcanvas = document.getElementById("image-screen");
     document.getElementById("image-page").addEventListener(
         "onload", canvasDraw.imageLoad()
     );
@@ -1004,6 +995,17 @@ window.onload = function(){
 
 window.onkeyup = globalKeyFuncs;
 
+var allLinesCheck = true;
+
+document.getElementById("showall-checkbox").onclick = function(event){
+    if(this.checked){
+        canvasDraw.drawAllLines(event);
+        allLinesCheck = true;
+    }else{
+        allLinesCheck = false;
+        return;
+    }
+};
 
 
 // Transcription Related Functions
@@ -1028,29 +1030,7 @@ function saveTranscription(){
     transLine.saveTranscription();
 }
 
-function changeAddTTitle(event){
-    var rbtn = event.target;
-    var val = rbtn.value;
-    var addTbtn = document.getElementById("addTranscriptionButton");
-    var addstr = "Add ";
-    addTbtn.title = addstr.concat(val);
-}
 // Canvas Related functions
-
-var allLinesCheck = false;
-
-function drawAllDetections(event){
-    var cbox = document.getElementById("showall-checkbox");
-    if(cbox.checked){
-        console.log("checked");
-        canvasDraw.drawAllLines(event);
-        allLinesCheck = true;
-    }else{
-        console.log("not");
-        allLinesCheck = false;
-        return;
-    }
-}
 
 function resetRect(){
     canvasDraw.resetRect();
@@ -1107,9 +1087,6 @@ function saveEverything(){
     saveWindow.document.write("</pre>");
 };
 //
-// Cacher le menu pour hover, il faut que la transcription et l'image soient
-// au meme hauteur
-// La region de la transcription s'affiche en dessus de la region correspondant
 // l'affichage de l'ecriture de droit à gauche pour des langues comme hebreu
 // le texte doit être colé à droit pour des langues comme hebreu
 // renommer les fichiers
