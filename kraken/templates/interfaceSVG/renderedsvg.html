@@ -85,18 +85,14 @@
                      var imgPath = "images/page_1.png";
                     </script>
 					          <img style="width: 100%;" src="images/page_1.png" alt="photo" id="image-page"/>
-                    <!-- <canvas id="image-canvas" -->
-                    <!-- onmousedown="canvasMouseDown(event)" -->
-                    <!-- onmouseup="canvasMouseUp(event)" -->
-                    <!-- onmousemove="canvasMouseMove(event)"> -->
-                    <!-- </canvas> -->
                     <svg id="image-screen"
-                         onmousedown="iscreenMouseDown(event)"
-                         onmouseup="iscreenMouseUp(event)"
-                         onmousemove="iscreenMouseMove(event)">
+                        onmousedown="iscreenMouseDown(event)"
+                        onmouseup="iscreenMouseUp(event)"
+                        onmousemove="iscreenMouseMove(event)">
                         <image href="images/page_1.png" alt="image photo" id="image-page-svg"/>
                     </svg>
-             <!--
+
+                    <!--
 						        <a class="rect"
                        alt="line-1"
                        href=""
@@ -251,79 +247,116 @@
              var lines = [ line1, line2, line3, line4, line5 ];
             </script>
 			      <div class="column">
-                <fieldset id="button-set">
-                    <button onclick="deleteBoxes()"
-                            value="" id="deleteButton"
-                            title="Delete Selections">
-                        <img src="icons/delete.svg" alt="Delete Button"/>
-                    </button>
-                    <button onclick="undoDeletion()" id="undodeleteButton"
-                            title="Undo Delete">
-                            <img src="icons/undo.svg" alt="Undo Icon"/>
-                            <img src="icons/delete.svg" alt="Delete Icon"/>
-                    </button>
-                    <button onclick="addTranscription()"
-                            id="addTranscriptionButton"
-                            title="Add Selection">
-                        <img src="icons/addbox.svg" alt="Add Selection Button"/>
-                    </button>
-                    <button onclick="saveEverything()"
-                            id="saveEverythingButton"
-                            title="Save">
-                            <img src="icons/save.svg" alt="Save Button"/>
-                    </button>
-                    <!-- <button onclick="addLines()" id="addLineButton">
-                         Add Lines
-                         </button>
-                    -->
-                    <button id="uploadTranscriptionButton"
-                            title="Upload Transcription File"
-                            onclick="uploadTranscription()">
-                        <img src="icons/upload.svg" alt="Upload Text Button"/>
-                    </button>
-                </fieldset>
-                <fieldset id="box-set">
-                    <legend>Selected Region Type</legend>
-                    <label class="lbl-rbox-container">
-                        Character
-                        <input type="radio"
-                               id="char-rbox"
-                               value="char"
-                               name="selected-region-rbutton">
-                    </label>
-                    <label class="lbl-rbox-container">
-                        Line
-                        <input type="radio"
-                               value="line"
-                               name="selected-region-rbutton""
-                               id="line-rbox">
-                    </label>
-                    <label class="lbl-rbox-container">
-                        Column
-                        <input type="radio"
-                               value="column"
-                               name="selected-region-rbutton""
-                               id="column-rbox">
-                    </label>
-                    <label class="lbl-rbox-container">
-                        Region
-                        <input type="radio"
-                               value="region"
-                               name="selected-region-rbutton""
-                               id="region-rbox">
-                    </label>
-                </fieldset>
+                <div id="hide-tools">
+                    <fieldset id="toolbox-set">
+                        <legend>Tools</legend>
+                        <fieldset id="button-set">
+                            <button onclick="deleteBoxes()"
+                                    value="" id="deleteButton"
+                                    title="Delete Selections">
+                                <img src="icons/delete.svg" alt="Delete Button"/>
+                            </button>
+                            <button onclick="undoDeletion()" id="undodeleteButton"
+                                    title="Undo Delete">
+                                <img src="icons/undo.svg" alt="Undo Icon"/>
+                                <img src="icons/delete.svg" alt="Delete Icon"/>
+                            </button>
+                            <button onclick="addTranscription()"
+                                    id="addTranscriptionButton"
+                                    title="Add Selection">
+                                <img src="icons/addbox.svg" alt="Add Selection Button"/>
+                            </button>
+                            <button onclick="saveEverything()"
+                                    id="saveEverythingButton"
+                                    title="Save">
+                                <img src="icons/save.svg" alt="Save Button"/>
+                            </button>
+                            <!-- <button onclick="addLines()" id="addLineButton">
+                                 Add Lines
+                                 </button>
+                            -->
+                            <button id="uploadTranscriptionButton"
+                                    title="Upload Transcription File"
+                                    onclick="uploadTranscription()">
+                                <img src="icons/upload.svg" alt="Upload Text Button"/>
+                            </button>
+                            <button id="markRTTranscriptionButton"
+                                    title="Mark Right to Left Text"
+                                    onclick="markRTTranscription()">
+                                Mark as Right To Left
+                            </button>
+                        </fieldset>
+                        <fieldset id="box-set">
+                            <legend>Selected Region Type</legend>
+                            <label class="lbl-rbox-container">
+                                Character
+                                <input type="radio"
+                                       id="char-rbox"
+                                       value="character"
+                                       onclick="changeAddTTitle(event)"
+                                       name="selected-region-rbutton">
+                            </label>
+                            <label class="lbl-rbox-container">
+                                Line
+                                <input type="radio"
+                                       value="line"
+                                       onclick="changeAddTTitle(event)"
+                                       name="selected-region-rbutton""
+                                       id="line-rbox">
+                            </label>
+                            <label class="lbl-rbox-container">
+                                Column
+                                <input type="radio"
+                                       value="column"
+                                       onclick="changeAddTTitle(event)"
+                                       name="selected-region-rbutton""
+                                       id="column-rbox">
+                            </label>
+                            <label class="lbl-rbox-container">
+                                Region
+                                <input type="radio"
+                                       value="region"
+                                       onclick="changeAddTTitle(event)"
+                                       name="selected-region-rbutton""
+                                       id="region-rbox">
+                            </label>
+                        </fieldset>
+                    </fieldset>
+                </div>
                 <fieldset>
                     <legend>Options</legend>
                     <label class="lbl-showall">
                         Show All Detected Lines
                         <input type="checkbox"
                         id="showall-checkbox"
-                        class="showall-checkbox">
+                        class="showall-checkbox"
+                        onchange="drawAllDetections(event)">
                         <span class="checkmark"></span>
                     </label>
+                    <label class="lbl-showtools">
+                        Show Toolbox
+                        <input type="checkbox"
+                        id="showtoolbox-checkbox"
+                        class="showtoolbox-checkbox">
+                        <span class="checkmark"></span>
 
+                    </label>
+                    <label class="lbl-selectall">
+                        Select All Lines
+                        <input type="checkbox"
+                        id="selectAllLines-checkbox"
+                        class="selectAllLines-checkbox">
+                        <span class="checkmark"></span>
+                    </label>
                 </fieldset>
+                <div id="selection-viewer">
+                    <div id="selection-info">
+                    </div>
+                    <div id="selection-img">
+                        <canvas id="selection-canvas">
+                        </canvas>
+                    </div>
+                </div>
 
 				        <ol id="text-line-list">
 				            <li class="item-group" id="1">
@@ -633,6 +666,6 @@
 				        </ol>
 			      </div>
 		    </section>
-	      <script src="js/widgets.js"></script>
+	      <script src="js/widgetssvg.js"></script>
 	  </body>
 </html>

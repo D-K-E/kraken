@@ -121,3 +121,14 @@ div#page-image {
     position: absolute;
     width: 50%;
 }
+
+div#hide-tools {
+    /* height: 0px; */
+    overflow: hidden;
+
+    transition:         height 0.5s ease;
+    -moz-transition:    height 0.5s ease;
+    -ms-transition:     height 0.5s ease;
+    -o-transition:      height 0.5s ease;
+    -webkit-transition: height 0.5s ease;
+}

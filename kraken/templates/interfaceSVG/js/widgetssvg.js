@@ -73,7 +73,7 @@ var CanvasRelated = function() {
 // methods
 CanvasRelated.prototype.imageLoad = function(){
     /*
-      Load the page image to the canvas
+      Load the page image to the svg viewer
       with proper scaling and store
       the scaling ratios for drawing rectangles afterwards
 
@@ -84,7 +84,7 @@ CanvasRelated.prototype.imageLoad = function(){
     // set canvas width and height
     var imagej = document.getElementById("image-page");
     var imagesvg = document.getElementById("image-page-svg");
-    console.log(imagesvg);
+    // console.log(imagesvg);
     var imcwidth = imagej.clientWidth;
     var imcheight = imagej.clientHeight;
     // set client width of the canvas to image
@@ -320,16 +320,18 @@ CanvasRelated.prototype.canvasMouseMove = function(event){
 };
 // General Drawing Methods
 //
-CanvasRelated.prototype.drawRectangle = function(mouseX2,
-                                                 mouseY2,
-                                                 mouseX2Trans,
-                                                 mouseY2Trans,
-                                                 x1coord,
-                                                 y1coord,
-                                                 hratio,
-                                                 vratio,
-                                                 context,
-                                                 rectUpdate){
+CanvasRelated.prototype.drawRectangle = function(mouseX2,// x2 on screen
+                                                 mouseY2, // y2 on screen
+                                                 mouseX2Trans, // x2 on image
+                                                 mouseY2Trans, //y2 on image
+                                                 x1coord, // x1 on screen
+                                                 y1coord, // y1 on screen
+                                                 hratio, // horizontal ratio
+                                                 vratio, // vertical ratio
+                                                 context, // drawing context
+                                                 rectUpdate // rect object to be
+                                                            // updated
+                                                ){
     // Rectangle draw function
     var rectW = mouseX2 - x1coord;
     var rectH = mouseY2 - y1coord;

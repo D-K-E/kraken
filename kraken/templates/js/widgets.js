@@ -725,7 +725,7 @@ TransColumn.prototype.createLineWidget = function(idstr){
     var delInput = document.createElement("input");
     delInput.setAttribute("id", idstr);
     delInput.setAttribute("type","checkbox");
-    delInput.setAttribute("class", "delete-checkbox");
+    delInput.setAttribute("class", "trans-cbox");
     labelContainer.appendChild(delInput);
     var spanElement = document.createElement("span");
     spanElement.setAttribute("class", "checkmark");
@@ -782,16 +782,61 @@ TransColumn.prototype.addTranscription = function(){
     this.lines.push(newline);
     this.sortLines();
 };
+TransColumn.prototype.markRTL = function(){
+    /*
+      Mark Selection as Right to Left
+     */
+    var cboxes = document.querySelectorAll("input.trans-cbox");
+    var cboxlen = cboxes.length;
+    var i = 0;
+    for(i; i < cboxlen; i++){
+        //
+        var cbox = cboxes[i];
+        var checkval = cbox.checked;
+        if(checkval===true){
+            //
+            var index = cbox.id;
+            var qstr = "li[class='editable-line', id='";
+            qstr = qstr.concat(index);
+            qstr = qstr.concat("']");
+            var listitem = document.querySelector(qstr);
+            listitem.setAttribute("style", "direction: rtl");
+        }
+    }
+};
+TransColumn.prototype.markLTR = function(){
+    /*
+      Mark Selection as Right to Left
+    */
+    var cboxes = document.querySelectorAll("input.trans-cbox");
+    var cboxlen = cboxes.length;
+    var i = 0;
+    for(i; i < cboxlen; i++){
+        //
+        var cbox = cboxes[i];
+        var checkval = cbox.checked;
+        if(checkval===true){
+            //
+            var index = cbox.id;
+            //
+            var qstr = "li[class='editable-line', id='";
+            qstr = qstr.concat(index);
+            qstr = qstr.concat("']");
+            var listitem = document.querySelector(qstr);
+            listitem.setAttribute("style", "direction: ltr");
+        }
+    }
+};
 //
 TransColumn.prototype.deleteBoxes = function(){
     /*
       Simple function for deleting lines whose checkboxes are selected
       Description:
-      We query the input elements whose class is delete-checkbox.
+      We query the input elements whose class is trans-cbox.
       Then we check whether they are checked or not.
       If they are checked we delete the item group containing them
     */
-    var deleteCheckBoxList = document.querySelectorAll("input.delete-checkbox");
+    var deleteCheckBoxList = document.querySelectorAll("input.trans-cbox");
     var dellength = deleteCheckBoxList.length;
     var deletedboxlength = 0;
     var i = 0;
@@ -1019,6 +1064,14 @@ function sortLines(){
     transLine.sortLines();
 }
 
+function markRTLTranscription(){
+    transLine.markRTL();
+}
+
+function markLTRTranscription(){
+    transLine.markLTR();
+}
+
 function addTranscription(){
     transLine.currentRect = canvasDraw.image.currentRect;
     transLine.addTranscription();
@@ -1049,6 +1102,16 @@ function drawAllDetections(event){
         console.log("not");
         allLinesCheck = false;
         return;
+    }
+}
+
+function showToolBox(event){
+    var cbox = document.getElementById("showtoolbox-checkbox");
+    var fset = document.getElementById("hide-tools");
+    if(cbox.checked){
+        fset.setAttribute("style", "height: 20%;");
+    }else{
+        fset.setAttribute("style", "height: 0%;");
     }
 }
 
@@ -1107,8 +1170,6 @@ function saveEverything(){
     saveWindow.document.write("</pre>");
 };
 //
-// Cacher le menu pour hover, il faut que la transcription et l'image soient
-// au meme hauteur
 // La region de la transcription s'affiche en dessus de la region correspondant
 // l'affichage de l'ecriture de droit à gauche pour des langues comme hebreu
 // le texte doit être colé à droit pour des langues comme hebreu
