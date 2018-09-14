@@ -11,8 +11,8 @@
 		    <script language="javascript" type="text/javascript" src="js/jquery-1.11.3.min.js">
          <!--        <script
 			   src="https://code.jquery.com/jquery-1.12.4.min.js"
-			      integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
-			      crossorigin="anonymous">
+			   integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+			   crossorigin="anonymous">
         </script> -->
 		    <script>
 
@@ -84,120 +84,122 @@
                     <script>
                      var imgPath = "images/page_1.png";
                     </script>
-					          <img style="width: 100%;" src="images/page_1.png" alt="photo" id="image-page"/>
+					          <img style="width: 100%;"
+                         src="images/page_1.png"
+                         alt="page image"
+                         onload="imageLoad()"
+                         id="image-page"/>
                     <canvas id="image-canvas"
                             onmousedown="canvasMouseDown(event)"
                             onmouseup="canvasMouseUp(event)"
                             onmousemove="canvasMouseMove(event)">
                     </canvas>
-             <!--
-						        <a class="rect"
-                       alt="line-1"
-                       href=""
-                       title=""/>
-                    <a class="rect"
-                           alt="line-2"
-                           href=""
-                           title=""
-                           style="position: absolute; left: 0.5555555555555556%; top: 4.595588235294118%; width: 98.24074074074075%; height: 8.547794117647058%; z-index: 2;"
-                           id="2"></a>
-						        <a class="rect"
-                       alt="line-3"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.18518518518518517%; top: 11.029411764705882%; width: 99.81481481481481%; height: 7.9963235294117645%; z-index: 2;"
-                       id="3"></a>
+                    <!--
+						             <a class="rect"
+                         alt="line-1"
+                         href=""
+                         title=""/>
+                         <a class="rect"
+                         alt="line-2"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.5555555555555556%; top: 4.595588235294118%; width: 98.24074074074075%; height: 8.547794117647058%; z-index: 2;"
+                         id="2"></a>
+						             <a class="rect"
+                         alt="line-3"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.18518518518518517%; top: 11.029411764705882%; width: 99.81481481481481%; height: 7.9963235294117645%; z-index: 2;"
+                         id="3"></a>
 
-						        <a class="rect"
-                       alt="line-4"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.18518518518518517%; top: 16.544117647058822%; width: 99.81481481481481%; height: 7.904411764705882%; z-index: 2;"
-                       id="4"></a>
+						             <a class="rect"
+                         alt="line-4"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.18518518518518517%; top: 16.544117647058822%; width: 99.81481481481481%; height: 7.904411764705882%; z-index: 2;"
+                         id="4"></a>
 
-						        <a class="rect"
-                       alt="line-5"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.2777777777777778%; top: 22.794117647058822%; width: 99.25925925925925%; height: 7.444852941176471%; z-index: 2;"
-                       id="5"></a>
+						             <a class="rect"
+                         alt="line-5"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.2777777777777778%; top: 22.794117647058822%; width: 99.25925925925925%; height: 7.444852941176471%; z-index: 2;"
+                         id="5"></a>
 
-						        <a class="rect"
-                       alt="line-6"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.18518518518518517%; top: 28.676470588235293%; width: 99.81481481481481%; height: 8.547794117647058%; z-index: 2;"
-                       id="6"></a>
+						             <a class="rect"
+                         alt="line-6"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.18518518518518517%; top: 28.676470588235293%; width: 99.81481481481481%; height: 8.547794117647058%; z-index: 2;"
+                         id="6"></a>
 
-						        <a class="rect"
-                       alt="line-7"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 2.4074074074074074%; top: 34.83455882352941%; width:97.22222222222223%; height: 8.088235294117647%; z-index: 2;"
-                       id="7"></a>
+						             <a class="rect"
+                         alt="line-7"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 2.4074074074074074%; top: 34.83455882352941%; width:97.22222222222223%; height: 8.088235294117647%; z-index: 2;"
+                         id="7"></a>
 
-						        <a class="rect"
-                       alt="line-8"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 40.900735294117645%; width: 99.16666666666667%; height: 7.9963235294117645%; z-index: 2;"
-                       id="8"></a>
-					          
-						        <a class="rect"
-                       alt="line-9"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 47.150735294117645%; width: 99.07407407407408%; height: 8.180147058823529%; z-index: 2;"
-                       id="9"></a>
-					          
-						        <a class="rect"
-                       alt="line-10"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 53.58455882352941%; width: 98.24074074074075%; height: 6.985294117647059%; z-index: 2;"
-                       id="10"></a>
-					          
-						        <a class="rect"
-                       alt="line-11"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 58.8235294117647%; width: 99.9074074074074%; height: 7.352941176470588%; z-index: 2;"
-                       id="11"></a>
-					          
-						        <a class="rect"
-                       alt="line-12"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 64.24632352941177%; width: 98.98148148148148%; height: 8.180147058823529%; z-index: 2;"
-                       id="12"></a>
-					          
-						        <a class="rect"
-                       alt="line-13"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 70.58823529411765%; width: 99.9074074074074%; height: 7.8125%; z-index: 2;"
-                       id="13"></a>
-					          
-						        <a class="rect"
-                       alt="line-14"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.18518518518518517%; top: 76.5625%; width: 99.25925925925925%; height: 8.363970588235293%; z-index: 2;"
-                       id="14"></a>
-					          
-						        <a class="rect"
-                       alt="line-15"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.18518518518518517%; top: 83.63970588235294%; width: 99.25925925925925%; height: 8.731617647058824%; z-index: 2;"
-                       id="15"></a>
-					          
-						        <a class="rect"
-                       alt="line-16"
-                       href=""
-                       title=""
-                       style="position: absolute; left: 0.0%; top: 88.87867647058823%; width: 99.81481481481481%; height: 9.099264705882353%; z-index: 2;"
-                       id="16"></a>
+						             <a class="rect"
+                         alt="line-8"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 40.900735294117645%; width: 99.16666666666667%; height: 7.9963235294117645%; z-index: 2;"
+                         id="8"></a>
+					               
+						             <a class="rect"
+                         alt="line-9"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 47.150735294117645%; width: 99.07407407407408%; height: 8.180147058823529%; z-index: 2;"
+                         id="9"></a>
+					               
+						             <a class="rect"
+                         alt="line-10"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 53.58455882352941%; width: 98.24074074074075%; height: 6.985294117647059%; z-index: 2;"
+                         id="10"></a>
+					               
+						             <a class="rect"
+                         alt="line-11"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 58.8235294117647%; width: 99.9074074074074%; height: 7.352941176470588%; z-index: 2;"
+                         id="11"></a>
+					               
+						             <a class="rect"
+                         alt="line-12"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 64.24632352941177%; width: 98.98148148148148%; height: 8.180147058823529%; z-index: 2;"
+                         id="12"></a>
+					               
+						             <a class="rect"
+                         alt="line-13"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 70.58823529411765%; width: 99.9074074074074%; height: 7.8125%; z-index: 2;"
+                         id="13"></a>
+						             <a class="rect"
+                         alt="line-14"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.18518518518518517%; top: 76.5625%; width: 99.25925925925925%; height: 8.363970588235293%; z-index: 2;"
+                         id="14"></a>
+						             <a class="rect"
+                         alt="line-15"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.18518518518518517%; top: 83.63970588235294%; width: 99.25925925925925%; height: 8.731617647058824%; z-index: 2;"
+                         id="15"></a>
+					               
+						             <a class="rect"
+                         alt="line-16"
+                         href=""
+                         title=""
+                         style="position: absolute; left: 0.0%; top: 88.87867647058823%; width: 99.81481481481481%; height: 9.099264705882353%; z-index: 2;"
+                         id="16"></a>
                     -->
 				        </div>
 			      </div>
@@ -276,7 +278,8 @@
                             <button id="uploadTranscriptionButton"
                                     title="Upload Transcription File"
                                     onclick="uploadTranscription()">
-                                <img src="icons/upload.svg" alt="Upload Text Button"/>
+                                <img src="icons/upload.svg"
+                                     alt="Upload Text Button"/>
                             </button>
                             <button id="markRTTranscriptionButton"
                                     title="Mark Right to Left Text"
@@ -284,11 +287,10 @@
                                 Mark as Right To Left
                             </button>
                             <button id="markRTLTranscriptionButton"
-                                title="Mark Right to Left Text"
-                                onclick="markLTRTranscription()">
+                                    title="Mark Right to Left Text"
+                                    onclick="markLTRTranscription()">
                                 Mark as Left To Right
                             </button>
-
                         </fieldset>
                         <fieldset id="box-set">
                             <legend>Selected Region Type</legend>
@@ -298,7 +300,7 @@
                                        id="char-rbox"
                                        value="character"
                                        onclick="changeAddTTitle(event)"
-                                       name="selected-region-rbutton">
+                                       name="selected-region-rbutton"/>
                             </label>
                             <label class="lbl-rbox-container">
                                 Line
@@ -306,7 +308,7 @@
                                        value="line"
                                        onclick="changeAddTTitle(event)"
                                        name="selected-region-rbutton""
-                                       id="line-rbox">
+                                       id="line-rbox"/>
                             </label>
                             <label class="lbl-rbox-container">
                                 Column
@@ -314,7 +316,7 @@
                                        value="column"
                                        onclick="changeAddTTitle(event)"
                                        name="selected-region-rbutton""
-                                       id="column-rbox">
+                                       id="column-rbox"/>
                             </label>
                             <label class="lbl-rbox-container">
                                 Region
@@ -322,352 +324,364 @@
                                        value="region"
                                        onclick="changeAddTTitle(event)"
                                        name="selected-region-rbutton""
-                                       id="region-rbox">
+                                       id="region-rbox"/>
                             </label>
-                        </fieldset>
-                    </fieldset>
+                        </fieldset> <!-- ends boxset -->
+                    </fieldset> <!-- ends toolbox -->
+                    <fieldset>
+                        <legend>Options</legend>
+                        <label class="lbl-showall">
+                            Show All Detected Lines
+                            <input type="checkbox"
+                                   id="showall-checkbox"
+                                   class="showall-checkbox"
+                                   onchange="drawAllDetections(event)"/>
+                        </label>
+                        <label class="lbl-selectall">
+                            Select/Deselect All Lines
+                            <input type="checkbox"
+                                   id="selectAllLines-checkbox"
+                                   onchange="selectAllLines()"
+                                   class="selectAllLines-checkbox"/>
+                        </label>
+                        <label class="lbl-showviewer">
+                            Activate Viewer
+                            <input type="checkbox"
+                                   id="activateViewer-checkbox"
+                                   onchange="activateViewer()"
+                                   class="viewer-checkbox"/>
+                        </label>
+                    </fieldset> <!-- Ends options -->
                 </div>
-                <fieldset>
-                    <legend>Options</legend>
-                    <label class="lbl-showall">
-                        Show All Detected Lines
-                        <input type="checkbox"
-                        id="showall-checkbox"
-                        class="showall-checkbox"
-                        onchange="drawAllDetections(event)">
-                        <span class="checkmark"></span>
-                    </label>
-                    <label class="lbl-showtools">
-                        Show Toolbox
-                        <input type="checkbox"
-                               id="showtoolbox-checkbox"
-                               onchange="showToolBox(event)"
-                               class="showtoolbox-checkbox">
-                        <span class="checkmark"></span>
-
-                    </label>
-                    <label class="lbl-selectall">
-                        Select All Lines
-                        <input type="checkbox"
-                        id="selectAllLines-checkbox"
-                        class="selectAllLines-checkbox">
-                        <span class="checkmark"></span>
-                    </label>
-                </fieldset>
-                <div id="selection-viewer">
-                    <div id="selection-info">
-                    </div>
-                    <div id="selection-img">
-                        <canvas id="selection-canvas">
-                        </canvas>
-                    </div>
-                </div>
-
-				        <ol id="text-line-list">
-				            <li class="item-group" id="1">
-                        <ul class="item-list" id="1">
-                            <li class="line-widget" id="1">
-                                <label class="del-cbox-container">
+                <label class="lbl-showtools">
+                    Show Toolbox
+                    <input type="checkbox"
+                           id="showtoolbox-checkbox"
+                           onchange="showToolBox(event)"
+                           class="showtoolbox-checkbox"/>
+                </label>
+                <ol id="text-line-list">
+				            <li class="item-group" id="ig1">
+                        <ul class="item-list" id="il1">
+                            <li class="line-widget" id="lw1">
+                                <label class="cbox-container" id="cbc1">
                                     <input type="checkbox"
-                                           id="1"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox1"
+                                           class="line-cbox"//>
                                 </label>
                             </li>
-					                  <li id="1"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="0, 0, 1071, 73"
-                                data-placeholder="Enter text for line 1"
-                                class="editable-line">
-					                  </li>
+                            <li id="el1">
+					                      <textarea id="ta1"
+                                          contenteditable="true"
+                                          spellcheck="true"
+                                          onfocus="viewLine(event)"
+                                          data-bbox="0, 0, 1071, 73"
+                                          data-placeholder="Enter text for line 1"
+                                          class="editable-textarea">
+					                      </textarea>
+                            </li>
                         </ul>
 				            </li>
-                    <li class="item-group" id="2">
-                        <ul class="item-list" id="2">
-                            <li class="line-widget" id="2">
-                                <label class="del-cbox-container">
+                    <li class="item-group" id="ig2">
+                        <ul class="item-list" id="il2">
+                            <li class="line-widget" id="lw2">
+                                <label class="cbox-container" id="cbc2">
                                     <input type="checkbox"
-                                           id="2"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox2"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="2"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="6, 50, 1067, 143"
-                                data-placeholder="Enter text for line 2"
-                                class="editable-line">
+                            <li id="el2">
+					                      <textarea id="ta2"
+                                          spellcheck="true"
+                                          onfocus="viewLine(event)"
+                                          data-bbox="6, 50, 1067, 143"
+                                          data-placeholder="Enter text for line 2"
+                                          class="editable-textarea">
+                                </textarea>
 					                  </li>
                         </ul>
                     </li>
-                    <li class="item-group" id="3">
-                        <ul class="item-list" id="3">
-                            <li class="line-widget" id="3">
-                                <label class="del-cbox-container">
+                    <li class="item-group" id="ig3">
+                        <ul class="item-list" id="il3">
+                            <li class="line-widget" id="lw3">
+                                <label class="cbox-container" id="cbc3">
                                     <input type="checkbox"
-                                           id="3"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox3"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="3" contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="2, 120, 1080, 207"
-                                data-placeholder="Enter text for line 3"
-                                class="editable-line">
+                            <li id="el3">
+					                      <textarea id="ta3"
+                                          spellcheck="true"
+                                          data-bbox="2, 120, 1080, 207"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 3"
+                                          class="editable-textarea">
+                                </textarea>
+						                </li>
+                        </ul
+					          </li>
+				            <li class="item-group" id="ig4">
+                        <ul class="item-list" id="il4">
+                            <li class="line-widget" id="lw4">
+                                <label class="cbox-container" id="cbc4">
+                                    <input type="checkbox"
+                                           id="lcbox4"
+                                           class="line-cbox"/>
+                                </label>
+                            </li>
+                            <li id="el4">
+					                      <textarea id="ta4"
+                                          spellcheck="true"
+
+                                          onfocus="viewLine(event)"
+                                          data-bbox="2, 180, 1080, 266"
+                                          data-placeholder="Enter text for line 4"
+                                          class="editable-textarea">
+                                </textarea>
 						                </li>
                         </ul>
 					          </li>
-				            <li class="item-group" id="4">
-                        <ul class="item-list" id="4">
-                            <li class="line-widget" id="4">
-                                <label class="del-cbox-container">
+	                  <li class="item-group" id="ig5">
+                        <ul class="item-list" id="il5">
+                            <li class="line-widget" id="lw5">
+                                <label class="cbox-container" id="cbc5">
                                     <input type="checkbox"
-                                           id="4"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox5"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="4" contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="2, 180, 1080, 266"
-                                data-placeholder="Enter text for line 4"
-                                class="editable-line">
-						                </li>
-                        </ul>
-					          </li>
-	                  <li class="item-group" id="5">
-                        <ul class="item-list" id="5">
-                            <li class="line-widget" id="5">
-                                <label class="del-cbox-container">
-                                    <input type="checkbox"
-                                           id="5"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </li>
-					                  <li id="5"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="3, 248, 1075, 329"
-                                data-placeholder="Enter text for line 5"
-                                class="editable-line">
+                            <li id="el5">
+					                      <textarea id="ta5"
+                                          spellcheck="true"
+                                          data-bbox="3, 248, 1075, 329"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 5"
+                                          class="editable-textarea">
+                                </textarea>
 							              </li>
                         </ul>
 					          </li>
-	                  <li class="item-group" id="6">
-                        <ul class="item-list" id="6">
-                            <li class="line-widget" id="6">
-                                <label class="del-cbox-container">
+	                  <li class="item-group" id="ig6">
+                        <ul class="item-list" id="il6">
+                            <li class="line-widget" id="lw6">
+                                <label class="cbox-container" id="cbc6">
                                     <input type="checkbox"
-                                           id="6"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox6"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="6"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="2, 312, 1080, 405"
-                                data-placeholder="Enter text for line 6"
-                                class="editable-line">
+                            <li id="el6">
+					                      <textarea id="ta6"
+                                          spellcheck="true"
+                                          data-bbox="2, 312, 1080, 405"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 6"
+                                          class="editable-textarea">
+                                </textarea>
 							              </li>
                         </ul>
 					          </li>
-	                  <li class="item-group" id="7">
-                        <ul class="item-list" id="7">
-                            <li class="line-widget" id="7">
-                                <label class="del-cbox-container">
+	                  <li class="item-group" id="ig7">
+                        <ul class="item-list" id="il7">
+                            <li class="line-widget" id="lw7">
+                                <label class="cbox-container" id="cbc7">
                                     <input type="checkbox"
-                                           id="7"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox7"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="7"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="26, 379, 1076, 467"
-                                data-placeholder="Enter text for line 7"
-                                class="editable-line">
+                            <li id="el7">
+					                      <textarea id="ta7"
+                                          spellcheck="true"
+                                          data-bbox="26, 379, 1076, 467"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 7"
+                                          class="editable-textarea">
+                                </textarea>
 							              </li>
                         </ul>
 					          </li>
-	                  <li class="item-group" id="8">
-                        <ul class="item-list" id="8">
-                            <li class="line-widget" id="8">
-                                <label class="del-cbox-container">
+	                  <li class="item-group" id="ig8">
+                        <ul class="item-list" id="il8">
+                            <li class="line-widget" id="lw8">
+                                <label class="cbox-container" id="cbc8">
                                     <input type="checkbox"
-                                           id="8"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox8"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="8"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="0, 445, 1071, 532"
-                                data-placeholder="Enter text for line 8"
-                                class="editable-line">
+                            <li id="el8">
+					                      <textarea id="ta8"
+                                          spellcheck="true"
+                                          data-bbox="0, 445, 1071, 532"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 8"
+                                          class="editable-textarea">
+                                </textarea>
 							              </li>
                         </ul>
 					          </li>
-	                  <li class="item-group" id="9">
-                        <ul class="item-list" id="9">
-                            <li class="line-widget" id="9">
-                                <label class="del-cbox-container">
+	                  <li class="item-group" id="ig9">
+                        <ul class="item-list" id="il9">
+                            <li class="line-widget" id="lw9">
+                                <label class="cbox-container" id="cbc9">
                                     <input type="checkbox"
-                                           id="9"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox9"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-
-					                  <li id="9"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="0, 513, 1070, 602"
-                                data-placeholder="Enter text for line 9"
-                                class="editable-line">
+                            <li id="el9">
+					                      <textarea id="ta9"
+                                          spellcheck="true"
+                                          data-bbox="0, 513, 1070, 602"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 9"
+                                          class="editable-textarea">
+                                </textarea>
 							              </li>
                         </ul>
 					          </li>
-	                  <li class="item-group" id="10">
-                        <ul class="item-list" id="10">
-                            <li class="line-widget" id="10">
-                                <label class="del-cbox-container">
+	                  <li class="item-group" id="ig10">
+                        <ul class="item-list" id="il10">
+                            <li class="line-widget" id="lw10">
+                                <label class="cbox-container" id="cbc10">
                                     <input type="checkbox"
-                                           id=10"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox10"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="10"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="0, 583, 1061, 659"
-                                data-placeholder="Enter text for line 10"
-                                class="editable-line">
+                            <li id="el10">
+					                      <textarea id="ta10"
+                                          spellcheck="true"
+                                          data-bbox="0, 583, 1061, 659"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 10"
+                                          class="editable-textarea">
+                                </textarea>
 							              </li>
                         </ul>
 					          </li>
-	                  <li class="item-group" id="11">
-                        <ul class="item-list" id="11">
-                            <li class="line-widget" id="11">
-                                <label class="del-cbox-container">
+	                  <li class="item-group" id="ig11">
+                        <ul class="item-list" id="il11">
+                            <li class="line-widget" id="lw11">
+                                <label class="cbox-container" id="cbc11">
                                     <input type="checkbox"
-                                           id="11"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox11"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-
-					                  <li id="11"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="0, 640, 1079, 720"
-                                data-placeholder="Enter text for line 11"
-                                class="editable-line">
+                            <li id="el11">
+					                      <textarea id="ta11"
+                                          spellcheck="true"
+                                          data-bbox="0, 640, 1079, 720"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 11"
+                                          class="editable-textarea">
+                                </textarea>
 							              </li>
                         </ul>
 					          </li>
-	                  <li class="item-group" id="12">
-                        <ul class="item-list" id="12">
-                            <li class="line-widget" id="12">
-                                <label class="del-cbox-container">
+	                  <li class="item-group" id="ig12">
+                        <ul class="item-list" id="il12">
+                            <li class="line-widget" id="lw12">
+                                <label class="cbox-container" id="cbc12">
                                     <input type="checkbox"
-                                           id="12"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox12"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="12"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="0, 699, 1069, 788"
-                                data-placeholder="Enter text for line 12"
-                                class="editable-line">
+                            <li id="el12">
+					                      <textarea id="ta12"
+                                          spellcheck="true"
+                                          data-bbox="0, 699, 1069, 788"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 12"
+                                          class="editable-textarea">
+                                </textarea>
 							              </li>
                         </ul>
 					          </li>
-	                  <li class="item-group" id="13">
-                        <ul class="item-list" id="13">
-                            <li class="line-widget" id="13">
-                                <label class="del-cbox-container">
+	                  <li class="item-group" id="ig13">
+                        <ul class="item-list" id="il13">
+                            <li class="line-widget" id="lw13">
+                                <label class="cbox-container" id="cbc13">
                                     <input type="checkbox"
-                                           id="13"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox13"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="13"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="0, 768, 1079, 853"
-                                data-placeholder="Enter text for line 13"
-                                class="editable-line">
+                            <li id="el13">
+					                      <textarea id="ta13"
+                                          spellcheck="true"
+                                          data-bbox="0, 768, 1079, 853"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 13"
+                                          class="editable-textarea">
+                                </textarea>
 							              </li>
                         </ul>
-					          </li>
-	                  <li class="item-group" id="14">
-                        <ul class="item-list" id="14">
-                            <li class="line-widget" id="14">
-                                <label class="del-cbox-container">
+				            </li>
+	                  <li class="item-group" id="ig14">
+                        <ul class="item-list" id="il14">
+                            <li class="line-widget" id="lw14">
+                                <label class="cbox-container" id="cbc14">
                                     <input type="checkbox"
-                                           id="14"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox14"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="14"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="2, 833, 1074, 924"
-                                data-placeholder="Enter text for line 14"
-                                class="editable-line">
+                            <li id="el14">
+					                      <textarea id="ta14"
+                                          spellcheck="true"
+                                          data-bbox="2, 833, 1074, 924"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 14"
+                                          class="editable-textarea">
 							              </li>
                         </ul>
-					          </li>
-	                  <li class="item-group" id="15">
-                        <ul class="item-list" id="15">
-                            <li class="line-widget" id="15">
-                                <label class="del-cbox-container">
+				            </li>
+	                  <li class="item-group" id="ig15">
+                        <ul class="item-list" id="il15">
+                            <li class="line-widget" id="lw15">
+                                <label class="cbox-container" id="cbc15">
                                     <input type="checkbox"
-                                           id="15"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox15"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="15"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="2, 910, 1074, 1005"
-                                data-placeholder="Enter text for line 15"
-                                class="editable-line">
+                            <li id="el15">
+					                      <textarea id="ta15"
+                                          spellcheck="true"
+                                          data-bbox="2, 910, 1074, 1005"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 15"
+                                          class="editable-textarea">
+                                </textarea>
 							              </li>
                         </ul>
-					          </li>
-	                  <li class="item-group" id="16">
-                        <ul class="item-list" id="16">
-                            <li class="line-widget" id="16">
-                                <label class="del-cbox-container">
+				            </li>
+	                  <li class="item-group" id="ig16">
+                        <ul class="item-list" id="il16">
+                            <li class="line-widget" id="lw16">
+                                <label class="cbox-container" id="cbc16">
                                     <input type="checkbox"
-                                           id="16"
-                                           class="trans-cbox">
-                                    <span class="checkmark"></span>
+                                           id="lcbox16"
+                                           class="line-cbox"/>
                                 </label>
                             </li>
-					                  <li id="16"
-                                contenteditable="true"
-                                spellcheck="true"
-                                data-bbox="0, 967, 1078, 1066"
-                                data-placeholder="Enter text for line 16"
-                                class="editable-line">
+                            <li id="el16">
+					                      <textarea id="ta16"
+                                          spellcheck="true"
+                                          data-bbox="0, 967, 1078, 1066"
+                                          onfocus="viewLine(event)"
+                                          data-placeholder="Enter text for line 16"
+                                          class="editable-textarea">
+                                </textarea>
                             </li>
                         </ul>
-					          </li>
+                    </li>
 				        </ol>
 			      </div>
 		    </section>

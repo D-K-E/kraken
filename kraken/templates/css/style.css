@@ -107,9 +107,9 @@ li.editable-line {
     display: inline-block;
 }
 
-li.line-widget {
-    display: inline-block;
-}
+/* li.line-widget { */
+/*     display: inline-block; */
+/* } */
 
 
 canvas#image-canvas {

@@ -128,18 +128,28 @@
 				        <ol id="text-line-list">
                     <!-- Contains the lines -->
 				            {% for line in page.lines %}
-                    <li class="item-group" id="{{ line.index }}">
-                        <ul class="item-list" id="{{ line.index }}">
-					                  <li id="{{ line.index }}" contenteditable="true" spellcheck="true" data-bbox="{{ line.bbox }}" data-placeholder="Enter text for line {{ line.index }}" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
+                    <li class="item-group" id="ig{{ line.index }}">
+                        <ul class="item-list" id="il{{ line.index }}">
+                            <li>
+					                      <textarea id="el{{ line.index }}"
+                                          spellcheck="true"
+                                          rows="{{ line.width_real }}"
+                                          cols="{{ line.height_real }}"
+                                          data-bbox="{{ line.bbox }}"
+                                          data-placeholder="Enter text for line {{ line.index }}"
+                                          class="editable-textarea">
+                                    <!-- This is the texts of the line on the image -->
 						                    {% if line.text %}
 							                  {{ line.text }}
 						                    {% endif %}
+                                </textarea>
                             </li>
-                            <li class="line-widget" id="{{ line.index }}">
-                                <label class="lbl-container">
+                            <li class="line-widget" id="lw{{ line.index }}">
+                                <label class="cbox-container">
                                     Mark for deletion
-                                    <input type="checkbox" id="{{ line.index }}" class="delete-checkbox">
+                                    <input type="checkbox"
+                                           id="lcbox{{ line.index }}"
+                                           class="line-cbox">
                                     <span class="checkmark"></span>
                                 </label>
 					                  </li>

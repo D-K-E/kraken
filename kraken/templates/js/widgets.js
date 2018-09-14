@@ -68,7 +68,6 @@ var CanvasRelated = function() {
     //
     return obj;
 };
-
 // Canvas Related methods
 // methods
 CanvasRelated.prototype.imageLoad = function(){
@@ -83,6 +82,7 @@ CanvasRelated.prototype.imageLoad = function(){
     var context = canvas.getContext('2d');
     // set canvas width and height
     var image = document.getElementById("image-page");
+    // console.log(image);
     var imcwidth = image.clientWidth;
     var imcheight = image.clientHeight;
     // set client width of the canvas to image
@@ -571,6 +571,9 @@ CanvasRelated.prototype.getCoordinates = function(){
 
 var TransColumn = function(){
     var obj = Object.create(TransColumn.prototype);
+    var pageImage;
+    obj.image = pageImage;
+    obj.viewerCheck = false;
     obj.currentRect = {
         "y1" : "",
         "x1" : "",
@@ -624,12 +627,15 @@ TransColumn.prototype.getLines = function(){
 };
 //
 TransColumn.prototype.getLineById = function(idstr){
+    var index = idstr.replace(/[^0-9]/g, '');
+    var result;
     for(var i=0; i < this.lines.length; i++){
         var line = this.lines[i];
-        if(line.index === idstr){
-            return line;
+        if(line.index === index){
+            result = line;
         }
     }
+    return result;
 };
 //
 TransColumn.prototype.createItemId = function(){
@@ -647,6 +653,11 @@ TransColumn.prototype.createItemId = function(){
     //
     var newId = childArray.length + 1;
     return newId;
+};
+TransColumn.prototype.createIdWithPrefix = function(index, prefix){
+    // creates the id with the necessary prefix
+    var id = prefix.concat(index);
+    return id;
 };
 //
 TransColumn.prototype.checkRectangle = function(){
@@ -692,15 +703,16 @@ TransColumn.prototype.createItList = function(idstr){
     //
     return ulList;
 };
-TransColumn.prototype.createTLine = function(idstr){
+TransColumn.prototype.createTLine = function(idstr, regionType){
     // transcription line
-    var transLine = document.createElement("li");
+    var transLine = document.createElement("textarea");
     transLine.setAttribute("id", idstr);
     transLine.setAttribute("contenteditable", "true");
     transLine.setAttribute("spellcheck", "true");
-    transLine.setAttribute("class", "editable-line");
-    var placeholder = "Enter text for line ";
-    placeholder = placeholder.concat(idstr);
+    transLine.setAttribute("class", "editable-textarea");
+    var index = idstr.replace(/[^0-9]/g, '');
+    var placeholder = "Enter text for added ";
+    placeholder = placeholder.concat(regionType);
     transLine.setAttribute("data-placeholder", placeholder);
     var bbox = "";
     bbox = bbox.concat(this.currentRect["x1_real"]);
@@ -715,22 +727,36 @@ TransColumn.prototype.createTLine = function(idstr){
     return transLine;
 };
 //
+TransColumn.prototype.createLineCbox = function(idstr){
+    // Create the checkbox in the line widget
+    var cbox = document.createElement("input");
+    cbox.setAttribute("id", idstr);
+    cbox.setAttribute("type","checkbox");
+    cbox.setAttribute("class", "line-cbox");
+    //
+    return cbox;
+};
+//
+TransColumn.prototype.createLineCboxLabel = function(idstr){
+    // Create line cbox label
+    // add the span element of the cbox
+    var labelContainer = document.createElement("label");
+    labelContainer.setAttribute("class", "cbox-container");
+    labelContainer.setAttribute("id", idstr);
+    // Commenting out the span element
+    // it is not really needed for anything
+    // var spanElement = document.createElement("span");
+    // spanElement.setAttribute("class", "checkmark");
+    // labelContainer.appendChild(spanElement);
+    return labelContainer;
+};
+//
 TransColumn.prototype.createLineWidget = function(idstr){
     // Create the line widget that holds
     // checkboxes and other functionality
     var lineWidget = document.createElement("li");
+    lineWidget.setAttribute("class", "line-widget");
     lineWidget.setAttribute("id", idstr);
-    var labelContainer = document.createElement("label");
-    labelContainer.setAttribute("class", "del-cbox-container");
-    var delInput = document.createElement("input");
-    delInput.setAttribute("id", idstr);
-    delInput.setAttribute("type","checkbox");
-    delInput.setAttribute("class", "trans-cbox");
-    labelContainer.appendChild(delInput);
-    var spanElement = document.createElement("span");
-    spanElement.setAttribute("class", "checkmark");
-    labelContainer.appendChild(spanElement);
-    lineWidget.appendChild(labelContainer);
     //
     return lineWidget;
 };
@@ -757,14 +783,38 @@ TransColumn.prototype.addTranscription = function(){
     var newListId = this.createItemId();
     this.currentRect["index"] = newListId;
     //
-    var listItem = this.createIGroup(newListId);
-    var ulList = this.createItList(newListId);
-    var transLine = this.createTLine(newListId);
-    var lineWidget = this.createLineWidget(newListId);
+    var igId = this.createIdWithPrefix(newListId, "ig");
+    var listItem = this.createIGroup(igId);
     //
+    var ilId = this.createIdWithPrefix(newListId, "il");
+    var ulList = this.createItList(ilId);
+    //
+    var taId = this.createIdWithPrefix(newListId, "ta");
+    var transLine = this.createTLine(taId, rbtnval);
+    //
+    var elId = this.createIdWithPrefix(newListId, "el");
+    var liel = document.createElement("li");
+    liel.setAttribute("id", elId);
+    //
+    var lwId = this.createIdWithPrefix(newListId, "lw");
+    var lineWidget = this.createLineWidget(lwId);
+    //
+    var cbcId = this.createIdWithPrefix(newListId, "cbc");
+    var cboxLabel = this.createLineCboxLabel(cbcId);
+    //
+    var lcboxId = this.createIdWithPrefix(newListId, "lcbox");
+    var lcbox = this.createLineCbox(lcboxId);
+    //
+    // cbox goes into cboxlabel
+    // cboxLabel.prependChild(lcbox);
+    cboxLabel.prepend(lcbox);
+    // cboxlabel goes into linewidget
+    lineWidget.appendChild(cboxLabel);
+    // textarea goes into line element
+    liel.appendChild(transLine);
     // transline and linewidget goes into ullist
     ulList.appendChild(lineWidget);
-    ulList.appendChild(transLine);
+    ulList.appendChild(liel);
     // ul list goes into list item
     listItem.appendChild(ulList);
     // list item goes into ol list
@@ -782,11 +832,29 @@ TransColumn.prototype.addTranscription = function(){
     this.lines.push(newline);
     this.sortLines();
 };
+//
+TransColumn.prototype.changeItemAttribute = function(index,
+                                                     prefix,
+                                                     attr,
+                                                     val){
+    /*
+      Change Item attribute to val
+      index: numeric part of id
+      prefix: string part of id
+      attr: attribute name
+      val: value to be set
+    */
+    var itemid = this.createIdWithPrefix(index, prefix);
+    var item = document.getElementById(itemid);
+    item.setAttribute(attr, val);
+    return item;
+};
+//
 TransColumn.prototype.markRTL = function(){
     /*
       Mark Selection as Right to Left
      */
-    var cboxes = document.querySelectorAll("input.trans-cbox");
+    var cboxes = document.querySelectorAll("input.line-cbox");
     var cboxlen = cboxes.length;
     var i = 0;
     for(i; i < cboxlen; i++){
@@ -796,19 +864,20 @@ TransColumn.prototype.markRTL = function(){
         if(checkval===true){
             //
             var index = cbox.id;
-            var qstr = "li[class='editable-line', id='";
-            qstr = qstr.concat(index);
-            qstr = qstr.concat("']");
-            var listitem = document.querySelector(qstr);
-            listitem.setAttribute("style", "direction: rtl");
+            index = index.replace(/[^0-9]/g, '');
+            this.changeItemAttribute(index,
+                                     "el",
+                                     "dir",
+                                     "rtl");
         }
     }
 };
+//
 TransColumn.prototype.markLTR = function(){
     /*
       Mark Selection as Right to Left
     */
-    var cboxes = document.querySelectorAll("input.trans-cbox");
+    var cboxes = document.querySelectorAll("input.line-cbox");
     var cboxlen = cboxes.length;
     var i = 0;
     for(i; i < cboxlen; i++){
@@ -818,12 +887,32 @@ TransColumn.prototype.markLTR = function(){
         if(checkval===true){
             //
             var index = cbox.id;
-            //
-            var qstr = "li[class='editable-line', id='";
-            qstr = qstr.concat(index);
-            qstr = qstr.concat("']");
-            var listitem = document.querySelector(qstr);
-            listitem.setAttribute("style", "direction: ltr");
+            index = index.replace(/[^0-9]/g, '');
+            this.changeItemAttribute(index,
+                                     "el",
+                                     "dir",
+                                     "ltr");
+        }
+    }
+};
+TransColumn.prototype.selectAllLines = function(){
+    // Mark all line checkboxes
+    var cboxlist = document.querySelectorAll("input.line-cbox");
+    var listlen = cboxlist.length;
+    var clist = [];
+    var i = 0;
+    for (i; i < listlen; i++){
+        var cbox = cboxlist[i];
+        if(cbox.checked === false){
+            cbox.checked = true;
+        }else{
+            clist.push(cbox);
+        }
+    }
+    if(clist.length === listlen){
+        for(i=0; i<listlen; i++){
+            var ncbox = cboxlist[i];
+            ncbox.checked = false;
         }
     }
 };
@@ -836,7 +925,7 @@ TransColumn.prototype.deleteBoxes = function(){
       Then we check whether they are checked or not.
       If they are checked we delete the item group containing them
     */
-    var deleteCheckBoxList = document.querySelectorAll("input.trans-cbox");
+    var deleteCheckBoxList = document.querySelectorAll("input.line-cbox");
     var dellength = deleteCheckBoxList.length;
     var deletedboxlength = 0;
     var i = 0;
@@ -905,8 +994,8 @@ TransColumn.prototype.sortOnBbox = function(a, b){
     // Sorts the list elements according to
     // their placement on the image
     // get editable lines
-    var eline1 = a.getElementsByClassName("editable-line");// returns a list
-    var eline2 = b.getElementsByClassName("editable-line");// with single element
+    var eline1 = a.getElementsByClassName("editable-textarea");// returns a list
+    var eline2 = b.getElementsByClassName("editable-textarea");// with single element
     eline1 = eline1[0]; //  get the single element
     eline2 = eline2[0];
     //
@@ -936,17 +1025,29 @@ TransColumn.prototype.sortOnBbox = function(a, b){
     //
     return bbox1_top - bbox2_top;
 };
-TransColumn.prototype.checkBbox = function(bbox, hoverRect){
-    // Check if given bbox corresponds to hover rect coordinates
+TransColumn.prototype.parseBbox = function(bbox){
+    // Parse the bbox values
     var bboxsplit = bbox.split(",");
     var bbox_x = parseInt(bboxsplit[0], 10);
     var bbox_y = parseInt(bboxsplit[1], 10);
     var bbox_width = parseInt(bboxsplit[2], 10);
     var bbox_height = parseInt(bboxsplit[3], 10);
+    var newbox  = {};
+    newbox.width = bbox_width;
+    newbox.height = bbox_height;
+    newbox.x = bbox_x;
+    newbox.y = bbox_y;
+    //
+    return newbox;
+
+};
+TransColumn.prototype.checkBbox = function(bbox, hoverRect){
+    // Check if given bbox corresponds to hover rect coordinates
+    var newbox = this.parseBbox(bbox);
     var hov_x = hoverRect["x1_real"];
     var hov_y = hoverRect["y1_real"];
     var check = false;
-    if((bbox_x === hov_x) && (bbox_y === hov_y)){
+    if((newbox.x === hov_x) && (newbox.y === hov_y)){
         check = true;
     }
     return check;
@@ -954,23 +1055,132 @@ TransColumn.prototype.checkBbox = function(bbox, hoverRect){
 TransColumn.prototype.emphTransRegion = function(hoverRect){
     // Highlight transcription rectangle which
     // correspond to hovering rect coordinates
-    var linelist = document.getElementsByClassName("editable-line");
+    var linelist = document.getElementsByClassName("editable-textarea");
+    var solidline;
     //
     for(var i=0; i < linelist.length; i++){
         //
         var line = linelist[i];
         var bbox = line.getAttribute("data-bbox");
         if(this.checkBbox(bbox, hoverRect) === true){
-            line.setAttribute("style", "border-color: red;border-style: solid;");
-        }else{
-            line.setAttribute("style", "border-color: black;border-style: dashed;");
+            solidline = line;
         }
+        line.setAttribute("style",
+                          "border-color: black;border-style: dashed;");
     }
+    if (solidline != null){
+        solidline.setAttribute("style", "border-color: red;border-style: solid;");
+    }
+};
+TransColumn.prototype.getScaleFactor = function(destWidth,
+                                                destHeight,
+                                                srcWidth,
+                                                srcHeight) {
+    // Get scale factor for correctly drawing rectangle
+    var hratio = destWidth / srcWidth;
+    var vratio = destHeight / srcHeight;
+    var ratio = Math.min(hratio, vratio);
+    //
+    return [hratio, vratio, ratio];
+};
+TransColumn.prototype.removeViewer = function(){
+    // remove the line viewer from dom
+    var oldviewer = document.getElementById("line-viewer");
+    if (oldviewer != null){
+        document.getElementById("line-viewer").remove();
+    }
+    return;
+
+};
+TransColumn.prototype.drawLineOnCanvas =  function(event){
+    /*
+      Draw the line on a canvas for selected transcription area
+      Finds the selected transcription area
+      Parses its bbox
+      Creates a canvas
+      Draws the associated coordinates of the image found in bbox
+      on canvas
+    */
+    if(this.viewerCheck === false){
+        this.removeViewer();
+        return;
+    }
+    // remove old viewer
+    this.removeViewer();
+    //
+    var resultline = event.target;
+    var linebbox = resultline.getAttribute("data-bbox");
+    var idstr = resultline.getAttribute("id");
+    var index = idstr.replace(/[^0-9]/g, '');
+    // get the corresponding line widget
+    var idLineWidget = this.createIdWithPrefix(index, "lw");
+    console.log(idLineWidget);
+    var activeLineWidget = document.getElementById(idLineWidget);
+    var idLineEl = this.createIdWithPrefix(index,"el");
+    var activeLineEl = document.getElementById(idLineEl);
+    console.log(activeLineWidget);
+    //
+    var bbox = this.parseBbox(linebbox);
+    var lineCanvas = document.createElement("canvas");
+    var imcanvas = document.getElementById("image-canvas");
+    console.log(bbox);
+    // var aspratio = bbox.height / bbox.width; // aspect ratio
+    // aspratio = aspratio * 100; // aspect ratio
+    // var str = "padding-top: ".concat(aspratio);
+    // str = str.concat("%;");
+    lineCanvas.id = "line-viewer";
+    // NOTE change the width style based on the region type
+    // character: square
+    // column: 4x3
+    // line: 2x4
+    lineCanvas.width = activeLineEl.clientWidth;
+    lineCanvas.height = activeLineEl.clientHeight;
+    var ctxt = lineCanvas.getContext('2d');
+    var nimage = this.image;
+    var cwidth = lineCanvas.clientWidth;
+    console.log(lineCanvas);
+    console.log("cwidth");
+    console.log(cwidth);
+    var cheight = lineCanvas.clientHeight;
+    console.log("cheight");
+    console.log(cheight);
+    // Get natural width and height of the drawn image
+    var imnwidth = bbox.width;
+    console.log("imnwidth");
+    console.log(imnwidth);
+    var imnheight = bbox.height;
+    console.log("imnheight");
+    console.log(imnheight);
+    //
+    var ratiolist  = this.getScaleFactor(cwidth, //dest width
+                                         cheight, // dest height
+                                         imnwidth, // src width
+                                         imnheight); // src height
+    var ratio = ratiolist[2];
+    console.log("ratio");
+    console.log(ratio);
+    var centerShift_x = ( cwidth - imnwidth * ratio ) / 2;
+    var centerShift_y = ( cheight - imnheight * ratio ) / 2;
+    var dwidth = imnwidth * ratio; // destination width
+    var dheight = imnheight * ratio; // destination height
+    console.log(nimage);
+    ctxt.drawImage(nimage,
+                   0,0,
+                   // bbox.x, bbox.y, // source coordinate
+                   imnwidth,
+                   imnheight,
+                   0,0, // destination coordinate
+                   dwidth,
+                   dheight
+                  );
+    console.log(activeLineWidget);
+    activeLineWidget.appendChild(lineCanvas);
+
 };
 TransColumn.prototype.saveTranscription = function(){
     // Opens up a transcription window with
     // transcription text in it.
-    var translines = document.getElementsByClassName("editable-line");
+    var translines = document.getElementsByClassName("editable-textarea");
     var texts = "";
     var textlist = [];
     //
@@ -993,7 +1203,7 @@ TransColumn.prototype.saveTranscription = function(){
 
 TransColumn.prototype.getTranscriptions = function(){
     // gets the text in transcription column
-    var translines = document.getElementsByClassName("editable-line");
+    var translines = document.getElementsByClassName("editable-textarea");
     var textlist = [];
     for(var i=0; i < translines.length; i++){
         var lineObj = {'index': i};
@@ -1012,8 +1222,8 @@ TransColumn.prototype.getTranscriptions = function(){
 let canvasDraw = new CanvasRelated();
 canvasDraw.getLines(); // populating canvas with lines
 
-let transLine = new TransColumn();
-transLine.getLines(); // populating transcription column with lines
+let transcription = new TransColumn();
+transcription.getLines(); // populating transcription column with lines
 // load image to canvas
 
 
@@ -1022,6 +1232,8 @@ transLine.getLines(); // populating transcription column with lines
 function globalKeyFuncs(event){
     // Functions that are triggered with
     // keystrocks within global window
+    // NOTE: Add a condition on event position
+    // if you want to make it specific to a widget
     if(event.defaultPrevented){
         return;
     }
@@ -1038,47 +1250,73 @@ function globalKeyFuncs(event){
 
 // Interfacing with html
 
-window.onload = function(){
-    // Mouse tracking to image
-    var imcanvas = document.getElementById("image-canvas");
-    document.getElementById("image-page").addEventListener(
-        "onload", canvasDraw.imageLoad()
-    );
-    // End of mouse tracking
-};
+function imageLoad(){
+    // Load image to canvas
+    canvasDraw.imageLoad();
+    transcription.image = canvasDraw.image.pageImage;
+}
 
 window.onkeyup = globalKeyFuncs;
 
+function showToolBox(event){
+    var cbox = document.getElementById("showtoolbox-checkbox");
+    var fset = document.getElementById("hide-tools");
+    if(cbox.checked){
+        fset.setAttribute("style", "height: 20%;");
+    }else{
+        fset.setAttribute("style", "height: 0%;");
+    }
+}
 
+function activateViewer(){
+    var cbox = document.getElementById("activateViewer-checkbox");
+    transcription.removeViewer();
+    transcription.viewerCheck = cbox.checked;
+}
 
 // Transcription Related Functions
 
 function deleteBoxes(){
-    transLine.deleteBoxes();
+    transcription.deleteBoxes();
+}
+
+function viewLine(event){
+    transcription.drawLineOnCanvas(event);
 }
 
 function undoDeletion(){
-    transLine.undoDeletion();
+    transcription.undoDeletion();
 }
 function sortLines(){
-    transLine.sortLines();
+    transcription.sortLines();
 }
 
 function markRTLTranscription(){
-    transLine.markRTL();
+    transcription.markRTL();
 }
 
 function markLTRTranscription(){
-    transLine.markLTR();
+    transcription.markLTR();
+}
+
+function selectAllLines(){
+    //
+    transcription.selectAllLines();
+}
+
+function deselectAllLines(){
+    //
+    transcription.deselectAllLines();
 }
 
 function addTranscription(){
-    transLine.currentRect = canvasDraw.image.currentRect;
-    transLine.addTranscription();
-    canvasDraw.image.lines = transLine.lines;
+    transcription.currentRect = canvasDraw.image.currentRect;
+    transcription.addTranscription();
+    canvasDraw.image.lines = transcription.lines;
 }
+
 function saveTranscription(){
-    transLine.saveTranscription();
+    transcription.saveTranscription();
 }
 
 function changeAddTTitle(event){
@@ -1105,16 +1343,6 @@ function drawAllDetections(event){
     }
 }
 
-function showToolBox(event){
-    var cbox = document.getElementById("showtoolbox-checkbox");
-    var fset = document.getElementById("hide-tools");
-    if(cbox.checked){
-        fset.setAttribute("style", "height: 20%;");
-    }else{
-        fset.setAttribute("style", "height: 0%;");
-    }
-}
-
 function resetRect(){
     canvasDraw.resetRect();
 }
@@ -1131,9 +1359,9 @@ function canvasMouseMove(event){
     if(allLinesCheck === true){
         return;
     }else{
-        transLine.currentRect = canvasDraw.image.currentRect;
+        transcription.currentRect = canvasDraw.image.currentRect;
         canvasDraw.canvasMouseMove(event);
-        transLine.emphTransRegion(canvasDraw.image.hoveringRect);
+        transcription.emphTransRegion(canvasDraw.image.hoveringRect);
     }
 }
 
@@ -1143,7 +1371,7 @@ function saveCoordinates(){
 
 function saveEverything(){
     // Saves the lines for transcribed coordinates
-    var textlines = transLine.getTranscriptions();
+    var textlines = transcription.getTranscriptions();
     var coordinates = canvasDraw.getCoordinates();
     var savelines = [];
     // TODO change coordinates.length to textlines.length
@@ -1171,8 +1399,6 @@ function saveEverything(){
 };
 //
 // La region de la transcription s'affiche en dessus de la region correspondant
-// l'affichage de l'ecriture de droit à gauche pour des langues comme hebreu
-// le texte doit être colé à droit pour des langues comme hebreu
 // renommer les fichiers
 // Change Add Transcription to Add line then associate the line with the region
 //
