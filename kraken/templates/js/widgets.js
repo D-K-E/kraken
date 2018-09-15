@@ -704,12 +704,14 @@ TransColumn.prototype.createItList = function(idstr){
     return ulList;
 };
 TransColumn.prototype.createTLine = function(idstr, regionType){
-    // transcription line
+    // create a transcription line
     var transLine = document.createElement("textarea");
+    // set attributes
     transLine.setAttribute("id", idstr);
-    transLine.setAttribute("contenteditable", "true");
     transLine.setAttribute("spellcheck", "true");
     transLine.setAttribute("class", "editable-textarea");
+    transLine.setAttribute("onfocus", "viewLine(event)");
+    //
     var index = idstr.replace(/[^0-9]/g, '');
     var placeholder = "Enter text for added ";
     placeholder = placeholder.concat(regionType);
@@ -763,6 +765,14 @@ TransColumn.prototype.createLineWidget = function(idstr){
 //
 TransColumn.prototype.addTranscription = function(){
     // adds a transcription box to item list
+    /*
+      First checks if a region is selected in the image
+      then gets the count of the number of transcription regions
+      in the transcription column
+      Then creates the elements that a transcription region holds
+      At the end, appends these elements to their corresponding parents
+
+     */
     var funcThis = this;
     var check = funcThis.checkRectangle();
     if(check === true){
@@ -1030,13 +1040,13 @@ TransColumn.prototype.parseBbox = function(bbox){
     var bboxsplit = bbox.split(",");
     var bbox_x = parseInt(bboxsplit[0], 10);
     var bbox_y = parseInt(bboxsplit[1], 10);
-    var bbox_width = parseInt(bboxsplit[2], 10);
-    var bbox_height = parseInt(bboxsplit[3], 10);
+    var bbox_x2 = parseInt(bboxsplit[2], 10);
+    var bbox_y2 = parseInt(bboxsplit[3], 10);
     var newbox  = {};
-    newbox.width = bbox_width;
-    newbox.height = bbox_height;
-    newbox.x = bbox_x;
-    newbox.y = bbox_y;
+    newbox.x2 = bbox_x2;
+    newbox.y2 = bbox_y2;
+    newbox.x1 = bbox_x;
+    newbox.y1 = bbox_y;
     //
     return newbox;
 
@@ -1047,7 +1057,7 @@ TransColumn.prototype.checkBbox = function(bbox, hoverRect){
     var hov_x = hoverRect["x1_real"];
     var hov_y = hoverRect["y1_real"];
     var check = false;
-    if((newbox.x === hov_x) && (newbox.y === hov_y)){
+    if((newbox.x1 === hov_x) && (newbox.y1 === hov_y)){
         check = true;
     }
     return check;
@@ -1137,41 +1147,25 @@ TransColumn.prototype.drawLineOnCanvas =  function(event){
     lineCanvas.height = activeLineEl.clientHeight;
     var ctxt = lineCanvas.getContext('2d');
     var nimage = this.image;
-    var cwidth = lineCanvas.clientWidth;
-    console.log(lineCanvas);
-    console.log("cwidth");
-    console.log(cwidth);
-    var cheight = lineCanvas.clientHeight;
-    console.log("cheight");
-    console.log(cheight);
+    var cwidth = lineCanvas.width;
+    var cheight = lineCanvas.height;
     // Get natural width and height of the drawn image
-    var imnwidth = bbox.width;
-    console.log("imnwidth");
-    console.log(imnwidth);
-    var imnheight = bbox.height;
-    console.log("imnheight");
-    console.log(imnheight);
+    var imnwidth = bbox.x2 - bbox.x1;
+    var imnheight = bbox.y2 -bbox.y1;
     //
     var ratiolist  = this.getScaleFactor(cwidth, //dest width
                                          cheight, // dest height
                                          imnwidth, // src width
                                          imnheight); // src height
-    var ratio = ratiolist[2];
-    console.log("ratio");
-    console.log(ratio);
-    var centerShift_x = ( cwidth - imnwidth * ratio ) / 2;
-    var centerShift_y = ( cheight - imnheight * ratio ) / 2;
-    var dwidth = imnwidth * ratio; // destination width
-    var dheight = imnheight * ratio; // destination height
-    console.log(nimage);
     ctxt.drawImage(nimage,
-                   0,0,
-                   // bbox.x, bbox.y, // source coordinate
+                   // 0,0,
+                   bbox.x1, bbox.y1, // source coordinate
                    imnwidth,
                    imnheight,
                    0,0, // destination coordinate
-                   dwidth,
-                   dheight
+                   // centerShift_x, centerShift_y,
+                   cwidth,
+                   cheight
                   );
     console.log(activeLineWidget);
     activeLineWidget.appendChild(lineCanvas);
