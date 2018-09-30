@@ -430,11 +430,11 @@ CanvasRelated.prototype.drawAllLines = function(event){
     this.redrawPageImage(context, imcanvas);
     for(var i=0; i< this.image.lines.length; i++){
         if(isOdd(i) === true){
-            context.strokeStyle = "red";
-            context.fillStyle = "rgba(255, 0, 0, 0.2)";
+            context.strokeStyle = "blue";
+            context.fillStyle = "rgba(0, 0, 255, 0.2)";
         }else{
             context.strokeStyle = "green";
-            context.fillStyle = "rgba(0, 255, 0, 0.2)";
+            context.fillStyle = "rgba(0, 102, 0, 0.2)";
         }
         context.lineWidth=1;
         var aLine = this.image.lines[i];
@@ -772,7 +772,7 @@ TransColumn.prototype.addTranscription = function(){
       Then creates the elements that a transcription region holds
       At the end, appends these elements to their corresponding parents
 
-     */
+    */
     var funcThis = this;
     var check = funcThis.checkRectangle();
     if(check === true){
@@ -863,7 +863,7 @@ TransColumn.prototype.changeItemAttribute = function(index,
 TransColumn.prototype.markRTL = function(){
     /*
       Mark Selection as Right to Left
-     */
+    */
     var cboxes = document.querySelectorAll("input.line-cbox");
     var cboxlen = cboxes.length;
     var i = 0;
@@ -1100,7 +1100,6 @@ TransColumn.prototype.removeViewer = function(){
         document.getElementById("line-viewer").remove();
     }
     return;
-
 };
 TransColumn.prototype.drawLineOnCanvas =  function(event){
     /*
@@ -1128,7 +1127,7 @@ TransColumn.prototype.drawLineOnCanvas =  function(event){
     var activeLineWidget = document.getElementById(idLineWidget);
     var idLineEl = this.createIdWithPrefix(index,"el");
     var activeLineEl = document.getElementById(idLineEl);
-    console.log(activeLineWidget);
+    // console.log(activeLineWidget);
     //
     var bbox = this.parseBbox(linebbox);
     var lineCanvas = document.createElement("canvas");
@@ -1162,14 +1161,9 @@ TransColumn.prototype.drawLineOnCanvas =  function(event){
                    bbox.x1, bbox.y1, // source coordinate
                    imnwidth,
                    imnheight,
-                   0,0, // destination coordinate
-                   // centerShift_x, centerShift_y,
-                   cwidth,
-                   cheight
                   );
-    console.log(activeLineWidget);
+    // console.log(activeLineWidget);
     activeLineWidget.appendChild(lineCanvas);
-
 };
 TransColumn.prototype.saveTranscription = function(){
     // Opens up a transcription window with
@@ -1202,7 +1196,7 @@ TransColumn.prototype.getTranscriptions = function(){
     for(var i=0; i < translines.length; i++){
         var lineObj = {'index': i};
         var line = translines[i];
-        var text = line.innerText;
+        var text = line.value;
         lineObj.lineText = text;
         textlist.push(lineObj);
     }
@@ -1392,7 +1386,7 @@ function saveEverything(){
     saveWindow.document.write("</pre>");
 };
 //
-// La region de la transcription s'affiche en dessus de la region correspondant
-// renommer les fichiers
-// Change Add Transcription to Add line then associate the line with the region
+// Upload json file
+// toolbox goes to top section above the image viewer and the transcription column
+// Highlight transcription line on image when transcribing
 //

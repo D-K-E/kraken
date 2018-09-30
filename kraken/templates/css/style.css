@@ -110,6 +110,9 @@ li.editable-line {
 /* li.line-widget { */
 /*     display: inline-block; */
 /* } */
+textarea.editable-textarea {
+    width: 100%;
+}
 
 
 canvas#image-canvas {
