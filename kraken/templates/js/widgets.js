@@ -2,6 +2,24 @@
 // CanvasRelated object regrouping
 // methods related to drawing and keeping track of the
 // objects on the canvas
+/*
+
+  There are 3 drawing events:
+
+  1. User is selecting a certain area:
+      - Draw previously detected regions and selection (redraw + drawing)
+      - Draw only currently added selections and selection (redraw + drawing)
+      - Draw both and selection (redraw + redraw + drawing)
+      - Draw only selection (drawing)
+  2. User is looking for a region (redraw):
+      - Draw bounding box of the previously detected region (redraw event)
+      - Draw bounding box of the previously detected + selected region (redraw)
+      - Draw bounding box of the previously detected + selected region (redraw)
+  3. User is transcribing a certain line:
+      - Draw bounding box on the currently transcribing area on canvas (redraw)
+      - Draw the area on a small canvas on top of transcription area
+
+ */
 
 // Utils funcs
 
@@ -12,23 +30,74 @@ function isOdd(nb){
 
 var CanvasRelated = function() {
     var obj = Object.create(CanvasRelated.prototype);
-    obj.mousePress = false;
+
+    // checks
     obj.inhover = false;
-    obj.selectInProcess = false;
+    obj.originalSize = false; // load the image in its original size
+    obj.selectInProcess = false; // selection is in process
+    obj.mousePressed = false; // mouse is pressed or not
+    obj.inMouseUp = false; // inside the mouse up event
     obj.outOfBounds = false;
+    obj.debug = false;
+
+    // selector options
+    obj.selectorOptions = {};
+    obj.selectorOptions.type = "";
+    obj.selectorOptions.strokeColor = "";
+    obj.selectorOptions.fillColor = "";
+    obj.selectorOptions.fillOpacity = "";
+
+    // selector types
+    obj.poly = {"pointlist" : [
+        // {x:0, y:1, x_real:20, y_real:50};
+    ],
+                "id" : "",
+                "type" : "polygon",
+                "regionType" : "",
+                "hratio" : "",
+                "vratio" : "",
+                "fillColor" : "",
+                "strokeColor" : "",
+                "fillOpacity" : "",
+                "imageId" : ""};
+    obj.rect = {"x1" : "",
+                "type" : "rectangle",
+                "regionType" : "",
+                "y1" : "",
+                "x1_real" : "",
+                "y1_real" : "",
+                "width" : "",
+                "width_real" : "",
+                "height" : "",
+                "height_real" : "",
+                "imageId" : "",
+                "hratio" : "",
+                "vratio" : "",
+                "fillColor" : "",
+                "strokeColor" : "",
+                "fillOpacity" : "",
+                "id" : ""};
+
+    // detections
+    obj.detections = {};
+
     // image related
     obj.image = {};
+    obj.image["id"] = "";
+
     var pageImage;
     obj.image.pageImage = pageImage;
     obj.image.xcoord = 0;
     obj.image.ycoord = 0;
     var shiftx;
     var shifty;
+
     obj.image.shiftx = shiftx;
     obj.image.shifty = shifty;
     obj.image.hratio = 1;
     obj.image.vratio = 1;
     obj.image.ratio = 1;
+
     // current selection
     obj.image.currentRect = {
         "y1" : "",
@@ -63,59 +132,18 @@ var CanvasRelated = function() {
         "width_real" : "",
         "height_real" : ""
     };
-    // Store lines detected in the image
-    obj.image.lines = [];
+
+    // Drawn object stacks
+    obj.drawnObject = {}; // stores last drawn object
+    obj.drawnObjects = {"type" : "FeatureCollection", "features" : []};
     //
     return obj;
 };
-// Canvas Related methods
-// methods
-CanvasRelated.prototype.imageLoad = function(){
-    /*
-      Load the page image to the canvas
-      with proper scaling and store
-      the scaling ratios for drawing rectangles afterwards
+// --------- Canvas Related methods ----------
+// hide/show spc+m+z+e
+// show all spc+m+z+r
 
-    */
-    // Canvas load image
-    var canvas = document.getElementById("image-canvas");
-    var context = canvas.getContext('2d');
-    // set canvas width and height
-    var image = document.getElementById("image-page");
-    // console.log(image);
-    var imcwidth = image.clientWidth;
-    var imcheight = image.clientHeight;
-    // set client width of the canvas to image
-    canvas.width = imcwidth;
-    canvas.height = imcheight;
-    var cwidth = canvas.clientWidth;
-    var cheight = canvas.clientHeight;
-    // Get natural width and height
-    var imnwidth = image.naturalWidth;
-    var imnheight = image.naturalHeight;
-    //
-    this.getScaleFactor(cwidth, //dest width
-                        cheight, // dest height
-                        imnwidth, // src width
-                        imnheight); // src height
-    this.image.shiftx = ( cwidth - imcwidth * this.image.ratio ) / 2;
-    this.image.shifty = ( cheight - imcheight * this.image.ratio ) / 2;
-    context.drawImage(image,
-                      0,0,// coordinate source
-                      imnwidth, // source rectangle width
-                      imnheight, // source rectangle height
-                      // centerShift_x, centerShift_y, // destination coordinate
-                      0,0,
-                      imnwidth*this.image.ratio, // destination width
-                      imnwidth*this.image.ratio // destination height
-                     );
-    // redrawPageImage(image, context, canvas);
-    this.image.pageImage = image.cloneNode(true);
-    this.image.pageImage.width = canvas.width;
-    this.image.pageImage.height = canvas.height;
-    document.getElementById("image-page").remove();
-};
-//
+//---------- Loading image correctly to canvas -------
 CanvasRelated.prototype.getScaleFactor = function(destWidth,
                                                   destHeight,
                                                   srcWidth,
@@ -128,7 +156,555 @@ CanvasRelated.prototype.getScaleFactor = function(destWidth,
     this.image.ratio = Math.min(hratio, vratio);
     //
     return;
+}; // DONE
+CanvasRelated.prototype.clearScene = function(){
+    /*
+      Remove image from scene
+    */
+    var scene = document.getElementById("scene");
+    var context = scene.getContext("2d");
+    context.clearRect(0,0, scene.width, scene.height);
+    return;
+}; // DONE
+CanvasRelated.prototype.imageLoad = function(event){
+    /*
+      Load the page image to the canvas
+      with proper scaling and store
+      the scaling ratios for drawing rectangles afterwards
+
+    */
+    // remove existing image with all of its elements
+    this.clearScene();
+
+    // get id from the image link
+    var imagelink = event.target;
+    var imname = imagelink.getAttribute("id");
+    imname = imname.replace("link-","image-");
+    this.image["id"] = imname;
+
+    // get img tag with id
+    var imtag = document.getElementById(imname);
+    this.image.pageImage = imtag.cloneNode(true);
+
+    // set the image width and height to
+    // scene, image tag, and rect element
+    var imwidth = imtag.naturalWidth;
+    var imheight = imtag.naturalHeight;
+
+    // get canvas and context
+    var scene = document.getElementById("scene");
+    var context = scene.getContext("2d");
+
+    // set image according to parent div
+    if(this.originalSize === false){
+        // Set canvas width and height
+        var imcol = document.getElementById("image-col");
+        var parwidth = imcol.clientWidth;
+        var parheight = imcol.clientHeight;
+        scene.setAttribute("width", parwidth);
+        scene.setAttribute("height", parheight);
+
+        // get correct ratios for display
+        var ratiolist = this.getScaleFactor(parwidth,
+                                            parheight,
+                                            imwidth,
+                                            imheight);
+        var ratio = ratiolist[2];
+    }else{
+        scene.setAttribute("width", imwidth);
+        scene.setAttribute("height", imheight);
+        // get correct ratios for display
+        var ratiolist = this.getScaleFactor(imwidth,
+                                            imheight,
+                                            imwidth,
+                                            imheight);
+        var ratio = ratiolist[2];
+    }
+    var scaledWidth = ratio * imwidth;
+    var scaledHeight = ratio * imheight;
+    context.drawImage(imtag, // image
+                      0,0, // coordinate source
+                      imwidth, // source width
+                      imheight, // source height
+                      0,0, // coordinate destination
+                      scaledWidth, // destination width
+                      scaledHeight // destination height
+                     );
+    return;
+}; // DONE
+// ----------- General Drawing Methods -------------
+
+// ----------- Create Identifiers for the Drawers ---
+CanvasRelated.prototype.setRectId = function(){
+    // Sets the id field for the current rectangle
+    var rectlist = [];
+    for(var i=0; i<this.drawnObjects["features"].length; i++){
+        //
+        var drawObj = this.drawnObjects["features"][i];
+        if(drawObj["properties"]["selectorType"] === "rectangle"){
+            rectlist.push(drawObj);
+        }
+    }
+    var rectid = rectlist.length;
+    rectid = "rect-".concat(rectid);
+    this.rect.id = rectid;
+    return;
+}; // DONE
+CanvasRelated.prototype.setPolyId = function(){
+    // Sets the id field for the current rectangle
+    var polylist = [];
+    for(var i=0; i<this.drawnObjects["features"].length; i++){
+        //
+        var drawObj = this.drawnObjects["features"][i];
+        if(drawObj["properties"]["selectorType"] === "polygon"){
+            polylist.push(drawObj);
+        }
+    }
+    var polyid = polylist.length;
+    polyid = "poly-".concat(polyid);
+    this.poly.id = polyid;
+    return;
+}; // DONE
+
+// ----------- Drawing Methods ----------------------
+CanvasRelated.prototype.drawRectangle = function(mouseX2, // destination x2
+                                                 mouseY2, // destination y2
+                                                 hratio,  // horizontal ratio
+                                                 vratio,  // vertical ratio
+                                                 context, // drawing context
+                                                 rectUpdate // drawer object
+                                                ){
+    // draw rectangle to context
+    // get rectangle width
+    var x1coord = rectUpdate["x1"];
+    var y1coord = rectUpdate["y1"];
+    var rectW = mouseX2 - x1coord;
+    var rectH = mouseY2 - y1coord;
+
+    // get real coordinate values
+    var x_real = x1coord / hratio;
+    var y_real = y1coord / vratio;
+
+    // get real coordinate of mouseX2 and mouseY2
+    var mouseX2Trans = mouseX2 / hratio;
+    var mouseY2Trans = mouseY2 / vratio;
+
+    // get real width
+    var width_real = Math.floor(mouseX2Trans - x_real);
+    var height_real = Math.floor(mouseY2Trans - y_real);
+
+    // Update rect object with the known values
+    //
+    rectUpdate["y2"] = mouseY2;
+    rectUpdate["x2"] = mouseX2;
+    //
+    rectUpdate["width"] = rectW;
+    rectUpdate["height"] = rectH;
+    //
+    rectUpdate["hratio"] = hratio;
+    rectUpdate["vratio"] = vratio;
+    //
+    rectUpdate["x1_real"] = Math.floor(x_real);
+    rectUpdate["y1_real"] = Math.floor(y_real);
+    //
+    rectUpdate["x2_real"] = mouseX2Trans,
+    rectUpdate["y2_real"] = mouseY2Trans;
+    //
+    rectUpdate["width_real"] = width_real;
+    rectUpdate["height_real"] = height_real;
+
+    // draw object
+    context.beginPath();
+    context.rect(x1coord,
+                 y1coord,
+                 rectW,
+                 rectH);
+    context.stroke();
+    context.fill();
+    context.closePath();
+    return context;
 };
+CanvasRelated.prototype.drawPolygon = function(mouseX2, // destination x2
+                                               mouseY2, // destination y2
+                                               hratio,  // horizontal ratio
+                                               vratio,  // vertical ratio
+                                               context, // drawing context
+                                               polyUpdate, // drawer object
+                                               closeCheck // boolean for closing poly
+                                              ){
+    // Draw polygon on context
+
+    // get real coordinate of mouseX2 and mouseY2
+    var mouseX2Trans = mouseX2 / hratio;
+    var mouseY2Trans = mouseY2 / vratio;
+
+    // create point object
+    var point = {};
+    point["x"] = mouseX2;
+    point["y"] = mouseY2;
+    point["x_real"] = mouseX2Trans;
+    point["y_real"] = mouseY2Trans;
+
+    // add point to pointlist
+    var pointlist = polyUpdate["pointlist"];
+    pointlist.push(point);
+    polyUpdate["hratio"] = hratio;
+    polyUpdate["vratio"] = vratio;
+    polyUpdate["pointlist"] = pointlist;
+    context.beginPath();
+    for(var p=0; p+1 < pointlist.length; p++){
+        var pointA = pointlist[p];
+        var pointB = pointlist[p+1];
+        context.moveTo(pointA.x, pointA.y);
+        context.lineTo(pointB.x, pointB.y);
+    }
+    if(closeCheck === true){
+        var firstPoint = pointlist[0];
+        context.lineTo(firstPoint.x, firstPoint.y);
+    }
+    context.closePath();
+    context.stroke();
+    context.fill();
+    return context;
+};
+CanvasRelated.prototype.drawPolygonFill = function(context, // drawing context
+                                                   polyObj // drawer object
+                                                  ){
+    // Drawn polygon with color fill
+    var points = polyObj["pointlist"];
+    var fillColor = polyObj["fillColor"];
+    var strokeColor = polyObj["strokeColor"];
+    var fillOpacity = polyObj["fillOpacity"];
+
+    // set context style
+    var rgbastr = "rgba(";
+    rgbastr = rgbastr.concat(fillColor); // rgb value ex: 255,0,0
+    rgbastr = rgbastr.concat(",");
+    rgbastr = rgbastr.concat(fillOpacity);
+    rgbastr = rgbastr.concat(")");
+    context.fillStyle = rgbastr;
+    context.strokeStyle = strokeColor;
+
+    // draw polygon
+    var firstPoint = points[0];
+    context.beginPath();
+    context.moveTo(firstPoint.x, firstPoint.y);
+    for(var p=0; p < points.length; p++){
+        var point = points[p];
+        context.lineTo(point.x, point.y);
+    }
+    context.lineTo(firstPoint.x, firstPoint.y);
+    context.closePath();
+    context.stroke();
+    context.fill();
+    return context;
+};
+// -------------- Redrawing Methods -------------------
+CanvasRelated.prototype.redrawImage = function(imageId, // image identifer
+                                               ratio, // ratio for canvas
+                                               context // drawing context
+                                              ){
+    // Redraw an already loaded image to canvas
+    // get img tag with id
+    var imtag = document.getElementById(imageId);
+
+    // set the image width and height to
+    // scene, image tag, and rect element
+    var imwidth = imtag.naturalWidth;
+    var imheight = imtag.naturalHeight;
+
+    // get scaled width and height
+    var scaledWidth = ratio * imwidth;
+    var scaledHeight = ratio * imheight;
+
+    // draw the image to context
+    context.beginPath();
+    context.drawImage(imtag, // image
+                      0,0, // coordinate source
+                      imwidth, // source width
+                      imheight, // source height
+                      0,0, // coordinate destination
+                      scaledWidth, // destination width
+                      scaledHeight // destination height
+                     );
+    context.closePath();
+    return context;
+};
+CanvasRelated.prototype.resetScene = function(){
+    // redraw page image without the drawn objects
+    // get canvas and context
+    var scene = document.getElementById("scene");
+    var context = scene.getContext("2d");
+    this.clearScene();
+    this.drawnObjects = [];
+    this.heldObjects = [];
+    this.redrawImage(this.imageId,
+                     this.ratio, context);
+};
+CanvasRelated.prototype.redrawRectObj = function(context, // drawing context
+                                                 rectObj // drawer object
+                                                ){
+    // Draw rectangle object to context
+    var x1coord = rectObj["properties"]["interfaceCoordinates"]["x1"];
+    var y1coord = rectObj["properties"]["interfaceCoordinates"]["y1"];
+    var nwidth = rectObj["properties"]["interfaceCoordinates"]["width"];
+    var nheight = rectObj["properties"]["interfaceCoordinates"]["height"];
+
+    // Setting context style
+    var fillColor = rectObj["properties"]["displayRelated"]["fillColor"];
+    var fillOpacity = rectObj["properties"]["displayRelated"]["fillOpacity"];
+    var strokeColor = rectObj["properties"]["displayRelated"]["strokeColor"];
+    var rgbastr = "rgba(";
+    rgbastr = rgbastr.concat(fillColor); // rgb value ex: 255,0,0
+    rgbastr = rgbastr.concat(",");
+    rgbastr = rgbastr.concat(fillOpacity);
+    rgbastr = rgbastr.concat(")");
+    context.fillStyle = rgbastr;
+    context.strokeStyle = strokeColor;
+
+    context.beginPath();
+    context.rect(x1coord,
+                 y1coord,
+                 nwidth,
+                 nheight);
+    context.stroke();
+    context.fill();
+    context.closePath();
+    return context;
+};
+CanvasRelated.prototype.redrawPolygonObj = function(context, // drawing context
+                                                    polyObj // drawer object
+                                                   ){
+    // Redraw polygon object
+    var points = polyObj["properties"]["interfaceCoordinates"]["pointlist"];
+
+    // Setting context style
+    var fillColor = polyObj["properties"]["displayRelated"]["fillColor"];
+    var fillOpacity = polyObj["properties"]["displayRelated"]["fillOpacity"];
+    var strokeColor = polyObj["properties"]["displayRelated"]["strokeColor"];
+    var rgbastr = "rgba(";
+    rgbastr = rgbastr.concat(fillColor); // rgb value ex: 255,0,0
+    rgbastr = rgbastr.concat(",");
+    rgbastr = rgbastr.concat(fillOpacity);
+    rgbastr = rgbastr.concat(")");
+    context.fillStyle = rgbastr;
+    context.strokeStyle = strokeColor;
+
+    // Drawing first point
+    var firstPoint = points[0];
+    context.beginPath();
+    context.moveTo(firstPoint.x, firstPoint.y);
+    for(var p=0; p < points.length; p++){
+        var point = points[p];
+        context.lineTo(point.x, point.y);
+    }
+    context.lineTo(firstPoint.x, firstPoint.y);
+    context.closePath();
+    context.stroke();
+    context.fill();
+    return context;
+};
+CanvasRelated.prototype.redrawAllDrawnObjects = function(){
+    // redraw all the objects in the drawnObjects stack
+    // get context and the scene
+    var scene = document.getElementById("scene");
+    var context = scene.getContext("2d");
+    if(this.debug === true){
+        console.log("in redraw all");
+    }
+    // redraw image
+    context = this.redrawImage(this.imageId,
+                               this.ratio, context);
+    if(this.debug === true){
+        console.log("in image redrawn");
+    }
+    for(var i=0; i < this.drawnObjects["features"].length; i++){
+        var dobj = this.drawnObjects["features"][i];
+        if(this.debug === true){
+            console.log("drawn object");
+            console.log(dobj);
+        }
+        if(dobj["properties"]["selectorType"] === "polygon"){
+            context = this.redrawPolygonObj(context, dobj);
+        }else if(dobj["properties"]["selectorType"] === "rectangle"){
+            context = this.redrawRectObj(context, dobj);
+        }
+    }
+    return;
+};
+//
+// ------------- Methods for Managing Drawing Event -------
+CanvasRelated.prototype.setSelectionCoordinates = function(event){
+    // set selection coordinates based on the selector type
+    // get scene and its offset
+    if(this.debug === true){
+        console.log('in set selection');
+    }
+    var scene = document.getElementById("scene");
+    var parentOffsetX = scene.offsetLeft;
+    var parentOffsetY = scene.offsetTop;
+
+    // get coordinates of the event on the scene
+    var xcoord = parseInt(event.layerX - parentOffsetX, 10);
+    var ycoord = parseInt(event.layerY - parentOffsetY, 10);
+
+    // get natural coordinates corresponding in the image
+    var xreal = xcoord / this.hratio;
+    var yreal = ycoord / this.vratio;
+
+    //
+    var seltype = this.selectorOptions.type;
+    if(this.debug === true){
+        console.log('in selector option');
+        console.log(seltype);
+    }
+    if(seltype === "polygon-selector"){
+        if(this.debug === true){
+            console.log('in polygon selector branch');
+        }
+        this.poly.pointlist.push({"x" : xcoord,
+                                  "x_real" : xreal,
+                                  "y_real" : yreal,
+                                  "y" : ycoord});
+        this.poly.hratio = this.hratio;
+        this.poly.vratio = this.vratio;
+        this.poly.imageId = this.imageId;
+        if(this.debug === true){
+            console.log('mousedown polygon state');
+            console.log(this.poly);
+        }
+    }else if(seltype === "rectangle-selector"){
+        if(this.debug === true){
+            console.log('in rect selector branch');
+        }
+        this.rect["x1"] = xcoord;
+        this.rect["x1_real"] = xreal;
+        this.rect["y1"] = ycoord;
+        this.rect["y1_real"] = yreal;
+        this.rect.hratio = this.hratio;
+        this.rect.vratio = this.vratio;
+        this.rect.imageId = this.imageId;
+        if(this.debug === true){
+            console.log('mousedown rect state');
+            console.log(this.rect);
+        }
+        // console.log(this.rect);
+    }
+    return;
+};
+CanvasRelated.prototype.setContextOptions2Object = function(dobj, // drawer object
+                                                            strokeColor,
+                                                            fillColor, // ex 255,0,0
+                                                            fillOpacity // 0.2
+                                                           ){
+    // set context options to the object
+    dobj["stroke"] = strokeColor;
+    dobj["fillColor"] = fillColor;
+    dobj["fillOpacity"] = fillOpacity;
+    return dobj;
+};
+
+
+// ------------ Convert Drawn Objects to Geojson -----------
+CanvasRelated.prototype.convertObj2Geojson = function(drawnObj){
+    // convert the drawn object to its geojson equivalent
+    var geoobj = {};
+    geoobj["type"] = "Feature";
+    geoobj["properties"] = {};
+    geoobj["geometry"] = {};
+    geoobj["id"] = drawnObj["id"];
+    geoobj["properties"]["id"] = drawnObj["id"];
+    geoobj["properties"]["imageId"] = drawnObj["imageId"];
+    geoobj["properties"]["regionType"] = drawnObj["regionType"];
+    geoobj["properties"]["displayRelated"] = {};
+    geoobj["properties"]["displayRelated"]["hratio"] = drawnObj["hratio"];
+    geoobj["properties"]["displayRelated"]["vratio"] = drawnObj["vratio"];
+    geoobj["properties"]["displayRelated"]["strokeColor"] = drawnObj["strokeColor"];
+    geoobj["properties"]["displayRelated"]["fillColor"] = drawnObj["fillColor"];
+    geoobj["properties"]["displayRelated"]["fillOpacity"] = drawnObj["fillOpacity"];
+    geoobj["properties"]["interfaceCoordinates"] = {};
+    if(drawnObj["type"] === "polygon"){
+        // geometries for polygon
+        var pointlist = drawnObj["pointlist"];
+        geoobj["properties"]["selectorType"] = drawnObj["type"];
+        geoobj["properties"]["interfaceCoordinates"]["pointlist"] = pointlist;
+        geoobj["geometry"]["type"] = "Polygon";
+        var coords = [];
+        for(var p=0; p<pointlist.length; p++){
+            var point = pointlist[p];
+            var coord = [point["x_real"], point["y_real"]];
+            coords.push(coord);
+        }
+        // add the first point to the end
+        var fp = pointlist[0];
+        var newfp = [fp["x_real"],fp["y_real"]];
+        coords.push(newfp);
+        geoobj["geometry"]["coordinates"] = [coords];
+    }else if(drawnObj["type"] === "rectangle"){
+        // geometries for rectangle
+        geoobj["properties"]["selectorType"] = drawnObj["type"];
+        var x1 = drawnObj["x1"];
+        var y1 = drawnObj["y1"];
+        var x1_real = drawnObj["x1_real"];
+        var y1_real = drawnObj["y1_real"];
+        var width = drawnObj["width"];
+        var width_real = drawnObj["width_real"];
+        var height = drawnObj["height"];
+        var height_real = drawnObj["height_real"];
+        var x2_real = x1_real + width_real;
+        var y2_real = y1_real + height_real;
+        var x2 = x1 + width;
+        var y2 = y1 + height;
+        geoobj["properties"]["interfaceCoordinates"]["x1"] = x1;
+        geoobj["properties"]["interfaceCoordinates"]["y1"] = y1;
+        geoobj["properties"]["interfaceCoordinates"]["x2"] = x2;
+        geoobj["properties"]["interfaceCoordinates"]["y2"] = y2;
+        //
+        geoobj["properties"]["interfaceCoordinates"]["y1_real"] = y1_real;
+        geoobj["properties"]["interfaceCoordinates"]["x1_real"] = x1_real;
+        geoobj["properties"]["interfaceCoordinates"]["y2_real"] = y2_real;
+        geoobj["properties"]["interfaceCoordinates"]["x2_real"] = x2_real;
+        //
+        geoobj["properties"]["interfaceCoordinates"]["width"] = width;
+        geoobj["properties"]["interfaceCoordinates"]["height"] = height;
+        geoobj["properties"]["interfaceCoordinates"]["width_real"] = width_real;
+        geoobj["properties"]["interfaceCoordinates"]["height_real"] = height_real;
+        //
+        geoobj["geometry"]["type"] = "MultiLineString";
+        var topside = [[x1_real, y1_real], [x2_real, y1_real]];
+        var bottomside = [[x1_real, y2_real], [x2_real, y2_real]];
+        var rightside = [[x2_real, y1_real], [x2_real, y2_real]];
+        var leftside = [[x1_real, y1_real], [x1_real, y2_real]];
+        geoobj["geometry"]["coordinates"] = [topside, rightside,
+                                             bottomside, leftside];
+    }
+    return geoobj;
+};
+CanvasRelated.prototype.addSingleDrawnObject = function(){
+    // add drawn object to drawn objects stack
+    // make a copy of drawn object
+    if(this.debug === true){
+        console.log("in add single drawn object");
+    }
+    var objstr = JSON.stringify(this.drawnObject);
+    var objJson = JSON.parse(objstr);
+    if(this.debug === true){
+        console.log("object before geojson conversion");
+        console.log(objJson);
+    }
+    var geoj = this.convertObj2Geojson(objJson);
+    if(this.debug === true){
+        console.log("object after geojson conversion");
+        console.log(geoj);
+    }
+    this.drawnObjects["features"].push(geoj);
+    if(this.debug === true){
+        console.log("drawn objects after recent addition");
+        console.log(this.drawnObjects);
+    }
+    return geoj;
+};
+
 //
 CanvasRelated.prototype.getLine = function(lineObj){
     // get line coordinates from line object
@@ -267,11 +843,11 @@ CanvasRelated.prototype.canvasMouseDown = function(event){
     this.image.ycoord = mouseY;
     //
     // store the starting mouse position
-    this.mousePress=true;
+    this.mousePressed=true;
     this.selectInProcess = true;
 };
 CanvasRelated.prototype.canvasMouseUp = function(event){
-    this.mousePress=false;
+    this.mousePressed=false;
 };
 CanvasRelated.prototype.canvasMouseMove = function(event){
     // regroups functions that activates with
@@ -297,10 +873,10 @@ CanvasRelated.prototype.canvasMouseMove = function(event){
         this.drawLineBounds(event);
     }
     //
-    if(this.mousePress === false){
+    if(this.mousePressed === false){
         return;
     }
-    if(this.mousePress === true){
+    if(this.mousePressed === true){
         this.selectInProcess = true;
         context.strokeStyle = "lightgray";
         context.lineWidth=2;
@@ -324,8 +900,6 @@ CanvasRelated.prototype.canvasMouseMove = function(event){
                            rect1);
     }
 };
-// General Drawing Methods
-//
 CanvasRelated.prototype.drawRectangle = function(mouseX2,
                                                  mouseY2,
                                                  mouseX2Trans,
@@ -417,145 +991,7 @@ CanvasRelated.prototype.drawLineBounds = function(event){
                        context,
                        this.image.hoveringRect);
 };
-CanvasRelated.prototype.drawAllLines = function(event){
-    // Draw all detected lines at the same time
-    // on the image. This function should be controlled by a checkbox
-    var imcanvas = document.getElementById("image-canvas");
-    var context = imcanvas.getContext('2d');
-    var canvasOffsetX = imcanvas.offsetLeft;
-    var canvasOffsetY = imcanvas.offsetTop;
-    context.clearRect(0,0,
-                      imcanvas.width,
-                      imcanvas.height);
-    this.redrawPageImage(context, imcanvas);
-    for(var i=0; i< this.image.lines.length; i++){
-        if(isOdd(i) === true){
-            context.strokeStyle = "blue";
-            context.fillStyle = "rgba(0, 0, 255, 0.2)";
-        }else{
-            context.strokeStyle = "green";
-            context.fillStyle = "rgba(0, 102, 0, 0.2)";
-        }
-        context.lineWidth=1;
-        var aLine = this.image.lines[i];
-        var x1_real = parseInt(aLine["x1"], 10);
-        var y1_real = parseInt(aLine["y1"], 10);
-        var x2_real = x1_real + parseInt(aLine["width"], 10);
-        var y2_real = y1_real + parseInt(aLine["height"], 10);
-        var x1coord = x1_real * this.image.hratio;
-        var y1coord = y1_real * this.image.vratio;
-        var x2 = x2_real * this.image.hratio;
-        var y2 = y2_real * this.image.vratio;
-        //
-        var width = x2 - x1coord;
-        var height = y2 - y1coord;
-        context.beginPath();
-        context.rect(x1coord,
-                     y1coord,
-                     width,
-                     height);
-        context.stroke();
-        context.fill();
-    };
-};
-//
-CanvasRelated.prototype.redrawRect = function(context, rectObj){
-    // redraw the last hovering rectangle
-    var x1coord = rectObj["x1"];
-    var y1coord = rectObj["y1"];
-    var nwidth = rectObj["width"];
-    var nheight = rectObj["height"];
-    // draw
-    context.strokeStyle = "red";
-    context.lineWidth=1;
-    context.beginPath();
-    context.rect(x1coord,
-                 y1coord,
-                 nwidth,
-                 nheight);
-    context.stroke();
-};
-//
-CanvasRelated.prototype.redrawPageImage = function(context, canvas){
-    // set canvas width and height
-    // Get client width/height, that is after styling
-    var imcwidth = this.image.pageImage.width;
-    var imcheight = this.image.pageImage.height;
-    // set client width of the canvas to image
-    canvas.width = imcwidth;
-    canvas.height = imcheight;
-    var cwidth = canvas.clientWidth;
-    var cheight = canvas.clientHeight;
-    // Get natural width and height
-    var imnwidth = this.image.pageImage.naturalWidth;
-    var imnheight = this.image.pageImage.naturalHeight;
-    //
-    var ratiolist  = this.getScaleFactor(cwidth, //dest width
-                                         cheight, // dest height
-                                         imnwidth, // src width
-                                         imnheight); // src height
-    var centerShift_x = ( cwidth - imcwidth * this.image.ratio ) / 2;
-    var centerShift_y = ( cheight - imcheight * this.image.ratio ) / 2;
-    context.drawImage(this.image.pageImage,
-                      0,0,// coordinate source
-                      imnwidth, // source rectangle width
-                      imnheight, // source rectangle height
-                      // centerShift_x, centerShift_y, // destination coordinate
-                      0,0,
-                      imnwidth*this.image.ratio, // destination width
-                      imnwidth*this.image.ratio // destination height
-                     );
-};
-//
-CanvasRelated.prototype.restoreOldCanvas = function(){
-    // restore canvas to its old state
-    var imcanvas = document.getElementById("image-canvas");
-    var context = imcanvas.getContext('2d');
-    context.clearRect(0,0,
-                      imcanvas.width,
-                      imcanvas.height);
-    this.redrawPageImage(context, imcanvas);
-    this.redrawRect(context, this.image.hoveringRect);
-};
-CanvasRelated.prototype.resetRect = function(){
-    // Clears canvas and redraws the original image
-    // Reset checks
-    this.selectInProcess = false;
-    //
-    this.image.currentRect = {
-        "y1" : "",
-        "x1" : "",
-        "y2" : "",
-        "x2" : "",
-        "width" : "",
-        "height" : "",
-        "hratio": "",
-        "vratio" : "",
-        "y1_real" : "",
-        "x1_real" : "",
-        "y2_real" : "",
-        "x2_real" : "",
-        "width_real" : "",
-        "height_real" : "",
-    };
-    this.image.hoveringRect = {
-        "y1" : "",
-        "x1" : "",
-        "y2" : "",
-        "x2" : "",
-        "width" : "",
-        "height" : "",
-        "hratio": "",
-        "vratio" : "",
-        "y1_real" : "",
-        "x1_real" : "",
-        "y2_real" : "",
-        "x2_real" : "",
-        "width_real" : "",
-        "height_real" : "",
-    };
-    this.restoreOldCanvas();
-};
+
 CanvasRelated.prototype.saveCoordinates = function(){
     // opens up a window with line coordinates in it
     var lines = this.image.lines;
@@ -596,6 +1032,29 @@ var TransColumn = function(){
     return obj;
 };
 // methods
+TransColumn.prototype.clearTranscription = function(){
+    // clears the transcription interface
+    // leaving only a skeleton of what should
+    // be in a normal transcription interface
+    var tlinelist = document.getElementById("text-line-list");
+
+    // remove child elements
+    while(tlinelist.firstChild){
+        tlinelist.removeChild(tlinelist.firstChild);
+    }
+
+    // add child element template
+};
+TransColumn.prototype.loadTranscription = function(event, page){
+    // loads the transcription of the image associated
+    // to the link
+    var lines = page["lines"];
+    for(var i=0; i<lines.length; i++){
+        //
+        var line = this.getLine(lines[i]);
+        this.lines.push(line);
+    }
+};
 TransColumn.prototype.getLine = function(lineObj){
     // get line coordinates from line object
     var leftInt = parseInt(lineObj.x1, 10);
@@ -656,8 +1115,9 @@ TransColumn.prototype.createItemId = function(){
 };
 TransColumn.prototype.createIdWithPrefix = function(index, prefix){
     // creates the id with the necessary prefix
-    var id = prefix.concat(index);
-    return id;
+    var id = prefix.concat("-");
+    var prefixId = id.concat(index);
+    return prefixId;
 };
 //
 TransColumn.prototype.checkRectangle = function(){
@@ -762,7 +1222,33 @@ TransColumn.prototype.createLineWidget = function(idstr){
     //
     return lineWidget;
 };
-//
+TransColumn.prototype.fillItemGroupBody = function(itemGroup,
+                                                 itemList,
+                                                 textAreaLine,
+                                                 listElement,
+                                                 lineWidget,
+                                                 lineCbox,
+                                                 cboxLabel){
+    // create text-line-list body
+
+    // cbox goes into cboxlabel
+    cboxLabel.prepend(lineCbox);
+
+    // cboxlabel goes into linewidget
+    lineWidget.appendChild(cboxLabel);
+
+    // textarea goes into line element
+    listElement.appendChild(textAreaLine);
+
+    // transline and linewidget goes into ullist
+    itemList.appendChild(lineWidget);
+    itemList.appendChild(listElement);
+
+    // ul list goes into list item
+    itemGroup.appendChild(itemList);
+
+    return itemGroup;
+};
 TransColumn.prototype.addTranscription = function(){
     // adds a transcription box to item list
     /*
@@ -815,20 +1301,15 @@ TransColumn.prototype.addTranscription = function(){
     var lcboxId = this.createIdWithPrefix(newListId, "lcbox");
     var lcbox = this.createLineCbox(lcboxId);
     //
-    // cbox goes into cboxlabel
-    // cboxLabel.prependChild(lcbox);
-    cboxLabel.prepend(lcbox);
-    // cboxlabel goes into linewidget
-    lineWidget.appendChild(cboxLabel);
-    // textarea goes into line element
-    liel.appendChild(transLine);
-    // transline and linewidget goes into ullist
-    ulList.appendChild(lineWidget);
-    ulList.appendChild(liel);
-    // ul list goes into list item
-    listItem.appendChild(ulList);
+    var itemGroup = this.fillItemGroupBody(listItem,
+                                           ulList,
+                                           transLine,
+                                           liel,
+                                           lineWidget,
+                                           lcbox,
+                                           cboxLabel);
     // list item goes into ol list
-    orList.appendChild(listItem);
+    orList.appendChild(itemGroup);
     // add the line to the lines list as well
     var newline = {
         "x1" : this.currentRect["x1_real"],
@@ -1211,7 +1692,6 @@ let canvasDraw = new CanvasRelated();
 canvasDraw.getLines(); // populating canvas with lines
 
 let transcription = new TransColumn();
-transcription.getLines(); // populating transcription column with lines
 // load image to canvas
 
 
@@ -1238,10 +1718,20 @@ function globalKeyFuncs(event){
 
 // Interfacing with html
 
-function imageLoad(){
-    // Load image to canvas
-    canvasDraw.imageLoad();
+// image-list Section
+function loadOriginalSize(event){
+    // change the value of the original size check
+    var selectval = document.getElementById("original-size-cbox");
+    canvasDraw.originalSize = selectval.checked;
+    return;
+}
+
+function loadImage2Viewer(event, page){
+    // load image to viewer
+    canvasDraw.imageLoad(event);
     transcription.image = canvasDraw.image.pageImage;
+    transcription.loadTranscription(event, page);
+    return;
 }
 
 window.onkeyup = globalKeyFuncs;
@@ -1249,7 +1739,7 @@ window.onkeyup = globalKeyFuncs;
 function showToolBox(event){
     var cbox = document.getElementById("showtoolbox-checkbox");
     var fset = document.getElementById("hide-tools");
-    if(cbox.checked){
+    if(cbox.checked === true){
         fset.setAttribute("style", "height: 20%;");
     }else{
         fset.setAttribute("style", "height: 0%;");
