@@ -26,20 +26,21 @@
                          page{{ page.index }}["index"] = {{ page.index  }};
                          page{{ page.index }}["imageFormat"] = "{{ page.img_format }}";
                          page{{ page.index }}["lines"] = [];
-                         var line = {};
                          {% for line in page.lines %}
-                         line["x1"] = {{ line.left_real }};
-                         line["width"] = {{ line.width_real }};
-                         line["y1"] = {{ line.top_real }};
-                         line["height"] = {{ line.height_real }};
-                         line["index"] = {{ line.index }};
-                         line["bbox"] = "{{ line.bbox  }}";
+                         var line{{ line.index }} = {};
+                         line{{ line.index }}["x1_real"] = {{ line.left_real }};
+                         line{{ line.index }}["width_real"] = {{ line.width_real }};
+                         line{{ line.index }}["y1_real"] = {{ line.top_real }};
+                         line{{ line.index }}["height_real"] = {{ line.height_real }};
+                         line{{ line.index }}["id"] = "{{ line.index }}";
+                         line{{ line.index }}["type"] = "line";
+                         line{{ line.index }}["bbox"] = "{{ line.bbox  }}";
                          {% if line.text %}
-                         line["text"] = "{{ line.text }}";
+                         line{{ line.index }}["text"] = "{{ line.text }}";
                          {% else %}
-                         line["text"] = "";
+                         line{{ line.index }}["text"] = "";
                          {% endif %}
-                         page{{ page.index }}["lines"].push(line);
+                         page{{ page.index }}["lines"].push(line{{ line.index }});
                          {% endfor %}
                         </script>
                         <li class="image-element">
@@ -288,10 +289,26 @@
                             <label class="lbl-showall">
                                 Show All Detected Lines
                                 <input type="checkbox"
-                                       id="showall-cbox"
+                                       id="showall-detected-cbox"
                                        class="showall-checkbox"
                                        onchange="showAllDetections(event)"/>
                             </label>
+                            <label class="lbl-showall">
+                                Show All Selected Lines
+                                <input type="checkbox"
+                                       id="showall-selected-cbox"
+                                       class="showall-checkbox"
+                                       onchange="showAllSelections(event)"/>
+                            </label>
+                            <label class="lbl-showall">
+                                Show Everything
+                                <input type="checkbox"
+                                       id="showall-cbox"
+                                       class="showall-checkbox"
+                                       onchange="showAllEverything(event)"/>
+                            </label>
+
+
                             <label class="lbl-selectall">
                                 Select/Deselect All Lines
                                 <input type="checkbox"

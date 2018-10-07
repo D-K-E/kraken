@@ -55,3 +55,7 @@ li.area-element{
 textarea.transcription-textarea{
     width: 100%;
 }
+textarea.hover-transcription-textarea{
+    width: 100%;
+    border-color: red;
+}

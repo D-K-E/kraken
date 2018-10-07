@@ -119,7 +119,8 @@ var CanvasRelated = function() {
 
     // Drawn object stacks
     obj.drawnObject = {}; // stores last drawn object
-    obj.drawnObjects = {"type" : "FeatureCollection", "features" : []};
+    obj.drawnObjects = {"type" : "FeatureCollection",
+                        "features" : []};
     //
     return obj;
 };
@@ -603,37 +604,43 @@ CanvasRelated.prototype.drawDetectionBounds = function(event){
                                    this.image.ratio,
                                    context);
     // ratio
-    var hratio = this.image.hratio;
-    var vratio = this.image.vratio;
+    var hratio = this.image["hratio"];
+    var vratio = this.image["vratio"];
 
     var mouseX2 = parseInt(event.layerX - canvasOffsetX);
     var mouseY2 = parseInt(event.layerY - canvasOffsetY);
 
-    var mouseX2Trans = mouseX2 / this.image["hratio"];
-    var mouseY2Trans = mouseY2 / this.image["vratio"];
+    var mouseX2Trans = mouseX2 / hratio;
+    var mouseY2Trans = mouseY2 / vratio;
 
     var funcThis = this;
     var lineDraw =  funcThis.getDetectionBound(mouseX2Trans,
                                                mouseY2Trans);
-    var width = parseInt(lineDraw["width"], 10);
-    var height = parseInt(lineDraw["height"], 10);
-    var x1 = parseInt(lineDraw["x1"], 10);
-    var y1 = parseInt(lineDraw["y1"], 10);
+    // console.log(lineDraw);
+    var width = lineDraw["width_real"] * hratio;
+    var height = lineDraw["height_real"] * vratio;
+    var x1 = lineDraw["x1_real"] * hratio;
+    lineDraw["x1"] = x1;
+    var y1 = lineDraw["y1_real"] * vratio;
+    lineDraw["y1"] = y1;
+    var x2 = x1 + width;
+    var y2 = y1 + height;
 
     // set context style options
     // set context stroke color
     context.strokeStyle = "yellow";
+    context.fillStyle = "rgba(127,0,0,0.1)";
 
     //
     // draw the rectangle
-    this.drawRectangle(x1,
-                       y1,
-                       this.image.hratio,
-                       this.image.vratio,
-                       context,
-                       lineDraw);
+    context = this.drawRectangle(x2,
+                                 y2,
+                                 this.image.hratio,
+                                 this.image.vratio,
+                                 context,
+                                 lineDraw);
     return context;
-};
+}; // TODO debug code
 // -------------- Redrawing Methods -------------------
 CanvasRelated.prototype.redrawImage = function(imageId, // image identifer
                                                ratio, // ratio for canvas
@@ -671,10 +678,39 @@ CanvasRelated.prototype.resetScene = function(){
     var scene = document.getElementById("scene");
     var context = scene.getContext("2d");
     this.clearScene();
-    this.drawnObjects = [];
+    this.drawnObject = {}; // stores last drawn object
+    this.drawnObjects = {"type" : "FeatureCollection",
+                        "features" : []};
+
     this.heldObjects = [];
     this.redrawImage(this.image["id"],
                      this.image.ratio, context);
+};
+CanvasRelated.prototype.redrawDetection = function(context,
+                                                   detection,
+                                                   setStyle){
+    // redraw a detection object
+    var hratio = this.image["hratio"];
+    var vratio = this.image["vratio"];
+    var width = detection["width_real"] * hratio;
+    var height = detection["height_real"] * vratio;
+    var x1 = detection["x1_real"] * hratio;
+    var y1 = detection["y1_real"] * vratio;
+
+    // set context style options
+    // set context stroke color
+    if(setStyle === true){
+        context.strokeStyle = "yellow";
+        context.fillStyle = "rgba(127,0,0,0.1)";
+    }
+    //
+    // draw the rectangle
+    context.beginPath();
+    context.rect(x1,y1, width, height);
+    context.closePath();
+    context.stroke();
+    context.fill();
+    return context;
 };
 CanvasRelated.prototype.redrawRectObj = function(context, // drawing context
                                                  rectObj // drawer object
@@ -739,6 +775,22 @@ CanvasRelated.prototype.redrawPolygonObj = function(context, // drawing context
     context.fill();
     return context;
 };
+CanvasRelated.prototype.redrawDrawnObjects = function(drawnObjects, context){
+    // Redraw all drawn objects
+    for(var i=0; i < drawnObjects["features"].length; i++){
+        var dobj = drawnObjects["features"][i];
+        if(this.debug === true){
+            console.log("drawn object");
+            console.log(dobj);
+        }
+        if(dobj["properties"]["selectorType"] === "polygon"){
+            context = this.redrawPolygonObj(context, dobj);
+        }else if(dobj["properties"]["selectorType"] === "rectangle"){
+            context = this.redrawRectObj(context, dobj);
+        }
+    }
+    return context;
+};
 CanvasRelated.prototype.redrawAllDrawnObjects = function(){
     // redraw all the objects in the drawnObjects stack
     // get context and the scene
@@ -753,19 +805,66 @@ CanvasRelated.prototype.redrawAllDrawnObjects = function(){
     if(this.debug === true){
         console.log("in image redrawn");
     }
-    for(var i=0; i < this.drawnObjects["features"].length; i++){
-        var dobj = this.drawnObjects["features"][i];
+    var fncthis = this;
+    context = fncthis.redrawDrawnObjects(this.drawnObjects, context);
+    return;
+};
+CanvasRelated.prototype.redrawDetections = function(detections, context){
+    // redraw detections
+    for(var i=0; i < detections.length; i++){
+        var dobj = detections[i];
         if(this.debug === true){
             console.log("drawn object");
             console.log(dobj);
         }
-        if(dobj["properties"]["selectorType"] === "polygon"){
-            context = this.redrawPolygonObj(context, dobj);
-        }else if(dobj["properties"]["selectorType"] === "rectangle"){
-            context = this.redrawRectObj(context, dobj);
+        if(isOdd(i) === true){
+            context.strokeColor = "blue";
+            context.fillStyle = "rgba(0,0,255,0.1)";
+        }else{
+            context.strokeColor = "yellow";
+            context.fillStyle = "rgba(127,0,0,0.2)";
         }
+        context = this.redrawDetection(context, dobj,
+                                       false // setStyle check
+                                      );
     }
+    return context;
+};
+CanvasRelated.prototype.redrawAllDetectedObjects = function(){
+    // redraw all the objects in the detections stack
+    // get context and the scene
+    var scene = document.getElementById("scene");
+    var context = scene.getContext("2d");
+    if(this.debug === true){
+        console.log("in redraw all");
+    }
+    // redraw image
+    context = this.redrawImage(this.image["id"],
+                               this.ratio, context);
+    if(this.debug === true){
+        console.log("in image redrawn");
+    }
+    var fncthis = this;
+    context = fncthis.redrawDetections(this.detections, context);
     return;
+};
+CanvasRelated.prototype.redrawEverything = function(){
+    // Combines redraw detections and selections
+    var scene = document.getElementById("scene");
+    var context = scene.getContext("2d");
+    if(this.debug === true){
+        console.log("in redraw all");
+    }
+    // redraw image
+    context = this.redrawImage(this.image["id"],
+                               this.ratio, context);
+    if(this.debug === true){
+        console.log("in image redrawn");
+    }
+    var fncthis = this;
+    context = fncthis.redrawDetections(this.detections, context);
+    context = fncthis.redrawDrawnObjects(this.drawnObjects, context);
+    return context;
 };
 //
 // ------------- Methods for Managing Drawing Event -------
@@ -849,6 +948,7 @@ CanvasRelated.prototype.convertObj2Geojson = function(drawnObj){
     geoobj["geometry"] = {};
     geoobj["id"] = drawnObj["id"];
     geoobj["properties"]["id"] = drawnObj["id"];
+    geoobj["properties"]["text"] = "";
     geoobj["properties"]["imageId"] = drawnObj["imageId"];
     geoobj["properties"]["regionType"] = drawnObj["regionType"];
     geoobj["properties"]["displayRelated"] = {};
@@ -963,20 +1063,42 @@ CanvasRelated.prototype.getLine = function(lineObj){
 //
 // Event handlers
 // Checks for event locations
-CanvasRelated.prototype.checkDetectionBound = function(mX,
+CanvasRelated.prototype.checkDetectionBound = function(mX, // real coordinate no scaling
                                                        mY,
                                                        x1, // real coordinate no scaling
                                                        y1,
                                                        x2, // real coordinates no scaling
                                                        y2){
     // check if the line contains the mX and mY
+    if(this.debug === true){
+        console.log("in check detection bound");
+    }
     var check = false;
+    if(this.debug === true){
+        console.log("checking detection coords");
+        console.log("mx");
+        console.log(mX);
+        console.log("my");
+        console.log(mY);
+        console.log("x1");
+        console.log(x1);
+        console.log("y1");
+        console.log(y1);
+        console.log("x2");
+        console.log(x2);
+        console.log("y2");
+        console.log(y2);
+    }
     //
     if(
         (y1 <= mY) && (mY <= y2) &&
             (x1 <= mX) && (mX <= x2)
     ){
         check=true;
+    }
+    if(this.debug === true){
+        console.log("check val");
+        console.log(check);
     }
     return check;
 };
@@ -1039,45 +1161,26 @@ CanvasRelated.prototype.getDetectionBound = function(mXcoord,
                                                      mYcoord){
     // get the line that is to be drawn based on the
     // coordinates provided
+    // console.log("in get detection bound");
     var detection;
     //
     for(var i=0; i< this.detections.length; i++){
         var aDetection = this.detections[i];
-        var x1 = parseInt(aDetection["x1"], 10);
-        var y1 = parseInt(aDetection["y1"], 10);
-        var x2 = x1 + parseInt(aDetection["width"], 10);
-        var y2 = y1 + parseInt(aDetection["height"], 10);
+        var x1 = parseInt(aDetection["x1_real"], 10);
+        var y1 = parseInt(aDetection["y1_real"], 10);
+        var x2 = x1 + parseInt(aDetection["width_real"], 10);
+        var y2 = y1 + parseInt(aDetection["height_real"], 10);
         if(this.checkDetectionBound(mXcoord, mYcoord,
                                     x1, y1,
                                     x2, y2) === true){
-            detection = aDetection;
+            detection = JSON.parse(JSON.stringify(aDetection));
+            break;
         }
     }
     //
     return detection;
 };
 // Controling the mouse movements in canvas
-CanvasRelated.prototype.canvasMouseDown = function(event){
-    // handling canvas mouse button pressed
-    var imcanvas = document.getElementById("image-canvas");
-    var canvasOffsetX = imcanvas.offsetLeft;
-    var canvasOffsetY = imcanvas.offsetTop;
-
-    var mouseX=parseInt(event.layerX - canvasOffsetX);
-    var mouseY=parseInt(event.layerY - canvasOffsetY);
-    var mouseXTrans = mouseX  / this.image.hratio;
-    var mouseYTrans = mouseY / this.image.vratio ;
-
-    this.image.xcoord = mouseX;
-    this.image.ycoord = mouseY;
-    //
-    // store the starting mouse position
-    this.mousePressed=true;
-    this.selectInProcess = true;
-};
-CanvasRelated.prototype.canvasMouseUp = function(event){
-    this.mousePressed=false;
-};
 CanvasRelated.prototype.canvasMouseMove = function(event){
     // regroups functions that activates with
     // mouse move on canvas
@@ -1149,6 +1252,9 @@ var TransColumn = function(){
     obj.image = pageImage;
     obj.viewerCheck = false;
     obj.drawnObject = {};
+    obj.hratio = "";
+    obj.vratio = "";
+    obj.ratio = "";
     obj.transcriptions = [];
     obj.deletedNodes = [];
     return obj;
@@ -1164,6 +1270,7 @@ TransColumn.prototype.clearTranscription = function(){
     while(tlinelist.firstChild){
         tlinelist.removeChild(tlinelist.firstChild);
     }
+    this.transcriptions = [];
     return;
 };
 TransColumn.prototype.addDetected2TranscriptionArea = function(detected){
@@ -1237,47 +1344,100 @@ TransColumn.prototype.loadTranscription = function(event){
     pageid = pageid.replace("image-page-","");
 
     pageid = parseInt(pageid, 10);
-    console.log(pageid);
+    // console.log(pageid);
 
     var page;
     for(var i=0; i<pages.length; i++){
         //
         var p = pages[i];
-        console.log(p);
+        // console.log(p);
         if(p["index"] === pageid){
             page = p;
         }
     }
 
     var lines = page["lines"];
+    // console.log(lines);
     var funcThis = this;
-    for(var k=0; i<lines.length; i++){
+    for(var k=0; k<lines.length; k++){
         //
         var line = this.getTranscription(lines[k]);
+        // console.log(line);
         funcThis.addDetected2TranscriptionArea(line);
         this.transcriptions.push(line);
     }
     return;
 }; // TODO: debug code
 TransColumn.prototype.getTranscription = function(transObj){
-    // get line coordinates from line object
-    var leftInt = parseInt(transObj.x1, 10);
+    // get information from transcribed object
+    var leftInt = parseInt(transObj["x1_real"], 10);
     leftInt = Math.floor(leftInt);
-    var topInt = parseInt(transObj.y1, 10);
+    var topInt = parseInt(transObj["y1_real"], 10);
     topInt = Math.floor(topInt);
-    var widthInt = parseInt(transObj.width, 10);
+    var widthInt = parseInt(transObj["width_real"], 10);
     widthInt = Math.floor(widthInt);
-    var heightInt = parseInt(transObj.height, 10);
+    var heightInt = parseInt(transObj["height_real"], 10);
     heightInt = Math.floor(heightInt);
     //
     var transcription = {};
-    transcription["x1"] = leftInt;
-    transcription["y1"] = topInt;
-    transcription["width"] = widthInt;
-    transcription["height"] = heightInt;
-    transcription["index"] = transObj["index"];
+    transcription["x1_real"] = leftInt;
+    transcription["y1_real"] = topInt;
+    transcription["width_real"] = widthInt;
+    transcription["height_real"] = heightInt;
+    transcription["id"] = transObj["id"];
     transcription["bbox"] = transObj["bbox"];
+    transcription["text"] = transObj["text"];
+    transcription["type"] = transObj["type"];
     return transcription;
+};
+TransColumn.prototype.convert2Geojson = function(detection){
+    // convert detection object to geojson
+    var geoobj = {};
+
+    // declaring values that would be stored
+    var x1_real = detection["x1_real"];
+    var y1_real = detection["y1_real"];
+    var width_real = detection["width_real"];
+    var height_real = detection["height_real"];
+    var x2_real = x1_real + width_real;
+    var y2_real = y1_real + height_real;
+    var x1 = x1_real * this.hratio;
+    var y1 = y1_real * this.vratio;
+    var x2 = x2_real * this.hratio;
+    var y2 = y2_real * this.vratio;
+    var width = width_real * this.hratio;
+    var height = height_real * this.vratio;
+
+    //
+    geoobj["type"] = "Feature";
+    geoobj["properties"] = {};
+    geoobj["geometry"] = {};
+    geoobj["id"] = detection["id"];
+    geoobj["properties"]["regionType"] = detection["type"];
+    geoobj["properties"]["interfaceCoordinates"] = {};
+    geoobj["properties"]["interfaceCoordinates"]["x1"] = x1;
+    geoobj["properties"]["interfaceCoordinates"]["y1"] = y1;
+    geoobj["properties"]["interfaceCoordinates"]["x2"] = x2;
+    geoobj["properties"]["interfaceCoordinates"]["y2"] = y2;
+    //
+    geoobj["properties"]["interfaceCoordinates"]["y1_real"] = y1_real;
+    geoobj["properties"]["interfaceCoordinates"]["x1_real"] = x1_real;
+    geoobj["properties"]["interfaceCoordinates"]["y2_real"] = y2_real;
+    geoobj["properties"]["interfaceCoordinates"]["x2_real"] = x2_real;
+    //
+    geoobj["properties"]["interfaceCoordinates"]["width"] = width;
+    geoobj["properties"]["interfaceCoordinates"]["height"] = height;
+    geoobj["properties"]["interfaceCoordinates"]["width_real"] = width_real;
+    geoobj["properties"]["interfaceCoordinates"]["height_real"] = height_real;
+    //
+    geoobj["geometry"]["type"] = "MultiLineString";
+    var topside = [[x1_real, y1_real], [x2_real, y1_real]];
+    var bottomside = [[x1_real, y2_real], [x2_real, y2_real]];
+    var rightside = [[x2_real, y1_real], [x2_real, y2_real]];
+    var leftside = [[x1_real, y1_real], [x1_real, y2_real]];
+    geoobj["geometry"]["coordinates"] = [topside, rightside,
+                                         bottomside, leftside];
+    return geoobj;
 };
 //
 TransColumn.prototype.getLineById = function(idstr){
@@ -1723,7 +1883,7 @@ TransColumn.prototype.parseBbox = function(bbox){
     return newbox;
 
 };
-TransColumn.prototype.checkBbox = function(bbox, hoverRect){
+TransColumn.prototype.checkBbox = function(bbox, drawnObject){
     // Check if given bbox corresponds to hover rect coordinates
     var newbox = this.parseBbox(bbox);
     var hov_x = hoverRect["x1_real"];
@@ -1920,7 +2080,11 @@ function loadImage2Viewer(event){
     // load image to viewer
     canvasDraw.imageLoad(event);
     transcription.image = canvasDraw.image.pageImage;
+    transcription.hratio = canvasDraw.image.hratio;
+    transcription.vratio = canvasDraw.image.vratio;
+    transcription.ratio = canvasDraw.image.ratio;
     transcription.loadTranscription(event);
+    // console.log(transcription.transcriptions);
     var objcopy = JSON.parse(JSON.stringify(transcription.transcriptions));
     canvasDraw.detections = objcopy;
     return;
@@ -1983,9 +2147,8 @@ function getRgbCode(className, listName){
 }
 function setSelectorStrokeColor(event){
     // set selector stroke color to viewer
-    var rgbcode = getRgbCode("selector-stroke-color",
-                             "selector-stroke-color-list");
-    canvasDraw.selectorOptions.strokeColor = rgbcode;
+    var selectedValue = document.getElementById("selector-stroke-color-list").value;
+    canvasDraw.selectorOptions.strokeColor = selectedValue;
     return;
 }
 
@@ -2012,11 +2175,30 @@ function setSelectionProcess(event){
 }
 function showAllDetections(){
     // show all previously added selections
-    var selectval = document.getElementById("showall-cbox");
+    var selectval = document.getElementById("showall-detected-cbox");
     if(selectval.checked === true){
-        console.log("in showall");
+        console.log("in showall detections");
+        canvasDraw.redrawAllDetectedObjects();
+    }
+    return;
+}
+function showAllSelections(){
+    // show all previously added selections
+    var selectval = document.getElementById("showall-selected-cbox");
+    if(selectval.checked === true){
+        console.log("in showall selections");
         canvasDraw.redrawAllDrawnObjects();
     }
+    return;
+}
+function showAllEverything(){
+    // show everything detected and drawn
+    var selectval = document.getElementById("showall-cbox");
+    if(selectval.checked === true){
+        console.log("in showall everything");
+        canvasDraw.redrawEverything();
+    }
+    return;
 }
 // ------------- ends selector-options -------------------
 // ------------- ends selector-set ---------------------
@@ -2049,11 +2231,20 @@ function setSceneMouseUp(event){
 
 function setSceneMouseDown(event){
     // set scene values for the mouse up event
+    var selectval = canvasDraw.selectInProcess;
+    var showallDetectedCheck = document.getElementById("showall-detected-cbox");
+    var showallSelectedCheck = document.getElementById("showall-selected-cbox");
     var showallCheck = document.getElementById("showall-cbox");
-    if(showallCheck.checked === true){
+    if(
+        (showallCheck.checked === true) ||
+            (showallDetectedCheck.checked === true) ||
+            (showallSelectedCheck.checked === true)
+      ){
+        if(selectval === true){
+            alert("uncheck show all boxes before selecting a region");
+        }
         return;
     }
-    var selectval = canvasDraw.selectInProcess;
     if(selectval === true){
         // set boolean checks
         canvasDraw.inMouseUp = false; // necessary for closing polygon
@@ -2117,8 +2308,14 @@ function setSceneMouseDown(event){
 function setSceneMouseMove(event){
     // set values related to mouse movement to scene
     // console.log("in scene mouse move");
+    var showallDetectedCheck = document.getElementById("showall-detected-cbox");
+    var showallSelectedCheck = document.getElementById("showall-selected-cbox");
     var showallCheck = document.getElementById("showall-cbox");
-    if(showallCheck.checked === true){
+    if(
+        (showallCheck.checked === true) ||
+            (showallDetectedCheck.checked === true) ||
+            (showallSelectedCheck.checked === true)
+    ){
         return;
     }
     var selectval = canvasDraw.selectInProcess;
@@ -2126,7 +2323,13 @@ function setSceneMouseMove(event){
         //
         canvasDraw.drawSelection(event);
     }else{
+        if(canvasDraw.image["id"] === ""){
+            // return if the image is not loaded yet
+            return;
+        }
+        // else show detection bounds
         canvasDraw.drawDetectionBounds(event);
+        // passing drawn object to transcription column
     }
     return;
 }
