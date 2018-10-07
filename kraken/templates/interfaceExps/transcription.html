@@ -1,783 +1,513 @@
 <!DOCTYPE html>
 <html>
-	  <head>
-		    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-		    <meta name="uuid" content="1e101244-f6d6-4025-bf72-7e1822629e60"/>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		    <meta name="uuid" content="3faaaf5a-9848-46d4-8d0f-b2cc885632ce"/>
 		    <meta itemprop="text_direction" content="horizontal-lr"/>
-        <link rel="stylesheet" type="text/css" href="css/style.css"/>
-	  </head>
-	  <body>
-        <script src="https://code.jquery.com/jquery-1.12.4.min.js"
-			          integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
-			          crossorigin="anonymous">
-        </script>
-        <script src="js/widgets.js"></script>
-		    <script>
-			   $(document).ready(function() {
-				     var uuid = $('meta[name=uuid]').attr('content');
-				     if (localStorage) {
-					       $('li[contenteditable=true], span').each(function(index) {
-						         if(localStorage[uuid + this.id]) {
-							           $(this).text(localStorage[uuid + this.id]);
-						         }
-					       });
-				     }
-				     // focus text fields when lines/words are clicked + mouseover
-				     $('a.rect').click(function(e) {
-					       e.preventDefault();
-					       $('#' + $(this).attr('alt')).focus();
-				     }).mouseover(function(e) {
-					       $('#' + $(this).attr('alt')).addClass("hovered");
-				     }).mouseout(function(e) {
-					       $('#' + $(this).attr('alt')).removeClass("hovered");
-				     });
-				     // create mouseover effect on text fields
-				     $('li[contenteditable=true], span').mouseover(function(e) {
-					       console.log(this.id);
-					       $('a.rect[alt=' + this.id + ']').addClass("hovered");
-				     }).mouseout(function(e) {
-					       $('a.rect[alt=' + this.id + ']').removeClass("hovered");
-				     }).focusin(function(e) {
-					       $('a.rect[alt=' + this.id + ']').addClass("hovered");
-				     }).focusout(function(e) {
-					       $('a.rect[alt=' + this.id + ']').removeClass("hovered");
-				     }).keydown(function(e) {
-					       if(e.which == 13) {
-						         e.preventDefault();
-						         $(this).addClass('corrected');
-						         var $els = $('[contenteditable=true]');
-						         $els.eq($els.index(this) + 1).focus();
-					       }
-				         // save to local storage 
-				     }).keyup(function () {
-					       localStorage[uuid + this.id] = $(this).text();
-				     });
-				     
-				     // smooth scrolling
-				     $('.page_anchor').click(function(e) {
-					       e.preventDefault();
-					       var target = $(this).attr("href");
-					       var top = $(target).offset().top;
-					       $('html, body').stop().animate({scrollTop: top }, 500);
-				     });
-
-				     // serializing the DOM to a file
-				     $('#download_button').click(function(e) {
-					       path = window.location.pathname;
-					       $(this).attr('href', 'data:text/html,' + encodeURIComponent($('html')[0].outerHTML));
-					       $(this).attr('download', path.substr(path.lastIndexOf('/') + 1));
-				     });
-			   });
-		    </script>
-		    <nav>
-			      <ul>
-			          
-				        <li><a class="page_anchor" href='#page_1'>1</a></li>
-			          
-			      </ul>
-			      <a id="download_button" href="#">Download</a>
-		    </nav>
-
-		    
-		    <section class="page container" id="page-1">
-			      <div class="column">
-				        <div class="img-container" id="page-image-div">
-					          <img style="width: 100%;" src="images/page_1.png"
-                         alt="photo"
-                         id="image-page"/>
-                    <canvas style="width: 100%" id="image-canvas"></canvas>
-                    <script>var lines = [];</script>
-					          
-					          <a class="rect" alt="line_1" href="" title="" style="left: 1.1111111111111112%; top: 0.0%; width: 98.05555555555556%; height: 6.709558823529412%; z-index: 2;" id="1"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "12",
-                         "width" : "1059",
-                         "top" : "0",
-                         "height" : "73",
-                         "index" : "1",
-                         "bbox" : "12, 0, 1071, 73"
-                     };
-                     lines.push(line);
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
+    </head>
+    <body>
+        <header>
+            <h1>Kraken Transcription Interface</h1>
+        </header>
+        <article>
+            <section id="image-list">
+                <h2 id="image-list-title"
+                    class="section-title">Image List</h2>
+                <nav id="image-paths"
+                     onload="getImageLinks()">
+                    <script type="text/javascript">
+                        var pages = [];
                     </script>
-					          
-					          <a class="rect" alt="line_2" href="" title="" style="left: 0.5555555555555556%; top: 4.595588235294118%; width: 98.24074074074075%; height: 8.547794117647058%; z-index: 2;" id="2"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "6",
-                         "width" : "1061",
-                         "top" : "50",
-                         "height" : "93",
-                         "index" : "2",
-                         "bbox" : "6, 50, 1067, 143"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_3" href="" title="" style="left: 0.18518518518518517%; top: 11.029411764705882%; width: 99.81481481481481%; height: 7.9963235294117645%; z-index: 2;" id="3"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "2",
-                         "width" : "1078",
-                         "top" : "120",
-                         "height" : "87",
-                         "index" : "3",
-                         "bbox" : "2, 120, 1080, 207"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_4" href="" title="" style="left: 0.18518518518518517%; top: 16.544117647058822%; width: 99.81481481481481%; height: 7.904411764705882%; z-index: 2;" id="4"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "2",
-                         "width" : "1078",
-                         "top" : "180",
-                         "height" : "86",
-                         "index" : "4",
-                         "bbox" : "2, 180, 1080, 266"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_5" href="" title="" style="left: 0.2777777777777778%; top: 22.794117647058822%; width: 99.25925925925925%; height: 7.444852941176471%; z-index: 2;" id="5"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "3",
-                         "width" : "1072",
-                         "top" : "248",
-                         "height" : "81",
-                         "index" : "5",
-                         "bbox" : "3, 248, 1075, 329"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_6" href="" title="" style="left: 0.18518518518518517%; top: 28.676470588235293%; width: 99.81481481481481%; height: 8.547794117647058%; z-index: 2;" id="6"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "2",
-                         "width" : "1078",
-                         "top" : "312",
-                         "height" : "93",
-                         "index" : "6",
-                         "bbox" : "2, 312, 1080, 405"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_7" href="" title="" style="left: 2.4074074074074074%; top: 34.83455882352941%; width: 97.22222222222223%; height: 8.088235294117647%; z-index: 2;" id="7"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "26",
-                         "width" : "1050",
-                         "top" : "379",
-                         "height" : "88",
-                         "index" : "7",
-                         "bbox" : "26, 379, 1076, 467"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_8" href="" title="" style="left: 0.0%; top: 40.900735294117645%; width: 99.16666666666667%; height: 7.904411764705882%; z-index: 2;" id="8"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "0",
-                         "width" : "1071",
-                         "top" : "445",
-                         "height" : "86",
-                         "index" : "8",
-                         "bbox" : "0, 445, 1071, 531"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_9" href="" title="" style="left: 0.6481481481481481%; top: 47.4264705882353%; width: 98.42592592592592%; height: 7.8125%; z-index: 2;" id="9"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "7",
-                         "width" : "1063",
-                         "top" : "516",
-                         "height" : "85",
-                         "index" : "9",
-                         "bbox" : "7, 516, 1070, 601"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_10" href="" title="" style="left: 0.0%; top: 53.58455882352941%; width: 98.24074074074075%; height: 6.985294117647059%; z-index: 2;" id="10"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "0",
-                         "width" : "1061",
-                         "top" : "583",
-                         "height" : "76",
-                         "index" : "10",
-                         "bbox" : "0, 583, 1061, 659"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_11" href="" title="" style="left: 0.0%; top: 58.8235294117647%; width: 99.9074074074074%; height: 7.261029411764706%; z-index: 2;" id="11"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "0",
-                         "width" : "1079",
-                         "top" : "640",
-                         "height" : "79",
-                         "index" : "11",
-                         "bbox" : "0, 640, 1079, 719"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_12" href="" title="" style="left: 0.0%; top: 64.24632352941177%; width: 98.70370370370371%; height: 8.180147058823529%; z-index: 2;" id="12"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "0",
-                         "width" : "1066",
-                         "top" : "699",
-                         "height" : "89",
-                         "index" : "12",
-                         "bbox" : "0, 699, 1066, 788"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_13" href="" title="" style="left: 0.0%; top: 70.58823529411765%; width: 99.9074074074074%; height: 7.8125%; z-index: 2;" id="13"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "0",
-                         "width" : "1079",
-                         "top" : "768",
-                         "height" : "85",
-                         "index" : "13",
-                         "bbox" : "0, 768, 1079, 853"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_14" href="" title="" style="left: 0.18518518518518517%; top: 76.5625%; width: 99.25925925925925%; height: 8.363970588235293%; z-index: 2;" id="14"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "2",
-                         "width" : "1072",
-                         "top" : "833",
-                         "height" : "91",
-                         "index" : "14",
-                         "bbox" : "2, 833, 1074, 924"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_15" href="" title="" style="left: 0.2777777777777778%; top: 83.63970588235294%; width: 99.16666666666667%; height: 8.731617647058824%; z-index: 2;" id="15"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "3",
-                         "width" : "1071",
-                         "top" : "910",
-                         "height" : "95",
-                         "index" : "15",
-                         "bbox" : "3, 910, 1074, 1005"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-					          <a class="rect" alt="line_16" href="" title="" style="left: 0.0%; top: 88.87867647058823%; width: 99.81481481481481%; height: 9.650735294117647%; z-index: 2;" id="16"></a>
-                    <!-- This is the bounding boxes overlayed on the image -->
-                    <script>
-                     var line = {
-                         "left" : "0",
-                         "width" : "1078",
-                         "top" : "967",
-                         "height" : "105",
-                         "index" : "16",
-                         "bbox" : "0, 967, 1078, 1072"
-                     };
-                     lines.push(line);
-                    </script>
-					          
-				        </div>
-			      </div>
-			      <div class="column">
-                <fieldset>
-                    <button onclick="deleteBoxes()" id="deleteButton">
-                        Delete Marked Lines
-                    </button>
-                    <button onclick="undoDeletion()" id="undodeleteButton">
-                        Undo Deletion
-                    </button>
-                    <button onclick="sortLines()" id="sortButton">
-                        Sort Lines
-                    </button>
-                    <!-- <button onclick="addLines()" id="addLineButton"> -->
-                    <!-- Add Lines -->
-                    <!-- </button> -->
-                </fieldset>
-				        <ol id="text-line-list">
-                    <!-- Contains the lines -->
-				            
-                    <li class="item-group" id="1">
-                        <ul class="item-list" id="1">
-					                  <li id="1" contenteditable="true" spellcheck="true" data-bbox="12, 0, 1071, 73" data-placeholder="Enter text for line 1" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="1">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="1" class="delete-checkbox">
-                                    <span class="checkmark"></span>
+                    <ol id="image-list">
+                        
+                        <script type="text/javascript">
+                         var page1 = {};
+                         page1["index"] = 1;
+                         page1["imageFormat"] = "png";
+                         page1["lines"] = [];
+                         var line = {};
+                         
+                         line["x1"] = 12;
+                         line["width"] = 1059;
+                         line["y1"] = 0;
+                         line["height"] = 73;
+                         line["index"] = 1;
+                         line["bbox"] = "12, 0, 1071, 73";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 6;
+                         line["width"] = 1061;
+                         line["y1"] = 50;
+                         line["height"] = 93;
+                         line["index"] = 2;
+                         line["bbox"] = "6, 50, 1067, 143";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 2;
+                         line["width"] = 1078;
+                         line["y1"] = 120;
+                         line["height"] = 87;
+                         line["index"] = 3;
+                         line["bbox"] = "2, 120, 1080, 207";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 2;
+                         line["width"] = 1078;
+                         line["y1"] = 180;
+                         line["height"] = 86;
+                         line["index"] = 4;
+                         line["bbox"] = "2, 180, 1080, 266";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 3;
+                         line["width"] = 1072;
+                         line["y1"] = 248;
+                         line["height"] = 81;
+                         line["index"] = 5;
+                         line["bbox"] = "3, 248, 1075, 329";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 2;
+                         line["width"] = 1078;
+                         line["y1"] = 312;
+                         line["height"] = 93;
+                         line["index"] = 6;
+                         line["bbox"] = "2, 312, 1080, 405";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 26;
+                         line["width"] = 1050;
+                         line["y1"] = 379;
+                         line["height"] = 88;
+                         line["index"] = 7;
+                         line["bbox"] = "26, 379, 1076, 467";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 0;
+                         line["width"] = 1071;
+                         line["y1"] = 445;
+                         line["height"] = 86;
+                         line["index"] = 8;
+                         line["bbox"] = "0, 445, 1071, 531";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 7;
+                         line["width"] = 1063;
+                         line["y1"] = 516;
+                         line["height"] = 85;
+                         line["index"] = 9;
+                         line["bbox"] = "7, 516, 1070, 601";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 0;
+                         line["width"] = 1061;
+                         line["y1"] = 583;
+                         line["height"] = 76;
+                         line["index"] = 10;
+                         line["bbox"] = "0, 583, 1061, 659";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 0;
+                         line["width"] = 1079;
+                         line["y1"] = 640;
+                         line["height"] = 79;
+                         line["index"] = 11;
+                         line["bbox"] = "0, 640, 1079, 719";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 0;
+                         line["width"] = 1066;
+                         line["y1"] = 699;
+                         line["height"] = 89;
+                         line["index"] = 12;
+                         line["bbox"] = "0, 699, 1066, 788";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 0;
+                         line["width"] = 1079;
+                         line["y1"] = 768;
+                         line["height"] = 85;
+                         line["index"] = 13;
+                         line["bbox"] = "0, 768, 1079, 853";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 2;
+                         line["width"] = 1072;
+                         line["y1"] = 833;
+                         line["height"] = 91;
+                         line["index"] = 14;
+                         line["bbox"] = "2, 833, 1074, 924";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 3;
+                         line["width"] = 1071;
+                         line["y1"] = 910;
+                         line["height"] = 95;
+                         line["index"] = 15;
+                         line["bbox"] = "3, 910, 1074, 1005";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                         line["x1"] = 0;
+                         line["width"] = 1078;
+                         line["y1"] = 967;
+                         line["height"] = 105;
+                         line["index"] = 16;
+                         line["bbox"] = "0, 967, 1078, 1072";
+                         
+                         line["text"] = "";
+                         
+                         page1["lines"].push(line);
+                         
+                        </script>
+                        <li class="image-element">
+                            <a id="link-page-1"
+                               class="image-link"
+                               onclick="loadImage2Viewer(event)">
+                                <img src="images/page_1.png"
+                                     draggable="false"
+                                     alt="image of page 1"
+                                     id="image-page-1"
+                                     class="thumbnail-images"/>
+                                <p>Page 1</p>
+                            </a>
+                        </li>
+                        <script type="text/javascript">
+                         pages.push(page1);
+                        </script>
+                        
+                    </ol>
+                    <label id="original-size-lbl">
+                        Load Original Size
+                        <input type="checkbox"
+                               id="original-size-cbox"
+                               onchange="loadOriginalSize(event)"/>
+                    </label>
+                </nav>
+            </section>
+            <section id="viewer">
+                <h2 id="viewer-title"
+                    class="section-title">Viewer</h2>
+                <div id="image-col">
+                    <fieldset id="viewer-tools">
+                        <legend>Viewer Tools</legend>
+                        <label>
+                            Debug mode
+                            <input type="checkbox"
+                                   onchange="setDebug(event)"
+                                   id="debug-cbox"/>
+                        </label>
+                        <button id="resetScene"
+                                class="reset-scene-btn"
+                                onclick="resetScene()">
+                            Reset Scene
+                        </button>
+                        <fieldset id="selector-set">
+                            <fieldset id="selector-types">
+                                <legend>
+                                    Available Selectors
+                                </legend>
+                                <label class="poly-selector-lbl">
+                                    Polygon
+                                    <input type="radio"
+                                           value="polygon-selector"
+                                           name="selector-rbutton"
+                                           onchange="setSelectorType()"
+                                           id="poly-selector-rbutton"/>
                                 </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="1" class="below-checkbox">
-                                    <span class="checkmark"></span>
+                                <label class="rect-selector-lbl">
+                                    Rectangle
+                                    <input type="radio"
+                                           value="rectangle-selector"
+                                           name="selector-rbutton"
+                                           onchange="setSelectorType()"
+                                           id="rect-selector-rbutton"/>
                                 </label>
-                                <label class="lbl-container">
+                            </fieldset>
+                            <fieldset id="selector-options">
+                                <legend>Selector Options</legend>
+                                <label>
+                                    Activate Selector
+                                    <input type="checkbox"
+                                           onchange="setSelectionProcess(event)"
+                                           id="selector-active-cbox"/>
+                                </label>
+                                <label class="lbl-holdselection">
+                                    Hold Selections
+                                    <input type="checkbox"
+                                           id="selector-hold-cbox"
+                                           onchange="holdSelection()"
+                                           class="viewer-checkbox"/>
+                                </label>
+                                <label class="select-stroke-color-lbl">
+                                    Selector Stroke Color
+                                    <select id="selector-stroke-color-list"
+                                            onchange="setSelectorStrokeColor(event)">
+                                        <option value="red"
+                                                data-rgb="255,0,0"
+                                                class="selector-stroke-color">Red</option>
+                                        <option class="selector-stroke-color"
+                                                data-rgb="127,0,0"
+                                                value="yellow">Yellow</option>
+                                        <option class="selector-stroke-color"
+                                                data-rgb="0,255,0"
+                                                value="green">Green</option>
+                                        <option class="selector-stroke-color"
+                                                data-rgb="0,0,255"
+                                                value="blue">Blue</option>
+                                    </select>
+                                </label>
+                                <label class="select-fill-color-lbl">
+                                    Selector Fill Color
+                                    <select id="selector-fill-color-list"
+                                            onchange="setSelectorFillColor(event)">
+                                        <option value="none"
+                                                data-rgb="0,0,0"
+                                                class="selector-fill-color">
+                                            None
+                                        </option>
+                                        <option value="red"
+                                                data-rgb="255,0,0"
+                                                class="selector-fill-color">
+                                            Red
+                                        </option>
+                                        <option class="selector-fill-color"
+                                                data-rgb="127,0,0"
+                                                value="yellow">
+                                            Yellow
+                                        </option>
+                                        <option class="selector-fill-color"
+                                                data-rgb="0,255,0"
+                                                value="green">
+                                            Green
+                                        </option>
+                                        <option class="selector-fill-color"
+                                                data-rgb="0,0,255"
+                                                value="blue">
+                                            Blue
+                                        </option>
 
-                                    Add Line Above
-                                    <input type="checkbox" id="1" class="above-checkbox">
-                                    <span class="checkmark"></span>
+                                    </select>
                                 </label>
+                                <label class="select-fill-opacity-lbl">
+                                    Selector Fill Opacity
+                                    <select id="selector-fill-opacity-list"
+                                            onchange="setSelectorFillOpacity(event)">
+                                        <option value="0">0</option>
+                                        <option value="0.1">0.1</option>
+                                        <option value="0.2">0.2</option>
+                                        <option value="0.3">0.3</option>
+                                        <option value="0.4">0.4</option>
+                                        <option value="0.5">0.5</option>
+                                        <option value="0.6">0.6</option>
+                                        <option value="0.7">0.7</option>
+                                        <option value="0.8">0.8</option>
+                                        <option value="0.9">0.9</option>
+                                        <option value="1">1</option>
+                                        </select>
+                                </label>
+                            </fieldset> <!-- ends selector options -->
+                        </fieldset> <!-- ends selector set -->
+                    </fieldset> <!-- ends viewer tools set -->
+                    <canvas id="scene"
+                            onmouseup="setSceneMouseUp(event)"
+                            onmousemove="setSceneMouseMove(event)"
+                            onmousedown="setSceneMouseDown(event)">
+                    </canvas>
+                </div> <!-- ends image-col -->
+            </section>
+            <section id="transcripter">
+                <h2 id="transcripter-title"
+                    class="section-title">Transcripter</h2>
+                <div class="transcription-col">
+                    <div id="hide-tools">
+                        <fieldset id="toolbox-set">
+                            <legend>Tools</legend>
+                            <fieldset id="button-set">
+                                <button onclick="deleteBoxes()"
+                                        value="" id="deleteButton"
+                                        title="Delete Selections">
+                                    <img src="assets/icons/delete.svg" alt="Delete Button"/>
+                                </button>
+                                <button onclick="undoDeletion()" id="undodeleteButton"
+                                        title="Undo Delete">
+                                    <img src="assets/icons/undo.svg" alt="Undo Icon"/>
+                                    <img src="assets/icons/delete.svg" alt="Delete Icon"/>
+                                </button>
+                                <button onclick="addTranscription()"
+                                        id="addTranscriptionButton"
+                                        title="Add Selection">
+                                    <img src="assets/icons/addbox.svg" alt="Add Selection Button"/>
+                                </button>
+                                <button onclick="saveEverything()"
+                                        id="saveEverythingButton"
+                                        title="Save">
+                                    <img src="assets/icons/save.svg" alt="Save Button"/>
+                                </button>
+                                <!-- <button onclick="addLines()" id="addLineButton">
+                                     Add Lines
+                                     </button>
+                                -->
+                                <button id="uploadTranscriptionButton"
+                                        title="Upload Transcription File"
+                                        onclick="uploadTranscription()">
+                                    <img src="assets/icons/upload.svg"
+                                         alt="Upload Text Button"/>
+                                </button>
+                                <button id="markRTTranscriptionButton"
+                                        title="Mark Right to Left Text"
+                                        onclick="markRTLTranscription()">
+                                    Mark as Right To Left
+                                </button>
+                                <button id="markRTLTranscriptionButton"
+                                        title="Mark Right to Left Text"
+                                        onclick="markLTRTranscription()">
+                                    Mark as Left To Right
+                                </button>
+                            </fieldset>
+                            <fieldset id="box-set">
+                                <legend>Selected Region Type</legend>
+                                <label class="lbl-rbox-container">
+                                    Character
+                                    <input type="radio"
+                                           id="char-rbox"
+                                           value="character"
+                                           onclick="changeAddTTitle(event)"
+                                           name="selected-region-rbutton"/>
+                                </label>
+                                <label class="lbl-rbox-container">
+                                    Line
+                                    <input type="radio"
+                                           value="line"
+                                           onclick="changeAddTTitle(event)"
+                                           name="selected-region-rbutton""
+                                           id="line-rbox"/>
+                                </label>
+                                <label class="lbl-rbox-container">
+                                    Column
+                                    <input type="radio"
+                                           value="column"
+                                           onclick="changeAddTTitle(event)"
+                                           name="selected-region-rbutton""
+                                           id="column-rbox"/>
+                                </label>
+                                <label class="lbl-rbox-container">
+                                    Region
+                                    <input type="radio"
+                                           value="region"
+                                           onclick="changeAddTTitle(event)"
+                                           name="selected-region-rbutton""
+                                           id="region-rbox"/>
+                                </label>
+                            </fieldset> <!-- ends boxset -->
+                        </fieldset> <!-- ends toolbox -->
+                        <fieldset>
+                            <legend>Options</legend>
+                            <label class="lbl-showall">
+                                Show All Detected Lines
+                                <input type="checkbox"
+                                       id="showall-cbox"
+                                       class="showall-checkbox"
+                                       onchange="showAllDetections(event)"/>
+                            </label>
+                            <label class="lbl-selectall">
+                                Select/Deselect All Lines
+                                <input type="checkbox"
+                                       id="selectAllLines-checkbox"
+                                       onchange="selectAllLines()"
+                                       class="selectAllLines-checkbox"/>
+                            </label>
+                            <label class="lbl-showviewer">
+                                Activate Viewer
+                                <input type="checkbox"
+                                       id="activateViewer-checkbox"
+                                       onchange="activateViewer()"
+                                       class="viewer-checkbox"/>
+                            </label>
+                        </fieldset> <!-- Ends options -->
+                    </div>
+                    <label class="lbl-showtools">
+                        Show Toolbox
+                        <input type="checkbox"
+                               id="showtoolbox-checkbox"
+                               onchange="showToolBox(event)"
+                               class="showtoolbox-checkbox"/>
+                    </label>
+                    <ol id="text-area-list">
+                        <li class="item-group" id="ig-">
+                            <ul class="item-list" id="il-">
+                                <li class="area-widget" id="aw-">
+                                    <label class="cbox-container" id="cbc-">
+                                        <input type="checkbox"
+                                               id="acbox-"
+                                               class="area-cbox"/>
+                                    </label>
+                                </li>
 
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="2">
-                        <ul class="item-list" id="2">
-					                  <li id="2" contenteditable="true" spellcheck="true" data-bbox="6, 50, 1067, 143" data-placeholder="Enter text for line 2" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="2">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="2" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="2" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
+                                <li id="ael-" class="area-element">
+                                    <textarea id="ta-"
+                                              spellcheck="true"
+                                              rows="2"
+                                              cols="100"
+                                              data-bbox=""
+                                              onfocus="showTranscriptionArea(event)"
+                                              data-region-type=""
+                                              placeholder="Enter text for area"
+                                              class="transcription-textarea">
+                                    </textarea>
+                                </li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div> <!-- Ends transcription col -->
+            </section> <!-- Ends transcription section -->
+        </article>
+        <script src="js/widgets.js" type="text/javascript"></script>
+    </body>
 
-                                    Add Line Above
-                                    <input type="checkbox" id="2" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="3">
-                        <ul class="item-list" id="3">
-					                  <li id="3" contenteditable="true" spellcheck="true" data-bbox="2, 120, 1080, 207" data-placeholder="Enter text for line 3" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="3">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="3" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="3" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="3" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="4">
-                        <ul class="item-list" id="4">
-					                  <li id="4" contenteditable="true" spellcheck="true" data-bbox="2, 180, 1080, 266" data-placeholder="Enter text for line 4" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="4">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="4" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="4" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="4" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="5">
-                        <ul class="item-list" id="5">
-					                  <li id="5" contenteditable="true" spellcheck="true" data-bbox="3, 248, 1075, 329" data-placeholder="Enter text for line 5" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="5">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="5" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="5" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="5" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="6">
-                        <ul class="item-list" id="6">
-					                  <li id="6" contenteditable="true" spellcheck="true" data-bbox="2, 312, 1080, 405" data-placeholder="Enter text for line 6" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="6">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="6" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="6" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="6" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="7">
-                        <ul class="item-list" id="7">
-					                  <li id="7" contenteditable="true" spellcheck="true" data-bbox="26, 379, 1076, 467" data-placeholder="Enter text for line 7" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="7">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="7" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="7" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="7" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="8">
-                        <ul class="item-list" id="8">
-					                  <li id="8" contenteditable="true" spellcheck="true" data-bbox="0, 445, 1071, 531" data-placeholder="Enter text for line 8" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="8">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="8" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="8" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="8" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="9">
-                        <ul class="item-list" id="9">
-					                  <li id="9" contenteditable="true" spellcheck="true" data-bbox="7, 516, 1070, 601" data-placeholder="Enter text for line 9" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="9">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="9" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="9" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="9" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="10">
-                        <ul class="item-list" id="10">
-					                  <li id="10" contenteditable="true" spellcheck="true" data-bbox="0, 583, 1061, 659" data-placeholder="Enter text for line 10" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="10">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="10" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="10" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="10" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="11">
-                        <ul class="item-list" id="11">
-					                  <li id="11" contenteditable="true" spellcheck="true" data-bbox="0, 640, 1079, 719" data-placeholder="Enter text for line 11" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="11">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="11" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="11" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="11" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="12">
-                        <ul class="item-list" id="12">
-					                  <li id="12" contenteditable="true" spellcheck="true" data-bbox="0, 699, 1066, 788" data-placeholder="Enter text for line 12" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="12">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="12" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="12" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="12" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="13">
-                        <ul class="item-list" id="13">
-					                  <li id="13" contenteditable="true" spellcheck="true" data-bbox="0, 768, 1079, 853" data-placeholder="Enter text for line 13" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="13">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="13" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="13" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="13" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="14">
-                        <ul class="item-list" id="14">
-					                  <li id="14" contenteditable="true" spellcheck="true" data-bbox="2, 833, 1074, 924" data-placeholder="Enter text for line 14" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="14">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="14" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="14" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="14" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-				            
-                    <li class="item-group" id="15">
-                        <ul class="item-list" id="15">
-					                  <li id="15" contenteditable="true" spellcheck="true" data-bbox="3, 910, 1074, 1005" data-placeholder="Enter text for line 15" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-						                    
-                            </li>
-                            <li class="line-widget" id="15">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="15" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="15" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="15" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-
-					                  </li>
-                        </ul>
-                    </li>
-                    <li class="item-group" id="16">
-                        <ul class="item-list" id="16">
-					                  <li id="16" contenteditable="true" spellcheck="true" data-bbox="0, 967, 1078, 1072" data-placeholder="Enter text for line 16" class="editable-line">
-                                <!-- This is the texts of the line on the image -->
-                            </li>
-                            <li class="line-widget" id="16">
-                                <label class="lbl-container">
-                                    Mark as deleted
-                                    <input type="checkbox" id="16" class="delete-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-                                    Add Line Below
-                                    <input type="checkbox" id="16" class="below-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="lbl-container">
-
-                                    Add Line Above
-                                    <input type="checkbox" id="16" class="above-checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-					                  </li>
-                        </ul>
-                    </li>
-                </ol>
-			      </div>
-		    </section>
-	  </body>
 </html>

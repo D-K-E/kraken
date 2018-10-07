@@ -1,6 +1,23 @@
 CHANGES
 =======
 
+* Changed layout and widgets
+* Started major refactoring
+* New styling and widget methods
+* The viewer canvas works now
+* Added the viewer canvas and dealt with selection deselection
+* Slider is done
+* Started svg version of the image viewer. Continued on the canvas version
+* All goals are implemented little bugs need attention
+* Icons added
+* Layout almost finalized
+* Started on drawAllLines function and rearranged renderhtml
+* Added keylistener and automatised the sortlines
+* The interface is ready for beta testing
+* Major refactoring using classes
+* Small refactoring identified the problem with linewidget
+* Added new functionality on hovering lines and refactoring
+* Rectangle selection box now works
 * new folders are added for css and js
 * Canvas correctly loads the image
 * minor fix on layout
