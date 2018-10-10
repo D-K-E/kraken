@@ -142,6 +142,7 @@ var CanvasRelated = function() {
 // --------- Canvas Related methods ----------
 // hide/show spc+m+z+e
 // show all spc+m+z+r
+// hide all spc+m+z+F
 
 //---------- Loading image correctly to canvas -------
 CanvasRelated.prototype.getScaleFactor = function(destWidth,
@@ -164,6 +165,12 @@ CanvasRelated.prototype.clearScene = function(){
     var scene = document.getElementById("scene");
     var context = scene.getContext("2d");
     context.clearRect(0,0, scene.width, scene.height);
+    scene.setAttribute("width", 0);
+    scene.setAttribute("height", 0);
+    var imcol = document.getElementById("image-col");
+    imcol.setAttribute("clientWidth", 0);
+    imcol.setAttribute("clientHeight", 0);
+
     return;
 }; // DONE
 CanvasRelated.prototype.imageLoad = function(event){

@@ -161,6 +161,8 @@ CanvasRelated.prototype.clearScene = function(){
     var scene = document.getElementById("scene");
     var context = scene.getContext("2d");
     context.clearRect(0,0, scene.width, scene.height);
+    // scene.setAttribute("width", "100%");
+    // scene.setAttribute("height", "100%");
     return;
 }; // DONE
 CanvasRelated.prototype.imageLoad = function(event){
@@ -227,9 +229,6 @@ CanvasRelated.prototype.imageLoad = function(event){
             console.log("parent client height");
             console.log(parheight);
         }
-        scene.setAttribute("width", parwidth);
-        scene.setAttribute("height", parheight);
-
 
         // get correct ratios for display
         var ratiolist = this.getScaleFactor(parwidth,
@@ -248,8 +247,6 @@ CanvasRelated.prototype.imageLoad = function(event){
         if(this.debug === true){
             console.log("in original size branch");
         }
-        scene.setAttribute("width", imwidth);
-        scene.setAttribute("height", imheight);
         // get correct ratios for display
         var ratiolist = this.getScaleFactor(imwidth,
                                             imheight,
@@ -266,6 +263,8 @@ CanvasRelated.prototype.imageLoad = function(event){
     }
     var scaledWidth = ratio * imwidth;
     var scaledHeight = ratio * imheight;
+    scene.setAttribute("width", scaledWidth);
+    scene.setAttribute("height", scaledHeight);
     if(this.debug === true){
         console.log("scaled image width");
         console.log(scaledWidth);
@@ -614,15 +613,15 @@ CanvasRelated.prototype.drawDetectionBounds = function(event){
     var mouseY2Trans = mouseY2 / vratio;
 
     var funcThis = this;
-    var lineDraw =  funcThis.getDetectionBound(mouseX2Trans,
+    var detection =  funcThis.getDetectionBound(mouseX2Trans,
                                                mouseY2Trans);
-    // console.log(lineDraw);
-    var width = lineDraw["width_real"] * hratio;
-    var height = lineDraw["height_real"] * vratio;
-    var x1 = lineDraw["x1_real"] * hratio;
-    lineDraw["x1"] = x1;
-    var y1 = lineDraw["y1_real"] * vratio;
-    lineDraw["y1"] = y1;
+    // console.log(detection);
+    var width = detection["width_real"] * hratio;
+    var height = detection["height_real"] * vratio;
+    var x1 = detection["x1_real"] * hratio;
+    detection["x1"] = x1;
+    var y1 = detection["y1_real"] * vratio;
+    detection["y1"] = y1;
     var x2 = x1 + width;
     var y2 = y1 + height;
 
@@ -638,7 +637,7 @@ CanvasRelated.prototype.drawDetectionBounds = function(event){
                                  this.image.hratio,
                                  this.image.vratio,
                                  context,
-                                 lineDraw);
+                                 detection);
     return context;
 }; // TODO debug code
 // -------------- Redrawing Methods -------------------
@@ -1378,6 +1377,7 @@ TransColumn.prototype.getTranscription = function(transObj){
     widthInt = Math.floor(widthInt);
     var heightInt = parseInt(transObj["height_real"], 10);
     heightInt = Math.floor(heightInt);
+    // console.log(transObj);
     //
     var transcription = {};
     transcription["x1_real"] = leftInt;

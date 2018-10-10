@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* redrawing events are done, now onto transcripter
 * Scene functionality is done, transcripter need work
 * Changed layout and widgets
 * Started major refactoring
