@@ -19,6 +19,11 @@
       - Draw bounding box on the currently transcribing area on canvas (redraw)
       - Draw the area on a small canvas on top of transcription area
 
+  Transcriptions objects should be emphasized based not on detections
+  but on a global object list that includes drawn objects and detections
+  maybe they should be added directly to drawn objects
+  thus requiring them to be geojson feature right from the start
+
  */
 
 // Utils funcs
@@ -81,6 +86,12 @@ var CanvasRelated = function() {
     // detections
     obj.detections = [];
 
+    // detection options
+    obj.detectionOptions = {};
+    obj.detectionOptions.strokeColor = "";
+    obj.detectionOptions.fillColor = "";
+    obj.detectionOptions.fillOpacity = "";
+
     // image related
     obj.image = {};
     obj.image["id"] = "";
@@ -127,6 +138,7 @@ var CanvasRelated = function() {
 // --------- Canvas Related methods ----------
 // hide/show spc+m+z+e
 // show all spc+m+z+r
+// hide all spc+m+z+F
 
 //---------- Loading image correctly to canvas -------
 CanvasRelated.prototype.getScaleFactor = function(destWidth,
@@ -435,7 +447,8 @@ CanvasRelated.prototype.drawPolygonFill = function(context, // drawing context
     rgbastr = rgbastr.concat(fillOpacity);
     rgbastr = rgbastr.concat(")");
     context.fillStyle = rgbastr;
-    context.strokeStyle = strokeColor;
+    var rgbstr = "rgb(" + strokeColor + ")";
+    context.strokeStyle = rgbstr;
 
     // draw polygon
     var firstPoint = points[0];
@@ -493,12 +506,31 @@ CanvasRelated.prototype.drawSelection = function(event){
     var y2coord = parseInt(event.layerY - parentOffsetY, 10);
 
     // ratio
-    var hratio = this.image.hratio;
-    var vratio = this.image.vratio;
+    var hratio = this.image["hratio"];
+    var vratio = this.image["vratio"];
+    var ratio = this.image["ratio"];
 
-    // set context style options
+    // set context style options 
     // set context stroke color
-    context.strokeStyle = this.selectorOptions.strokeColor;
+    var strokeColor = this.selectorOptions.strokeColor;
+    var fillColor = this.selectorOptions.fillColor;
+    var fillOpacity = this.selectorOptions.fillOpacity;
+
+    if(fillColor === ""){
+        fillColor = "50,50,50";
+        this.selectorOptions.fillColor = fillColor;
+    }
+    if(fillOpacity === ""){
+        fillOpacity = "0.1";
+        this.selectorOptions.fillOpacity = fillOpacity;
+    }
+    if(strokeColor === ""){
+        strokeColor = "0,0,0";
+        this.selectorOptions.strokeColor = strokeColor;
+    }
+
+    var rgbstr = "rgb(" + this.selectorOptions.strokeColor + ")";
+    context.strokeStyle = rgbstr;
 
     // prepare rgba string for fill style. ex: rgba(255,0,0,0.4)
     var rgbastr = "rgba(";
@@ -508,6 +540,8 @@ CanvasRelated.prototype.drawSelection = function(event){
     rgbastr = rgbastr.concat(this.selectorOptions.fillOpacity);
     rgbastr = rgbastr.concat(")");
     context.fillStyle = rgbastr;
+
+    //
     if(this.debug === true){
         console.log("context set");
     }
@@ -527,7 +561,7 @@ CanvasRelated.prototype.drawSelection = function(event){
         }
         // draw the object
         context = this.drawPolygon(x2coord, y2coord,
-                                   hratio, vratio,
+                                   ratio, ratio,
                                    context,
                                    this.poly,
                                    this.inMouseUp);
@@ -558,8 +592,8 @@ CanvasRelated.prototype.drawSelection = function(event){
         // draw the object
         context = this.drawRectangle(x2coord,
                                      y2coord,
-                                     hratio,
-                                     vratio,
+                                     ratio,
+                                     ratio,
                                      context,
                                      this.rect);
         if(this.debug === true){
@@ -573,7 +607,7 @@ CanvasRelated.prototype.drawSelection = function(event){
             console.log(this.drawnObject);
         }
     }
-    return context;
+    return [context, this.drawnObject];
 };
 // Draw Line Bounding Boxes
 CanvasRelated.prototype.drawDetectionBounds = function(event){
@@ -605,40 +639,64 @@ CanvasRelated.prototype.drawDetectionBounds = function(event){
     // ratio
     var hratio = this.image["hratio"];
     var vratio = this.image["vratio"];
+    var ratio  = this.image["ratio"];
 
     var mouseX2 = parseInt(event.layerX - canvasOffsetX);
     var mouseY2 = parseInt(event.layerY - canvasOffsetY);
 
-    var mouseX2Trans = mouseX2 / hratio;
-    var mouseY2Trans = mouseY2 / vratio;
+    var mouseX2Trans = mouseX2 / ratio;
+    var mouseY2Trans = mouseY2 / ratio;
 
     var funcThis = this;
     var detection =  funcThis.getDetectionBound(mouseX2Trans,
-                                               mouseY2Trans);
+                                                mouseY2Trans);
     // console.log(detection);
-    var width = detection["width_real"] * hratio;
-    var height = detection["height_real"] * vratio;
-    var x1 = detection["x1_real"] * hratio;
+    var width = detection["width_real"] * ratio;
+    var height = detection["height_real"] * ratio;
+    var x1 = detection["x1_real"] * ratio;
     detection["x1"] = x1;
-    var y1 = detection["y1_real"] * vratio;
+    var y1 = detection["y1_real"] * ratio;
     detection["y1"] = y1;
     var x2 = x1 + width;
     var y2 = y1 + height;
 
     // set context style options
     // set context stroke color
-    context.strokeStyle = "yellow";
-    context.fillStyle = "rgba(127,0,0,0.1)";
+    var fillColor = this.detectionOptions.fillColor;
+    var fillOpacity = this.detectionOptions.fillOpacity;
+    var strokeColor = this.detectionOptions.strokeColor;
+
+    if(fillColor === ""){
+        fillColor = "50,50,50";
+        this.detectionOptions.fillColor = fillColor;
+    }
+    if(fillOpacity === ""){
+        fillOpacity = "0.1";
+        this.detectionOptions.fillOpacity = fillOpacity;
+    }
+    if(strokeColor === ""){
+        strokeColor = "0,0,0";
+        this.detectionOptions.strokeColor = strokeColor;
+    }
+    context.strokeStyle = "rgb(" + strokeColor + ")";
+    var rgbastr = "rgba(";
+    // console.log("strokestyle");
+    // console.log(this.detectionOptions.strokeColor);
+    rgbastr = rgbastr.concat(fillColor); // rgb value ex: 255,0,0
+    rgbastr = rgbastr.concat(",");
+    rgbastr = rgbastr.concat(fillOpacity);
+    rgbastr = rgbastr.concat(")");
+    context.fillStyle = rgbastr;
 
     //
     // draw the rectangle
     context = this.drawRectangle(x2,
                                  y2,
-                                 this.image.hratio,
-                                 this.image.vratio,
+                                 this.image.ratio,
+                                 this.image.ratio,
                                  context,
                                  detection);
-    return context;
+    return [context, detection];
 }; // TODO debug code
 // -------------- Redrawing Methods -------------------
 CanvasRelated.prototype.redrawImage = function(imageId, // image identifer
@@ -671,19 +729,43 @@ CanvasRelated.prototype.redrawImage = function(imageId, // image identifer
     context.closePath();
     return context;
 };
-CanvasRelated.prototype.resetScene = function(){
-    // redraw page image without the drawn objects
-    // get canvas and context
+CanvasRelated.prototype.resetCanvasState = function(byeDrawnObject,
+                                                    byeDrawnObjects,
+                                                    byeHeldObjects,
+                                                    byeDetections){
+    // resets everything
+    // zeros out drawn objects
+    // held objects
     var scene = document.getElementById("scene");
     var context = scene.getContext("2d");
     this.clearScene();
-    this.drawnObject = {}; // stores last drawn object
-    this.drawnObjects = {"type" : "FeatureCollection",
-                        "features" : []};
-
-    this.heldObjects = [];
+    if(byeDrawnObject === true){
+        this.drawnObject = {}; // stores last drawn object
+    }
+    if(byeDrawnObjects === true){
+        this.drawnObjects = {"type" : "FeatureCollection",
+                             "features" : []};
+    }
+    if(byeHeldObjects === true){
+        this.heldObjects = [];
+    }
+    if(byeDetections === true){
+        this.detections = [];
+    }
     this.redrawImage(this.image["id"],
                      this.image.ratio, context);
+
+};
+CanvasRelated.prototype.resetScene = function(){
+    // redraw page image without the drawn objects
+    // get canvas and context
+    var fncthis = this;
+    fncthis.resetCanvasState(true, // bye drawn object
+                             true, // bye drawn objects
+                             true, // bye held objects
+                             false // keep detections
+                            );
+    return;
 };
 CanvasRelated.prototype.redrawDetection = function(context,
                                                    detection,
@@ -691,16 +773,24 @@ CanvasRelated.prototype.redrawDetection = function(context,
     // redraw a detection object
     var hratio = this.image["hratio"];
     var vratio = this.image["vratio"];
-    var width = detection["width_real"] * hratio;
-    var height = detection["height_real"] * vratio;
-    var x1 = detection["x1_real"] * hratio;
-    var y1 = detection["y1_real"] * vratio;
+    var ratio = this.image["ratio"];
+    var width = detection["width_real"] * ratio;
+    var height = detection["height_real"] * ratio;
+    var x1 = detection["x1_real"] * ratio;
+    var y1 = detection["y1_real"] * ratio;
 
     // set context style options
     // set context stroke color
     if(setStyle === true){
-        context.strokeStyle = "yellow";
-        context.fillStyle = "rgba(127,0,0,0.1)";
+        context.strokeStyle = "rgb(" + this.detectionOptions.strokeColor + ")";
+        var rgbastr = "rgba(";
+        var fillColor = this.detectionOptions.fillColor;
+        var fillOpacity = this.detectionOptions.fillOpacity;
+        rgbastr = rgbastr.concat(fillColor); // rgb value ex: 255,0,0
+        rgbastr = rgbastr.concat(",");
+        rgbastr = rgbastr.concat(fillOpacity);
+        rgbastr = rgbastr.concat(")");
+        context.fillStyle = rgbastr;
     }
     //
     // draw the rectangle
@@ -800,7 +890,7 @@ CanvasRelated.prototype.redrawAllDrawnObjects = function(){
     }
     // redraw image
     context = this.redrawImage(this.image["id"],
-                               this.ratio, context);
+                               this.image["ratio"], context);
     if(this.debug === true){
         console.log("in image redrawn");
     }
@@ -856,7 +946,7 @@ CanvasRelated.prototype.redrawEverything = function(){
     }
     // redraw image
     context = this.redrawImage(this.image["id"],
-                               this.ratio, context);
+                               this.image["ratio"], context);
     if(this.debug === true){
         console.log("in image redrawn");
     }
@@ -931,6 +1021,7 @@ CanvasRelated.prototype.setContextOptions2Object = function(dobj, // drawer obje
                                                             fillOpacity // 0.2
                                                            ){
     // set context options to the object
+
     dobj["stroke"] = strokeColor;
     dobj["fillColor"] = fillColor;
     dobj["fillOpacity"] = fillOpacity;
@@ -1277,7 +1368,7 @@ TransColumn.prototype.addDetected2TranscriptionArea = function(detected){
 
     // get information to add
     var text = detected["text"];
-    var index = detected["index"];
+    var index = detected["id"];
     var bbox = detected["bbox"];
     var areatype;
     if(detected["type"]){
@@ -1894,25 +1985,27 @@ TransColumn.prototype.checkBbox = function(bbox, drawnObject){
     }
     return check;
 };
-TransColumn.prototype.emphTransRegion = function(hoverRect){
+TransColumn.prototype.resetTextareaStyle = function(){
+    // resets the class of all textareas to transcription-textarea
+    var areaElements = document.getElementsByClassName("area-element");
+    for(var i=0; i<areaElements.length; i++){
+        var tarea = areaElements[i].firstElementChild;
+        var tclass = tarea.getAttribute("class");
+        if(tclass === "onfocus-transcription-textarea"){
+            tarea.setAttribute("class","transcription-textarea");
+        }
+    }
+    return;
+};
+TransColumn.prototype.emphTransRegion = function(drawnObject){
     // Highlight transcription rectangle which
     // correspond to hovering rect coordinates
-    var linelist = document.getElementsByClassName("editable-textarea");
-    var solidline;
-    //
-    for(var i=0; i < linelist.length; i++){
-        //
-        var line = linelist[i];
-        var bbox = line.getAttribute("data-bbox");
-        if(this.checkBbox(bbox, hoverRect) === true){
-            solidline = line;
-        }
-        line.setAttribute("style",
-                          "border-color: black;border-style: dashed;");
-    }
-    if (solidline != null){
-        solidline.setAttribute("style", "border-color: red;border-style: solid;");
-    }
+    this.resetTextareaStyle();
+    var taId = "ta-".concat(drawnObject["id"]);
+    var taType = drawnObject["type"];
+    var textarea = document.getElementById(taId);
+    textarea.setAttribute("class", "onfocus-transcription-textarea");
+    return;
 };
 TransColumn.prototype.getScaleFactor = function(destWidth,
                                                 destHeight,
@@ -2145,10 +2238,12 @@ function getRgbCode(className, listName){
     }
     return rgbval;
 }
+
 function setSelectorStrokeColor(event){
     // set selector stroke color to viewer
-    var selectedValue = document.getElementById("selector-stroke-color-list").value;
-    canvasDraw.selectorOptions.strokeColor = selectedValue;
+    var rgbcode = getRgbCode("selector-stroke-color",
+                             "selector-stroke-color-list");
+    canvasDraw.selectorOptions.strokeColor = rgbcode;
     return;
 }
 
@@ -2167,12 +2262,112 @@ function setSelectorFillOpacity(event){
     return;
 }
 
+
+function setDetectionStrokeColor(event){
+    // set detection stroke color to viewer
+    var rgbcode = getRgbCode("detection-stroke-color",
+                             "detection-stroke-color-list");
+    canvasDraw.detectionOptions.strokeColor = rgbcode;
+    return;
+}
+
+function setDetectionFillColor(event){
+    // set detection fill color to viewer
+    var rgbcode = getRgbCode("detection-fill-color",
+                             "detection-fill-color-list");
+    canvasDraw.detectionOptions.fillColor = rgbcode;
+    return;
+}
+
+function setDetectionFillOpacity(event){
+    // set detection fill opacity to viewer
+    var selectedValue = document.getElementById("detection-fill-opacity-list").value;
+    canvasDraw.detectionOptions.fillOpacity = parseFloat(selectedValue, 10);
+    return;
+}
+
+function setColorScheme(event){
+    // set color schemes for drawing
+    var selectedVal = document.getElementById("color-scheme-list").value;
+    switch(selectedVal){
+        //
+    case "red":
+        // red borders orange yellow fill
+        canvasDraw.detectionOptions.strokeColor = "255,153,0"; // orange borders
+        canvasDraw.selectorOptions.strokeColor = "255,0,0"; // red borders
+        canvasDraw.detectionOptions.fillColor = "255,255,102"; // light orange fill
+        canvasDraw.selectorOptions.fillColor = "255,204,0"; // orange fill
+        canvasDraw.detectionOptions.fillOpacity = "0.1";
+        canvasDraw.selectorOptions.fillOpacity = "0.2";
+        break;
+    case "yellow":
+        canvasDraw.detectionOptions.strokeColor = "255,255,0"; // bright yellow borders
+        canvasDraw.selectorOptions.strokeColor = "255,216,0"; // yellow borders
+        canvasDraw.detectionOptions.fillColor = "88,112,88"; // finlandia green fill
+        canvasDraw.selectorOptions.fillColor = "88,116,152"; // waikawa gray fill
+        canvasDraw.detectionOptions.fillOpacity = "0.1";
+        canvasDraw.selectorOptions.fillOpacity = "0.2";
+        break;
+    case "green":
+        canvasDraw.detectionOptions.strokeColor = "0,100,4"; // light dark green borders
+        canvasDraw.selectorOptions.strokeColor = "0,85,2"; // dark green borders
+        canvasDraw.detectionOptions.fillColor = "204,255,187"; // light green fill
+        canvasDraw.selectorOptions.fillColor = "58,127,11"; // darker light green fill
+        canvasDraw.detectionOptions.fillOpacity = "0.1";
+        canvasDraw.selectorOptions.fillOpacity = "0.2";
+        break;
+    case "blue":
+        canvasDraw.detectionOptions.strokeColor = "0,153,204"; // blue borders
+        canvasDraw.selectorOptions.strokeColor = "0,51,153"; // dark blue borders
+        canvasDraw.detectionOptions.fillColor = "204,255,204"; // blue green fill
+        canvasDraw.selectorOptions.fillColor = "102,204,255"; // blue fill
+        canvasDraw.detectionOptions.fillOpacity = "0.1";
+        canvasDraw.selectorOptions.fillOpacity = "0.2";
+        break;
+    case "purple":
+        canvasDraw.detectionOptions.strokeColor = "140,72,159"; // dark purple borders
+        canvasDraw.selectorOptions.strokeColor = "68,50,102"; // darker purple borders
+        canvasDraw.detectionOptions.fillColor = "241,240,255"; // light purple fill
+        canvasDraw.selectorOptions.fillColor = "195,195,229"; // orange fill
+        canvasDraw.detectionOptions.fillOpacity = "0.1";
+        canvasDraw.selectorOptions.fillOpacity = "0.2";
+        break;
+    case "pink":
+        canvasDraw.detectionOptions.strokeColor = "181,138,165"; // deep pink borders
+        canvasDraw.selectorOptions.strokeColor = "132,89,107"; // crimson borders
+        canvasDraw.detectionOptions.fillColor = "206,207,206"; // gray fill
+        canvasDraw.selectorOptions.fillColor = "102,127,127"; // darker gray fill
+        canvasDraw.detectionOptions.fillOpacity = "0.1";
+        canvasDraw.selectorOptions.fillOpacity = "0.2";
+        break;
+    default:
+        canvasDraw.detectionOptions.strokeColor = "120,120,120"; // gray borders
+        canvasDraw.selectorOptions.strokeColor = "0,0,0"; // black borders
+        canvasDraw.detectionOptions.fillColor = "120,120,120"; // gray fill
+        canvasDraw.selectorOptions.fillColor = "0,0,0"; // black fill
+        canvasDraw.detectionOptions.fillOpacity = "0.1";
+        canvasDraw.selectorOptions.fillOpacity = "0.2";
+        // break;
+    }
+    return;
+}
+
 function setSelectionProcess(event){
     // set selection process to viewer
     var selectval = document.getElementById("selector-active-cbox");
     canvasDraw.selectInProcess=selectval.checked;
+    if(selectval.checked === true){
+        // if the selection is ongoing
+        // detections that are already drawn should be
+        // removed unless hold check is enabled
+        // also we should reset the textarea style
+        transcription.resetTextareaStyle();
+        canvasDraw.resetScene();
+    }
     return selectval;
 }
+
+
 function showAllDetections(){
     // show all previously added selections
     var selectval = document.getElementById("showall-detected-cbox");
@@ -2218,7 +2413,8 @@ function setSceneMouseUp(event){
         canvasDraw.inMouseUp = true;
         //
         if(canvasDraw.selectorOptions.type === "polygon-selector"){
-            var lastDrawingContext = canvasDraw.drawSelection(event);
+            var contextObjectList = canvasDraw.drawSelection(event);
+            var lastDrawingContext = contextObjectList[0];
             canvasDraw.drawPolygonFill(lastDrawingContext,
                                         canvasDraw.poly);
         }else{
@@ -2328,7 +2524,8 @@ function setSceneMouseMove(event){
             return;
         }
         // else show detection bounds
-        canvasDraw.drawDetectionBounds(event);
+        var contextObjectList = canvasDraw.drawDetectionBounds(event);
+        transcription.emphTransRegion(contextObjectList[1]);
         // passing drawn object to transcription column
     }
     return;

@@ -55,7 +55,8 @@ li.area-element{
 textarea.transcription-textarea{
     width: 100%;
 }
-textarea.hover-transcription-textarea{
+textarea.onfocus-transcription-textarea{
     width: 100%;
-    border-color: red;
+    border-color: purple;
+    border-style: dashed;
 }
