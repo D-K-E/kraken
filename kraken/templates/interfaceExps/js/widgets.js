@@ -57,7 +57,7 @@ var CanvasRelated = function() {
         // {x:0, y:1, x_real:20, y_real:50};
     ],
                 "id" : "",
-                "type" : "polygon",
+                "shape" : "polygon",
                 "regionType" : "",
                 "hratio" : "",
                 "vratio" : "",
@@ -66,7 +66,7 @@ var CanvasRelated = function() {
                 "fillOpacity" : "",
                 "imageId" : ""};
     obj.rect = {"x1" : "",
-                "type" : "rectangle",
+                "shape" : "rectangle",
                 "regionType" : "",
                 "y1" : "",
                 "x1_real" : "",
@@ -1022,7 +1022,7 @@ CanvasRelated.prototype.setContextOptions2Object = function(dobj, // drawer obje
                                                            ){
     // set context options to the object
 
-    dobj["stroke"] = strokeColor;
+    dobj["strokeColor"] = strokeColor;
     dobj["fillColor"] = fillColor;
     dobj["fillOpacity"] = fillOpacity;
     return dobj;
@@ -1048,10 +1048,10 @@ CanvasRelated.prototype.convertObj2Geojson = function(drawnObj){
     geoobj["properties"]["displayRelated"]["fillColor"] = drawnObj["fillColor"];
     geoobj["properties"]["displayRelated"]["fillOpacity"] = drawnObj["fillOpacity"];
     geoobj["properties"]["interfaceCoordinates"] = {};
-    if(drawnObj["type"] === "polygon"){
+    if(drawnObj["shape"] === "polygon"){
         // geometries for polygon
         var pointlist = drawnObj["pointlist"];
-        geoobj["properties"]["selectorType"] = drawnObj["type"];
+        geoobj["properties"]["regionShape"] = drawnObj["shape"];
         geoobj["properties"]["interfaceCoordinates"]["pointlist"] = pointlist;
         geoobj["geometry"]["type"] = "Polygon";
         var coords = [];
@@ -1065,9 +1065,9 @@ CanvasRelated.prototype.convertObj2Geojson = function(drawnObj){
         var newfp = [fp["x_real"],fp["y_real"]];
         coords.push(newfp);
         geoobj["geometry"]["coordinates"] = [coords];
-    }else if(drawnObj["type"] === "rectangle"){
+    }else if(drawnObj["shape"] === "rectangle"){
         // geometries for rectangle
-        geoobj["properties"]["selectorType"] = drawnObj["type"];
+        geoobj["properties"]["regionShape"] = drawnObj["shape"];
         var x1 = drawnObj["x1"];
         var y1 = drawnObj["y1"];
         var x1_real = drawnObj["x1_real"];
@@ -1270,59 +1270,6 @@ CanvasRelated.prototype.getDetectionBound = function(mXcoord,
     //
     return detection;
 };
-// Controling the mouse movements in canvas
-CanvasRelated.prototype.canvasMouseMove = function(event){
-    // regroups functions that activates with
-    // mouse move on canvas
-    var imcanvas = document.getElementById("image-canvas");
-    var context = imcanvas.getContext('2d');
-    var canvasOffsetX = imcanvas.offsetLeft;
-    var canvasOffsetY = imcanvas.offsetTop;
-    var mouseX = parseInt(event.layerX - canvasOffsetX);
-    var mouseY = parseInt(event.layerY - canvasOffsetY);
-    var mouseXTrans = mouseX / this.image.hratio; // real coordinates
-    var mouseYTrans = mouseY / this.image.vratio; // real coordinates
-    //
-    var currentRect = this.image.currentRect;
-    var hoveringRect = this.image.hoveringRect;
-    // var contains = this.checkRectContained(hoveringRect,// checks if first
-    // currentRect);// contains the second
-    var contains = false;
-    this.checkEventRectBound(event, hoveringRect, this.inhover);
-    if((this.inhover === false) &&
-       (this.selectInProcess === false) &&
-       (contains === false)){
-        this.drawLineBounds(event);
-    }
-    //
-    if(this.mousePressed === false){
-        return;
-    }
-    if(this.mousePressed === true){
-        this.selectInProcess = true;
-        context.strokeStyle = "lightgray";
-        context.lineWidth=2;
-        context.clearRect(0,0,
-                          imcanvas.width,
-                          imcanvas.height);
-        this.redrawPageImage(context, imcanvas);
-        // drawRectangleSelection(mouseXTrans,
-        //                        mouseYTrans,
-        //                        context);
-        var rect1 = this.image.currentRect;
-        this.drawRectangle(mouseX,
-                           mouseY,
-                           mouseXTrans,
-                           mouseYTrans,
-                           this.image.xcoord,
-                           this.image.ycoord,
-                           this.image.hratio,
-                           this.image.vratio,
-                           context,
-                           rect1);
-    }
-};
-
 CanvasRelated.prototype.saveCoordinates = function(){
     // opens up a window with line coordinates in it
     var lines = this.image.lines;
@@ -1345,6 +1292,7 @@ var TransColumn = function(){
     obj.hratio = "";
     obj.vratio = "";
     obj.ratio = "";
+    obj.imageId = "";
     obj.transcriptions = [];
     obj.deletedNodes = [];
     return obj;
@@ -1392,8 +1340,8 @@ TransColumn.prototype.addDetected2TranscriptionArea = function(detected){
     var taId = this.createIdWithPrefix(index, "ta");
     var makeBbox = false;
     var transLine = this.createTLine(taId,
-                                     areatype,
-                                     detected, makeBbox);
+                                     detected,
+                                     makeBbox);
     transLine.setAttribute("data-bbox", bbox);
 
     // create list element that contains text area
@@ -1452,9 +1400,10 @@ TransColumn.prototype.loadTranscription = function(event){
     for(var k=0; k<lines.length; k++){
         //
         var line = this.getTranscription(lines[k]);
-        // console.log(line);
+        console.log(line);
+        var geoj = this.convert2Geojson(line);
         funcThis.addDetected2TranscriptionArea(line);
-        this.transcriptions.push(line);
+        this.transcriptions.push(geoj);
     }
     return;
 }; // TODO: debug code
@@ -1479,6 +1428,7 @@ TransColumn.prototype.getTranscription = function(transObj){
     transcription["bbox"] = transObj["bbox"];
     transcription["text"] = transObj["text"];
     transcription["type"] = transObj["type"];
+    transcription["shape"] = transObj["shape"];
     return transcription;
 };
 TransColumn.prototype.convert2Geojson = function(detection){
@@ -1505,6 +1455,26 @@ TransColumn.prototype.convert2Geojson = function(detection){
     geoobj["geometry"] = {};
     geoobj["id"] = detection["id"];
     geoobj["properties"]["regionType"] = detection["type"];
+    geoobj["properties"]["id"] = detection["id"];
+    geoobj["properties"]["text"] = "";
+
+    // display related
+    geoobj["properties"]["displayRelated"] = {};
+    geoobj["properties"]["displayRelated"]["hratio"] = this.hratio;
+    geoobj["properties"]["displayRelated"]["vratio"] = this.vratio;
+    if(detection.hasOwnProperty("strokeColor")){
+        geoobj["properties"]["displayRelated"]["strokeColor"] = detection["strokeColor"];
+    }
+    if(detection.hasOwnProperty("fillColor")){
+        geoobj["properties"]["displayRelated"]["fillColor"] = detection["fillColor"];
+    }
+    if(detection.hasOwnProperty("fillOpacity")){
+        geoobj["properties"]["displayRelated"]["fillOpacity"] = detection["fillOpacity"];
+    }
+    if(detection.hasOwnProperty("imageId")){
+        geoobj["properties"]["imageId"] = detection["imageId"];
+    }
+
     geoobj["properties"]["interfaceCoordinates"] = {};
     geoobj["properties"]["interfaceCoordinates"]["x1"] = x1;
     geoobj["properties"]["interfaceCoordinates"]["y1"] = y1;
@@ -1595,8 +1565,6 @@ TransColumn.prototype.createItList = function(idstr){
     return ulList;
 };
 TransColumn.prototype.createTLine = function(idstr, // textarea id
-                                             regionType, // type of the
-                                             // transcription area
                                              coordObj, // coordinate containing object
                                              makeBbox
                                             ){
@@ -1610,9 +1578,10 @@ TransColumn.prototype.createTLine = function(idstr, // textarea id
     //
     var index = idstr.replace(/[^0-9]/g, '');
     var placeholder = "Enter text for added ";
-    placeholder = placeholder.concat(regionType);
+    placeholder = placeholder.concat(coordObj["regionType"]);
     transLine.setAttribute("placeholder", placeholder);
-    transLine.setAttribute("data-region-type", regionType);
+    transLine.setAttribute("data-region-type", coordObj["regionType"]);
+    transLine.setAttribute("data-drawn-id", coordObj["id"]);
     var bbox = "";
     if(makeBbox === true){
         bbox = bbox.concat(coordObj["x1_real"]);
@@ -1723,7 +1692,8 @@ TransColumn.prototype.addTranscription = function(){
     var orList = document.getElementById("text-area-list");
     // create the new line id
     var newListId = this.createItemId();
-    this.drawnObject["index"] = newListId;
+    console.log(this.drawnObject);
+    this.drawnObject["regionType"] = rbtnval;
     //
     var igId = this.createIdWithPrefix(newListId, "ig");
     var listItem = this.createIGroup(igId);
@@ -1733,7 +1703,7 @@ TransColumn.prototype.addTranscription = function(){
     //
     var taId = this.createIdWithPrefix(newListId, "ta");
     var makeBbox = true;
-    var transLine = this.createTLine(taId, rbtnval,
+    var transLine = this.createTLine(taId,
                                      this.drawnObject,
                                      makeBbox);
 
@@ -2462,7 +2432,7 @@ function setSceneMouseDown(event){
         }else if(selectorType === "rectangle-selector"){
             // reset the rectangle if the selector is a rectangle
             canvasDraw.rect = {"x1" : "",
-                                "type" : "rectangle",
+                                "shape" : "rectangle",
                                 "regionType" : "",
                                 "y1" : "",
                                 "x1_real" : "",
@@ -2483,7 +2453,7 @@ function setSceneMouseDown(event){
             // reset the polygon if the selector is a polygon
             canvasDraw.poly = {"pointlist" : [],
                                 "id" : "",
-                                "type" : "polygon",
+                                "shape" : "polygon",
                                 "regionType" : "",
                                 "hratio" : "",
                                 "vratio" : "",

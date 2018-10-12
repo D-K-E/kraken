@@ -33,7 +33,10 @@
                          line{{ line.index }}["y1_real"] = {{ line.top_real }};
                          line{{ line.index }}["height_real"] = {{ line.height_real }};
                          line{{ line.index }}["id"] = "{{ line.index }}";
+                         // todo change these fields with the arrival of
+                         // new detection methods
                          line{{ line.index }}["type"] = "line";
+                         line{{ line.index }}["shape"] = "rectangle";
                          line{{ line.index }}["bbox"] = "{{ line.bbox  }}";
                          {% if line.text %}
                          line{{ line.index }}["text"] = "{{ line.text }}";
@@ -478,6 +481,7 @@
                                               data-bbox=""
                                               onfocus="showTranscriptionArea(event)"
                                               data-region-type=""
+                                              data-drawn-id=""
                                               placeholder="Enter text for area"
                                               class="transcription-textarea">
                                         <!-- Instead of data-region-type field,
