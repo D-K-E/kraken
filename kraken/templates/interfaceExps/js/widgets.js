@@ -1,3 +1,23 @@
+// author: Kaan Eraslan
+
+
+function generateUUID() { // Public Domain/MIT
+    /*
+      taken from stackoverflow.com
+      https://stackoverflow.com/a/8809472/7330813
+      author: Briguy37
+     */
+
+    var d = new Date().getTime();
+    if (typeof performance !== 'undefined' && typeof performance.now === 'function'){
+        d += performance.now(); //use high-precision timer if available
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
 
 // CanvasRelated object regrouping
 // methods related to drawing and keeping track of the
@@ -84,7 +104,8 @@ var CanvasRelated = function() {
                 "id" : ""};
 
     // detections
-    obj.detections = [];
+    obj.detections = {"type" : "FeatureCollection",
+                      "features" : []};
 
     // detection options
     obj.detectionOptions = {};
@@ -651,12 +672,12 @@ CanvasRelated.prototype.drawDetectionBounds = function(event){
     var detection =  funcThis.getDetectionBound(mouseX2Trans,
                                                 mouseY2Trans);
     // console.log(detection);
-    var width = detection["width_real"] * ratio;
-    var height = detection["height_real"] * ratio;
-    var x1 = detection["x1_real"] * ratio;
-    detection["x1"] = x1;
-    var y1 = detection["y1_real"] * ratio;
-    detection["y1"] = y1;
+    var width = detection["properties"]["interfaceCoordinates"]["width_real"] * ratio;
+    var height = detection["properties"]["interfaceCoordinates"]["height_real"] * ratio;
+    var x1 = detection["properties"]["interfaceCoordinates"]["x1_real"] * ratio;
+    detection["properties"]["interfaceCoordinates"]["x1"] = x1;
+    var y1 = detection["properties"]["interfaceCoordinates"]["y1_real"] * ratio;
+    detection["properties"]["interfaceCoordinates"]["y1"] = y1;
     var x2 = x1 + width;
     var y2 = y1 + height;
 
@@ -690,12 +711,12 @@ CanvasRelated.prototype.drawDetectionBounds = function(event){
 
     //
     // draw the rectangle
-    context = this.drawRectangle(x2,
-                                 y2,
-                                 this.image.ratio,
-                                 this.image.ratio,
-                                 context,
-                                 detection);
+    context.beginPath();
+    context.rect(x1,y1,width,height);
+    context.stroke();
+    context.fill();
+    context.closePath();
+
     return [context, detection];
 }; // TODO debug code
 // -------------- Redrawing Methods -------------------
@@ -750,7 +771,8 @@ CanvasRelated.prototype.resetCanvasState = function(byeDrawnObject,
         this.heldObjects = [];
     }
     if(byeDetections === true){
-        this.detections = [];
+        this.detections = {"type" : "FeatureCollection",
+                           "features" : []};
     }
     this.redrawImage(this.image["id"],
                      this.image.ratio, context);
@@ -768,16 +790,17 @@ CanvasRelated.prototype.resetScene = function(){
     return;
 };
 CanvasRelated.prototype.redrawDetection = function(context,
-                                                   detection,
+                                                   detection, // geojObj
                                                    setStyle){
     // redraw a detection object
     var hratio = this.image["hratio"];
     var vratio = this.image["vratio"];
     var ratio = this.image["ratio"];
-    var width = detection["width_real"] * ratio;
-    var height = detection["height_real"] * ratio;
-    var x1 = detection["x1_real"] * ratio;
-    var y1 = detection["y1_real"] * ratio;
+    // console.log(detection);
+    var width = detection["properties"]["interfaceCoordinates"]["width_real"] * ratio;
+    var height = detection["properties"]["interfaceCoordinates"]["height_real"] * ratio;
+    var x1 = detection["properties"]["interfaceCoordinates"]["x1_real"] * ratio;
+    var y1 = detection["properties"]["interfaceCoordinates"]["y1_real"] * ratio;
 
     // set context style options
     // set context stroke color
@@ -872,9 +895,9 @@ CanvasRelated.prototype.redrawDrawnObjects = function(drawnObjects, context){
             console.log("drawn object");
             console.log(dobj);
         }
-        if(dobj["properties"]["selectorType"] === "polygon"){
+        if(dobj["properties"]["regionShape"] === "polygon"){
             context = this.redrawPolygonObj(context, dobj);
-        }else if(dobj["properties"]["selectorType"] === "rectangle"){
+        }else if(dobj["properties"]["regionShape"] === "rectangle"){
             context = this.redrawRectObj(context, dobj);
         }
     }
@@ -898,10 +921,11 @@ CanvasRelated.prototype.redrawAllDrawnObjects = function(){
     context = fncthis.redrawDrawnObjects(this.drawnObjects, context);
     return;
 };
-CanvasRelated.prototype.redrawDetections = function(detections, context){
+CanvasRelated.prototype.redrawDetections = function(detections, // geojObj
+                                                    context){
     // redraw detections
-    for(var i=0; i < detections.length; i++){
-        var dobj = detections[i];
+    for(var i=0; i < detections["features"].length; i++){
+        var dobj = detections["features"][i];
         if(this.debug === true){
             console.log("drawn object");
             console.log(dobj);
@@ -913,6 +937,7 @@ CanvasRelated.prototype.redrawDetections = function(detections, context){
             context.strokeColor = "yellow";
             context.fillStyle = "rgba(127,0,0,0.2)";
         }
+        // console.log(dobj);
         context = this.redrawDetection(context, dobj,
                                        false // setStyle check
                                       );
@@ -954,6 +979,39 @@ CanvasRelated.prototype.redrawEverything = function(){
     context = fncthis.redrawDetections(this.detections, context);
     context = fncthis.redrawDrawnObjects(this.drawnObjects, context);
     return context;
+};
+CanvasRelated.prototype.removeFeatureById = function(features, filterId){
+    // filter out the filterid from features array
+    var narray = [];
+    for(var i=0; i<features.length; i++){
+        var feature = features[i];
+        if(feature["id"] != filterId){
+            narray.push(feature);
+        }
+    }
+    return narray;
+};
+CanvasRelated.prototype.removeDrawnObject = function(drawnObj){
+    // remove drawn object from detection/drawnObjects
+    // if it exist in detections
+    // console.log("removing drawn object");
+    // console.log(drawnObj);
+    this.detections["features"] = this.removeFeatureById(
+        this.detections["features"],
+        drawnObj["id"]);
+    this.drawnObjects["features"] = this.removeFeatureById(
+        this.drawnObjects["features"],
+        drawnObj["id"]);
+
+    return;
+};
+CanvasRelated.prototype.removeDrawnObjects = function(drawnObjList){
+    // remove drawn objects from canvas memory
+    for(var i=0; i<drawnObjList.length; i++){
+        // console.log(drawnObjList);
+        var fncthis = this;
+        fncthis.removeDrawnObject(drawnObjList[i]);
+    }
 };
 //
 // ------------- Methods for Managing Drawing Event -------
@@ -1036,7 +1094,7 @@ CanvasRelated.prototype.convertObj2Geojson = function(drawnObj){
     geoobj["type"] = "Feature";
     geoobj["properties"] = {};
     geoobj["geometry"] = {};
-    geoobj["id"] = drawnObj["id"];
+    geoobj["id"] = generateUUID();
     geoobj["properties"]["id"] = drawnObj["id"];
     geoobj["properties"]["text"] = "";
     geoobj["properties"]["imageId"] = drawnObj["imageId"];
@@ -1127,8 +1185,20 @@ CanvasRelated.prototype.addSingleDrawnObject = function(){
         console.log("drawn objects after recent addition");
         console.log(this.drawnObjects);
     }
-    console.log(this.drawnObjects);
+    // console.log(this.drawnObjects);
     return geoj;
+};
+CanvasRelated.prototype.getDrawnById = function(index, drawStack){
+    // gives the transcription (feature) using data id
+    var retobj;
+    for(var i=0; i<drawStack["features"].length; i++){
+        var trans = drawStack["features"][i];
+        if(trans["id"] === index){
+            retobj = JSON.parse(JSON.stringify(trans));
+            return retobj;
+        }
+    }
+    return retobj;
 };
 
 //
@@ -1253,13 +1323,14 @@ CanvasRelated.prototype.getDetectionBound = function(mXcoord,
     // coordinates provided
     // console.log("in get detection bound");
     var detection;
+    // console.log(this.detections);
     //
-    for(var i=0; i< this.detections.length; i++){
-        var aDetection = this.detections[i];
-        var x1 = parseInt(aDetection["x1_real"], 10);
-        var y1 = parseInt(aDetection["y1_real"], 10);
-        var x2 = x1 + parseInt(aDetection["width_real"], 10);
-        var y2 = y1 + parseInt(aDetection["height_real"], 10);
+    for(var i=0; i< this.detections["features"].length; i++){
+        var aDetection = this.detections["features"][i]; // Contains geoj
+        var x1 = parseInt(aDetection["properties"]["interfaceCoordinates"]["x1_real"], 10);
+        var y1 = parseInt(aDetection["properties"]["interfaceCoordinates"]["y1_real"], 10);
+        var x2 = x1 + parseInt(aDetection["properties"]["interfaceCoordinates"]["width_real"], 10);
+        var y2 = y1 + parseInt(aDetection["properties"]["interfaceCoordinates"]["height_real"], 10);
         if(this.checkDetectionBound(mXcoord, mYcoord,
                                     x1, y1,
                                     x2, y2) === true){
@@ -1293,7 +1364,8 @@ var TransColumn = function(){
     obj.vratio = "";
     obj.ratio = "";
     obj.imageId = "";
-    obj.transcriptions = [];
+    obj.transcriptions = {"type" : "FeatureCollection",
+                          "features" : []};
     obj.deletedNodes = [];
     return obj;
 };
@@ -1308,68 +1380,77 @@ TransColumn.prototype.clearTranscription = function(){
     while(tlinelist.firstChild){
         tlinelist.removeChild(tlinelist.firstChild);
     }
-    this.transcriptions = [];
+    this.transcriptions["features"] = [];
     return;
 };
-TransColumn.prototype.addDetected2TranscriptionArea = function(detected){
-    // adds the detected area 2 transcription area
-
-    // get information to add
-    var text = detected["text"];
-    var index = detected["id"];
-    var bbox = detected["bbox"];
-    var areatype;
-    if(detected["type"]){
-        areatype = detected["type"];
-    }else{
-        areatype="";
-    }
-
-    // create necessary elements
-    var orList = document.getElementById("text-area-list");
-
-    // create the item group
+TransColumn.prototype.createTranscriptionField = function(index,
+                                                          makeBbox,
+                                                          geojObject){
+    // Create Transcription field
     var igId = this.createIdWithPrefix(index, "ig");
     var listItem = this.createIGroup(igId);
-
-    // create item unordered list
+    //
     var ilId = this.createIdWithPrefix(index, "il");
     var ulList = this.createItList(ilId);
-
-    // create textarea
+    //
     var taId = this.createIdWithPrefix(index, "ta");
-    var makeBbox = false;
     var transLine = this.createTLine(taId,
-                                     detected,
+                                     geojObject,
                                      makeBbox);
-    transLine.setAttribute("data-bbox", bbox);
 
     // create list element that contains text area
     var aelId = this.createIdWithPrefix(index, "ael");
     var ael = this.createAreaElement(aelId);
 
-    // create area widget next to textarea
+    //
     var awId = this.createIdWithPrefix(index, "aw");
     var areaWidget = this.createAreaWidget(awId);
-
-    // create checkbox container label
+    //
     var cbcId = this.createIdWithPrefix(index, "cbc");
     var cboxLabel = this.createAreaCboxLabel(cbcId);
-
-    // create area checkbox
+    //
     var acboxId = this.createIdWithPrefix(index, "acbox");
     var acbox = this.createAreaCbox(acboxId);
 
+    return [listItem, ulList, transLine, ael,
+            areaWidget, cboxLabel, acbox];
+
+};
+TransColumn.prototype.setBbox2Textarea = function(bbox, index){
+    // set data-bbox attribute of a given textarea in the given index
+    var taId = this.createIdWithPrefix(index, "ta");
+    var txtarea = document.getElementById(taId);
+    // console.log(bbox);
+    txtarea.setAttribute("data-bbox", bbox);
+    return;
+
+};
+TransColumn.prototype.addDetected2TranscriptionArea = function(detected // geojObject
+                                                              ){
+    // adds the detected area 2 transcription area
+
+    // get information to add
+    var text = detected["properties"]["text"];
+    var index = detected["properties"]["id"];
+    var bbox = detected["properties"]["interfaceCoordinates"]["bbox"];
+
+    // create necessary elements
+    var orList = document.getElementById("text-area-list");
+
+    // create the item group
+    var fncthis = this;
+    var makeBbox = false;
+    var fieldItem = fncthis.createTranscriptionField(index,
+                                                     makeBbox,
+                                                     detected);
     // put everything in its correct position
-    var itemGroup = this.fillItemGroupBody(listItem,
-                                           ulList,
-                                           transLine,
-                                           ael,
-                                           areaWidget,
-                                           acbox,
-                                           cboxLabel);
+    var itemGroup = this.fillItemGroupBody(fieldItem);
     // list item goes into ol list
     orList.appendChild(itemGroup);
+
+    // set bbox to textarea
+    // console.log(detected);
+    fncthis.setBbox2Textarea(bbox, index);
     // this.sortLines();
 };
 TransColumn.prototype.loadTranscription = function(event){
@@ -1400,10 +1481,11 @@ TransColumn.prototype.loadTranscription = function(event){
     for(var k=0; k<lines.length; k++){
         //
         var line = this.getTranscription(lines[k]);
-        console.log(line);
+        // console.log(line);
         var geoj = this.convert2Geojson(line);
-        funcThis.addDetected2TranscriptionArea(line);
-        this.transcriptions.push(geoj);
+        funcThis.addDetected2TranscriptionArea(geoj);
+        // console.log(geoj);
+        this.transcriptions["features"].push(geoj);
     }
     return;
 }; // TODO: debug code
@@ -1453,8 +1535,9 @@ TransColumn.prototype.convert2Geojson = function(detection){
     geoobj["type"] = "Feature";
     geoobj["properties"] = {};
     geoobj["geometry"] = {};
-    geoobj["id"] = detection["id"];
+    geoobj["id"] = generateUUID();
     geoobj["properties"]["regionType"] = detection["type"];
+    geoobj["properties"]["regionShape"] = detection["shape"];
     geoobj["properties"]["id"] = detection["id"];
     geoobj["properties"]["text"] = "";
 
@@ -1490,6 +1573,11 @@ TransColumn.prototype.convert2Geojson = function(detection){
     geoobj["properties"]["interfaceCoordinates"]["height"] = height;
     geoobj["properties"]["interfaceCoordinates"]["width_real"] = width_real;
     geoobj["properties"]["interfaceCoordinates"]["height_real"] = height_real;
+
+    // add bbox if it exists
+    if(detection.hasOwnProperty("bbox")){
+        geoobj["properties"]["interfaceCoordinates"]["bbox"] = detection["bbox"];
+    }
     //
     geoobj["geometry"]["type"] = "MultiLineString";
     var topside = [[x1_real, y1_real], [x2_real, y1_real]];
@@ -1504,8 +1592,8 @@ TransColumn.prototype.convert2Geojson = function(detection){
 TransColumn.prototype.getLineById = function(idstr){
     var index = idstr.replace(/[^0-9]/g, '');
     var result;
-    for(var i=0; i < this.transcriptions.length; i++){
-        var trans = this.transcriptions[i];
+    for(var i=0; i < this.transcriptions["features"].length; i++){
+        var trans = this.transcriptions["features"][i];
         if(trans.index === index){
             result = trans;
         }
@@ -1571,6 +1659,7 @@ TransColumn.prototype.createTLine = function(idstr, // textarea id
     // create a transcription line
     var transLine = document.createElement("textarea");
     // set attributes
+    // console.log(coordObj);
     transLine.setAttribute("id", idstr);
     transLine.setAttribute("spellcheck", "true");
     transLine.setAttribute("class", "transcription-textarea");
@@ -1578,19 +1667,19 @@ TransColumn.prototype.createTLine = function(idstr, // textarea id
     //
     var index = idstr.replace(/[^0-9]/g, '');
     var placeholder = "Enter text for added ";
-    placeholder = placeholder.concat(coordObj["regionType"]);
+    placeholder = placeholder.concat(coordObj["properties"]["regionType"]);
     transLine.setAttribute("placeholder", placeholder);
-    transLine.setAttribute("data-region-type", coordObj["regionType"]);
+    transLine.setAttribute("data-region-type", coordObj["properties"]["regionType"]);
     transLine.setAttribute("data-drawn-id", coordObj["id"]);
     var bbox = "";
     if(makeBbox === true){
-        bbox = bbox.concat(coordObj["x1_real"]);
+        bbox = bbox.concat(coordObj["properties"]["interfaceCoordinates"]["x1_real"]);
         bbox = bbox.concat(", ");
-        bbox = bbox.concat(coordObj["y1_real"]);
+        bbox = bbox.concat(coordObj["properties"]["interfaceCoordinates"]["y1_real"]);
         bbox = bbox.concat(", ");
-        bbox = bbox.concat(coordObj["width_real"]);
+        bbox = bbox.concat(coordObj["properties"]["interfaceCoordinates"]["width_real"]);
         bbox = bbox.concat(", ");
-        bbox = bbox.concat(coordObj["height_real"]);
+        bbox = bbox.concat(coordObj["properties"]["interfaceCoordinates"]["height_real"]);
     }
     transLine.setAttribute("data-bbox", bbox);
     //
@@ -1637,14 +1726,17 @@ TransColumn.prototype.createAreaWidget = function(idstr){
     //
     return areaWidget;
 };
-TransColumn.prototype.fillItemGroupBody = function(itemGroup,
-                                                 itemList,
-                                                 textAreaLine,
-                                                 listElement,
-                                                 areaWidget,
-                                                 areaCbox,
-                                                 cboxLabel){
+TransColumn.prototype.fillItemGroupBody = function(fieldItems){
     // create text-area-list body
+    var itemGroup, itemList, transLine, textAreaLine, areaWidget, cboxLabel, areaCbox;
+    itemGroup = fieldItems[0]; // item group
+    itemList = fieldItems[1];  // ulList
+    transLine = fieldItems[2];  // textarea
+    textAreaLine = fieldItems[3];  // area Element - ael
+    areaWidget = fieldItems[4]; // area widget
+    cboxLabel = fieldItems[5]; // cbox label
+    areaCbox = fieldItems[6]; // cbox
+
 
     // cbox goes into cboxlabel
     cboxLabel.prepend(areaCbox);
@@ -1653,11 +1745,11 @@ TransColumn.prototype.fillItemGroupBody = function(itemGroup,
     areaWidget.appendChild(cboxLabel);
 
     // textarea goes into line element
-    listElement.appendChild(textAreaLine);
+    textAreaLine.appendChild(transLine);
 
     // transline and linewidget goes into ullist
     itemList.appendChild(areaWidget);
-    itemList.appendChild(listElement);
+    itemList.appendChild(textAreaLine);
 
     // ul list goes into list item
     itemGroup.appendChild(itemList);
@@ -1692,47 +1784,20 @@ TransColumn.prototype.addTranscription = function(){
     var orList = document.getElementById("text-area-list");
     // create the new line id
     var newListId = this.createItemId();
-    console.log(this.drawnObject);
-    this.drawnObject["regionType"] = rbtnval;
-    //
-    var igId = this.createIdWithPrefix(newListId, "ig");
-    var listItem = this.createIGroup(igId);
-    //
-    var ilId = this.createIdWithPrefix(newListId, "il");
-    var ulList = this.createItList(ilId);
-    //
-    var taId = this.createIdWithPrefix(newListId, "ta");
+    this.drawnObject["properties"]["regionType"] = rbtnval;
     var makeBbox = true;
-    var transLine = this.createTLine(taId,
-                                     this.drawnObject,
-                                     makeBbox);
-
-    // create list element that contains text area
-    var aelId = this.createIdWithPrefix(newListId, "ael");
-    var ael = this.createAreaElement(aelId);
-
+    var fncthis = this;
     //
-    var awId = this.createIdWithPrefix(newListId, "aw");
-    var lineWidget = this.createAreaWidget(awId);
+    var fieldItems = fncthis.createTranscriptionField(newListId,
+                                                      makeBbox,
+                                                      this.drawnObject);
     //
-    var cbcId = this.createIdWithPrefix(newListId, "cbc");
-    var cboxLabel = this.createAreaCboxLabel(cbcId);
-    //
-    var acboxId = this.createIdWithPrefix(newListId, "acbox");
-    var acbox = this.createAreaCbox(acboxId);
-    //
-    var itemGroup = this.fillItemGroupBody(listItem,
-                                           ulList,
-                                           transLine,
-                                           ael,
-                                           lineWidget,
-                                           acbox,
-                                           cboxLabel);
+    var itemGroup = this.fillItemGroupBody(fieldItems);
     // list item goes into ol list
     orList.appendChild(itemGroup);
     // add the line to the lines list as well
     var newTranscription = JSON.parse(JSON.stringify(this.drawnObject));
-    this.transcriptions.push(newTranscription);
+    this.transcriptions["features"].push(newTranscription);
     this.sortLines();
 };
 //
@@ -1757,7 +1822,7 @@ TransColumn.prototype.markRTL = function(){
     /*
       Mark Selection as Right to Left
     */
-    var cboxes = document.querySelectorAll("input.line-cbox");
+    var cboxes = document.querySelectorAll("input.area-cbox");
     var cboxlen = cboxes.length;
     var i = 0;
     for(i; i < cboxlen; i++){
@@ -1769,7 +1834,7 @@ TransColumn.prototype.markRTL = function(){
             var index = cbox.id;
             index = index.replace(/[^0-9]/g, '');
             this.changeItemAttribute(index,
-                                     "ael",
+                                     "ta",
                                      "dir",
                                      "rtl");
         }
@@ -1780,7 +1845,7 @@ TransColumn.prototype.markLTR = function(){
     /*
       Mark Selection as Right to Left
     */
-    var cboxes = document.querySelectorAll("input.line-cbox");
+    var cboxes = document.querySelectorAll("input.area-cbox");
     var cboxlen = cboxes.length;
     var i = 0;
     for(i; i < cboxlen; i++){
@@ -1792,7 +1857,7 @@ TransColumn.prototype.markLTR = function(){
             var index = cbox.id;
             index = index.replace(/[^0-9]/g, '');
             this.changeItemAttribute(index,
-                                     "ael",
+                                     "ta",
                                      "dir",
                                      "ltr");
         }
@@ -1828,41 +1893,56 @@ TransColumn.prototype.deleteBoxes = function(){
       Then we check whether they are checked or not.
       If they are checked we delete the item group containing them
     */
-    var deleteCheckBoxList = document.querySelectorAll("input.line-cbox");
+    var deleteCheckBoxList = document.querySelectorAll("input.area-cbox");
     var dellength = deleteCheckBoxList.length;
     var deletedboxlength = 0;
+    var delArray = [];
     var i = 0;
     while(i < dellength){
         var cbox = deleteCheckBoxList[i];
         var checkval = cbox.checked;
         if(checkval===true){
             // removing the element if checkbox is checked
-            var labelnode = cbox.parentNode;
-            var linewidgetNode = labelnode.parentNode;
-            var itemlistNode = linewidgetNode.parentNode;
-            var itemgroupNode = itemlistNode.parentNode;
-            var lineId = itemgroupNode.id;
+
+            // get the identifer of the item group
+            var idstr = cbox.getAttribute("id");
+            var index = idstr.replace(/[^0-9]/g, '');
+            var itemGroupId = this.createIdWithPrefix(index, "ig");
+
+            // get the identifer of the textarea
+            var textareaId = this.createIdWithPrefix(index, "ta");
+            var textArea = document.getElementById(textareaId);
+            // neutralize any style changes that might be on textarea
+            textArea.setAttribute("class", "transcription-textarea");
+            var itemGroup = document.getElementById(itemGroupId);
+
+            // get the identifier of the drawn object
+            var drawnId = textArea.getAttribute("data-drawn-id");
+
+            // get drawn object
+            var geoobj = this.getTranscriptionByDataId(drawnId);
             // get the image line from the other column
-            var imageLine = this.getLineById(lineId);//
             //
-            var itemparent = itemgroupNode.parentNode;
-            var deleted = {"imageline" : imageLine,
-                           "itemgroup" : itemgroupNode,
-                           "imageparent" : this.transcriptions,
+            var itemparent = itemGroup.parentNode;
+            var deleted = {"feature" : geoobj,
+                           "itemgroup" : itemGroup,
+                           "featureParent" : this.transcriptions,
                            "itemparent" : itemparent};
             this.deletedNodes.push(deleted);
             // remove both from the page
-            itemparent.removeChild(itemgroupNode);
-            var lineindex = this.transcriptions.indexOf(imageLine);
-            this.transcriptions.splice(lineindex,1);
+            itemparent.removeChild(itemGroup);
+            this.transcriptions["features"] = this.removeFeatureById(
+                this.transcriptions["features"], drawnId);
             deletedboxlength +=1;
+            delArray.push(geoobj);
         }
         i+=1;
     }
-    this.sortLines();
+    // this.sortLines();
     if(deletedboxlength === 0){
         alert("Please select lines for deletion");
     }
+    return delArray;
 };
 //
 TransColumn.prototype.undoDeletion = function(){
@@ -1871,53 +1951,132 @@ TransColumn.prototype.undoDeletion = function(){
     }
     var lastObject = this.deletedNodes.pop();
     //
-    var imageLine = lastObject["imageline"];
+    var imageFeature = lastObject["feature"];
     var itemgroup = lastObject["itemgroup"];
-    var imageparent = lastObject["imageparent"]; // this.transcriptions
+    var imageparent = lastObject["featureParent"]; // this.transcriptions
     var itemparent = lastObject["itemparent"];
     //
-    imageparent.push(imageLine);
+    imageparent["features"].push(imageFeature);
     itemparent.appendChild(itemgroup);
-    this.sortLines();
+    return imageFeature;
     //
 };
 // sorting lines
 TransColumn.prototype.sortLines = function() {
     var lineList = document.querySelectorAll(".item-group");
     var itemparent = document.getElementById("text-area-list");
+    var fncthis = this;
     var linearr = Array.from(lineList).sort(
-        this.sortOnBbox
+        this.sortOnTopCoordinate.bind(this)
     );
+    // console.log("linelist before");
+    // console.log(lineList);
+    // console.log("linearray sorted");
+    // console.log(linearr);
     //
     //
     linearr.forEach( el => itemparent.appendChild(el) );
 };
+TransColumn.prototype.removeFeatureById = function(features, filterId){
+    // filter out the filterid from features array
+    var narray = [];
+    for(var i=0; i<features.length; i++){
+        var feature = features[i];
+        if(feature["id"] != filterId){
+            narray.push(feature);
+        }
+    }
+    return narray;
+};
+TransColumn.prototype.getTranscriptionByDataId = function(index){
+    // gives the transcription (feature) using data id
+    var retobj;
+    for(var i=0; i<this.transcriptions["features"].length; i++){
+        var trans = this.transcriptions["features"][i];
+        if(trans["id"] === index){
+            retobj = JSON.parse(JSON.stringify(trans));
+            return retobj;
+        }
+    }
+    return retobj;
+};
+TransColumn.prototype.getTranscriptionTopCoord = function(geoj){
+    // get transcription top point
+    var tcoord;
+    // console.log("get top coord");
+    // console.log(geoj);
+    if(geoj["properties"]["regionShape"] === "rectangle"){
+        tcoord = Math.max(geoj["properties"]["interfaceCoordinates"]["y1"],
+                          geoj["properties"]["interfaceCoordinates"]["y2"]);
+
+        // console.log('top point');
+        // console.log(tcoord);
+
+        return tcoord;
+    }else if(geoj["properties"]["regionShape"] === "polygon"){
+        //
+        var pointlist = geoj["properties"]["interfaceCoordinates"]["pointlist"];
+        var tpointCoord = 0;
+        for(var i=0; i < pointlist.length; i++){
+            var point = pointlist[i];
+            var py = parseInt(point["y"], 10);
+            if(py > tpointCoord){
+                tpointCoord = py;
+            }
+        }
+        tcoord = tpointCoord;
+        // console.log('top point');
+        // console.log(tcoord);
+        return tcoord;
+    }
+    return tcoord; // null object
+};
 //
-TransColumn.prototype.sortOnBbox = function(a, b){
+TransColumn.prototype.sortOnTopCoordinate = function(a, b){
     // Sorts the list elements according to
     // their placement on the image
+    // console.log("a");
+    // console.log(a);
+    // console.log("b");
+    // console.log(b);
+
     // get editable lines
     var eline1 = a.getElementsByClassName("transcription-textarea");// returns a list
     var eline2 = b.getElementsByClassName("transcription-textarea");// with single element
     eline1 = eline1[0]; //  get the single element
     eline2 = eline2[0];
     //
-    // get bbox
-    var bbox1 = eline1.getAttribute("data-bbox");
-    var bbox2 = eline2.getAttribute("data-bbox");
+    // get drawn id
+    var eid1 = eline1.getAttribute("data-drawn-id");
+    // console.log("element id 1");
+    // console.log(eid1);
+
+    var eid2 = eline2.getAttribute("data-drawn-id");
+    // console.log("element id 2");
+    // console.log(eid2);
+    // console.log("transcriptions");
+    // console.log(this.transcriptions);
+
     // split the string
-    var bbox1_split = bbox1.split(",");
-    var bbox2_split = bbox2.split(",");
-    // second element is the top value
-    // get top value
-    var bbox1_top = bbox1_split[1];
-    var bbox2_top = bbox2_split[1];
-    bbox1_top = bbox1_top.trim();
-    bbox2_top = bbox2_top.trim();
-    //
-    bbox1_top = parseInt(bbox1_top, 10);
-    bbox2_top = parseInt(bbox2_top, 10);
-    //
+    var fncthis = this;
+    var geoobj1 = this.getTranscriptionByDataId(eid1);
+    // console.log("geo1");
+    // console.log(geoobj1);
+
+    var geoobj2 = this.getTranscriptionByDataId(eid2);
+    // console.log("geo2");
+    // console.log(geoobj2);
+
+    var geoobj1y = this.getTranscriptionTopCoord(geoobj1);
+    // console.log("geo1y");
+    // console.log(geoobj1y);
+
+    var geoobj2y = this.getTranscriptionTopCoord(geoobj2);
+    // console.log("geo2y");
+    // console.log(geoobj2y);
+
+    // debug code
+
     // compare:
     // if the the top value is higher
     // that means the line is at a lower section
@@ -1926,7 +2085,7 @@ TransColumn.prototype.sortOnBbox = function(a, b){
     // should be placed after it is a simple ascending
     // numbers comparison
     //
-    return bbox1_top - bbox2_top;
+    return geoobj1y - geoobj2y;
 };
 TransColumn.prototype.parseBbox = function(bbox){
     // Parse the bbox values
@@ -1971,8 +2130,10 @@ TransColumn.prototype.emphTransRegion = function(drawnObject){
     // Highlight transcription rectangle which
     // correspond to hovering rect coordinates
     this.resetTextareaStyle();
-    var taId = "ta-".concat(drawnObject["id"]);
-    var taType = drawnObject["type"];
+    // console.log('inside emphTransRegion');
+    // console.log(drawnObject);
+    var taId = "ta-".concat(drawnObject["properties"]["id"]);
+    var taType = drawnObject["properties"]["type"];
     var textarea = document.getElementById(taId);
     textarea.setAttribute("class", "onfocus-transcription-textarea");
     return;
@@ -2084,18 +2245,19 @@ TransColumn.prototype.saveTranscription = function(){
     window.open('data:text/.txt; charset=utf-8,' + texts);
 };
 
-TransColumn.prototype.getTranscriptions = function(){
+TransColumn.prototype.setTranscriptionText = function(){
     // gets the text in transcription column
-    var translines = document.getElementsByClassName("editable-textarea");
-    var textlist = [];
-    for(var i=0; i < translines.length; i++){
-        var lineObj = {'index': i};
-        var line = translines[i];
-        var text = line.value;
-        lineObj.lineText = text;
-        textlist.push(lineObj);
+    var transAreaList = document.getElementsByClassName("transcription-textarea");
+    for(var i=0; i < transAreaList.length; i++){
+        var transArea = transAreaList[i];
+        var drawnid = transArea.getAttribute("data-drawn-id");
+        var transObjCp = this.getTranscriptionByDataId(drawnid);
+        this.transcriptions["features"] = this.removeFeatureById(
+            this.transcriptions["features"], drawnid);
+        transObjCp["properties"]["text"] = transArea.value;
+        this.transcriptions["features"].push(transObjCp);
     }
-    return textlist;
+    return;
 };
 
 
@@ -2149,6 +2311,10 @@ function loadImage2Viewer(event){
     transcription.loadTranscription(event);
     // console.log(transcription.transcriptions);
     var objcopy = JSON.parse(JSON.stringify(transcription.transcriptions));
+    for(var i=0; i< objcopy["features"].length; i++){
+        var transFeature = objcopy["features"][i];
+        canvasDraw.drawnObjects["features"].push(transFeature);
+    }
     canvasDraw.detections = objcopy;
     return;
 }
@@ -2524,7 +2690,11 @@ function activateViewer(){
 // Transcription Related Functions
 
 function deleteBoxes(){
-    transcription.deleteBoxes();
+    var delArray = transcription.deleteBoxes();
+    console.log("del array");
+    console.log(delArray);
+    canvasDraw.removeDrawnObjects(delArray);
+    transcription.sortLines();
 }
 
 function viewLine(event){
@@ -2532,7 +2702,9 @@ function viewLine(event){
 }
 
 function undoDeletion(){
-    transcription.undoDeletion();
+    var drawnFeature = transcription.undoDeletion();
+    canvasDraw.drawnObjects["features"].push(drawnFeature);
+    transcription.sortLines();
 }
 function sortLines(){
     transcription.sortLines();
@@ -2557,9 +2729,11 @@ function deselectAllLines(){
 }
 
 function addTranscription(){
-    transcription.drawnObject = canvasDraw.drawnObject;
+    var objstr = JSON.stringify(canvasDraw.drawnObject);
+    var objnorm = JSON.parse(objstr);
+    var geojObj = canvasDraw.convertObj2Geojson(objnorm);
+    transcription.drawnObject = geojObj;
     transcription.addTranscription();
-    canvasDraw.image.lines = transcription.lines;
     var selectval = canvasDraw.selectInProcess;
     if(selectval === true){
         //
@@ -2631,21 +2805,22 @@ function saveCoordinates(){
 
 function saveEverything(){
     // Saves the lines for transcribed coordinates
-    var textlines = transcription.getTranscriptions();
-    var coordinates = canvasDraw.getCoordinates();
-    var savelines = [];
-    // TODO change coordinates.length to textlines.length
-    // since we have less coordinates than transcriptions
-    // for now, we need to deal with undefined objects this way
-    for(var i=0; i < coordinates.length; i++){
-        var tline = textlines[i];
-        var cline = coordinates[i];
-        var newcline = Object.assign(cline);
-        newcline.index = tline.index;
-        newcline.text = tline.lineText;
-        savelines.push(newcline);
-    }
-    var stringfied = JSON.stringify(savelines, null, 4);
+    // var textlines = transcription.getTranscriptions();
+    // var coordinates = canvasDraw.getCoordinates();
+    // var savelines = [];
+    // // TODO change coordinates.length to textlines.length
+    // // since we have less coordinates than transcriptions
+    // // for now, we need to deal with undefined objects this way
+    // for(var i=0; i < coordinates.length; i++){
+    //     var tline = textlines[i];
+    //     var cline = coordinates[i];
+    //     var newcline = Object.assign(cline);
+    //     newcline.index = tline.index;
+    //     newcline.text = tline.lineText;
+    //     savelines.push(newcline);
+    // }
+    transcription.setTranscriptionText();
+    var stringfied = JSON.stringify(transcription.transcriptions, null, 4);
     var w = window.innerWidth.toString();
     var h = window.innerHeight.toString();
     w = "width=".concat(w);

@@ -1,5 +1,6 @@
 # rebuild kraken for interface experiments
-
+echo "removing kraken"
+pip uninstall kraken
 currentDir=$(echo $PWD)
 echo "Starting rebuild"
 mainDir="$currentDir/../../../"

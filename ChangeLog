@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Geojson not done yet. Deletion and addition is not done yet
 * Textarea styles are done, color-schemes are implemented
 * A lot of stuff not yet done
 * redrawing events are done, now onto transcripter
