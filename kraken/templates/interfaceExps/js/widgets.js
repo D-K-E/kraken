@@ -2031,6 +2031,128 @@ TransColumn.prototype.getTranscriptionTopCoord = function(geoj){
     }
     return tcoord; // null object
 };
+TransColumn.prototype.getDrawnExtremePoint = function(geoj,  // geojson object
+                                                      fnctype, // min, max
+                                                      thresh, // -infinity, infinity
+                                                      direction  // [x, y]
+                                                     ){
+    // finds extreme points based on the given criteria
+    var epoint; // extreme point
+
+    if(geoj["properties"]["regionShape"] === "rectangle"){
+
+        // TODO: finds top point continue refactoring for finding all extreme points
+        // initialize points
+        var y1_real, y2_real, y1, y2, x1, x1_real, x2, x2_real;
+        y1_real = geoj["properties"]["interfaceCoordinates"]["y1_real"];
+        y2_real = geoj["properties"]["interfaceCoordinates"]["y2_real"];
+        y1 = geoj["properties"]["interfaceCoordinates"]["y1"];
+        y2 = geoj["properties"]["interfaceCoordinates"]["y2"];
+
+        x1_real = geoj["properties"]["interfaceCoordinates"]["x1_real"];
+        x2_real = geoj["properties"]["interfaceCoordinates"]["x2_real"];
+        x1 = geoj["properties"]["interfaceCoordinates"]["x1"];
+        x2 = geoj["properties"]["interfaceCoordinates"]["x2"];
+
+        var maxy_real = Math.max(y1_real,
+                                 y2_real);
+        var maxx_real, maxx, maxy;
+        if(maxy_real === y1_real){
+            maxx_real = x1_real;
+            maxx = x1;
+            maxy = y1;
+        }else{
+            maxx_real = x2_real;
+            maxx = x2;
+            maxy = y2;
+        }
+        epoint = {"x_real" : maxx_real,
+                  "y_real" : maxy_real,
+                  "x" : maxx,
+                  "y" : maxy};
+
+        // console.log('top point');
+        // console.log(tcoord);
+
+        return epoint;
+    }else if(geoj["properties"]["regionShape"] === "polygon"){
+        //
+        var pointlist = geoj["properties"]["interfaceCoordinates"]["pointlist"];
+        var tpointCoordy_real = 0;
+        var tpointCoordx, tpointCoordy, tpointCoordx_real;
+        for(var i=0; i < pointlist.length; i++){
+            var point = pointlist[i];
+            var py = parseInt(point["y_real"], 10);
+            if(py > tpointCoordy){
+                tpointCoordy_real = py;
+                tpointCoordx = parseInt(point["x"], 10);
+                tpointCoordy = parseInt(point["y"], 10);
+                tpointCoordx_real = parseInt(point["x_real"], 10);
+            }
+        }
+        epoint = {"x" : tpointCoordx,
+                  "y" : tpointCoordy,
+                  "x_real" : tpointCoordx_real,
+                  "y_real" : tpointCoordy_real};
+        // console.log('top point');
+        // console.log(tcoord);
+        return tpoint;
+    }
+    return tpoint; // null object
+
+}
+TransColumn.prototype.getTranscriptionTopPoint = function(geoj){
+    // get transcription top point
+    var tpoint;
+    // console.log("get top coord");
+    // console.log(geoj);
+    if(geoj["properties"]["regionShape"] === "rectangle"){
+        var maxy_real = Math.max(geoj["properties"]["interfaceCoordinates"]["y1_real"],
+                            geoj["properties"]["interfaceCoordinates"]["y2_real"]);
+        var maxx_real, maxx, maxy;
+        if(maxy_real === geoj["properties"]["interfaceCoordinates"]["y1_real"]){
+            maxx_real = geoj["properties"]["interfaceCoordinates"]["x1_real"];
+            maxx = geoj["properties"]["interfaceCoordinates"]["x1"];
+            maxy = geoj["properties"]["interfaceCoordinates"]["y1"];
+        }else{
+            maxx_real = geoj["properties"]["interfaceCoordinates"]["x2_real"];
+            maxx = geoj["properties"]["interfaceCoordinates"]["x2"];
+            maxy = geoj["properties"]["interfaceCoordinates"]["y2"];
+        }
+        tpoint = {"x_real" : maxx_real,
+                  "y_real" : maxy_real,
+                  "x" : maxx,
+                  "y" : maxy};
+
+        // console.log('top point');
+        // console.log(tcoord);
+
+        return tpoint;
+    }else if(geoj["properties"]["regionShape"] === "polygon"){
+        //
+        var pointlist = geoj["properties"]["interfaceCoordinates"]["pointlist"];
+        var tpointCoordy_real = 0;
+        var tpointCoordx, tpointCoordy, tpointCoordx_real;
+        for(var i=0; i < pointlist.length; i++){
+            var point = pointlist[i];
+            var py = parseInt(point["y_real"], 10);
+            if(py > tpointCoordy){
+                tpointCoordy_real = py;
+                tpointCoordx = parseInt(point["x"], 10);
+                tpointCoordy = parseInt(point["y"], 10);
+                tpointCoordx_real = parseInt(point["x_real"], 10);
+            }
+        }
+        tpoint = {"x" : tpointCoordx,
+                  "y" : tpointCoordy,
+                  "x_real" : tpointCoordx_real,
+                  "y_real" : tpointCoordy_real};
+        // console.log('top point');
+        // console.log(tcoord);
+        return tpoint;
+    }
+    return tpoint; // null object
+};
 //
 TransColumn.prototype.sortOnTopCoordinate = function(a, b){
     // Sorts the list elements according to
@@ -2157,7 +2279,7 @@ TransColumn.prototype.removeViewer = function(){
     }
     return;
 };
-TransColumn.prototype.drawLineOnCanvas =  function(event){
+TransColumn.prototype.drawAreaOnCanvas =  function(event){
     /*
       Draw the line on a canvas for selected transcription area
       Finds the selected transcription area
@@ -2172,38 +2294,43 @@ TransColumn.prototype.drawLineOnCanvas =  function(event){
     }
     // remove old viewer
     this.removeViewer();
-    //
-    var resultline = event.target;
-    var linebbox = resultline.getAttribute("data-bbox");
-    var idstr = resultline.getAttribute("id");
-    var index = idstr.replace(/[^0-9]/g, '');
-    // get the corresponding line widget
+
+    // Get identifiers
+    var textArea = event.target;
+    var drawnId = textArea.getAttribute("data-drawn-id");
+    var domid = textArea.getAttribute("id");
+    var index = domid.replace(/[^0-9]/g, '');
+
+    // get the corresponding area widget and area element
     var idAreaWidget = this.createIdWithPrefix(index, "aw");
-    console.log(idAreaWidget);
-    var activeLineWidget = document.getElementById(idAreaWidget);
-    var idLineEl = this.createIdWithPrefix(index,"ael");
-    var activeLineEl = document.getElementById(idLineEl);
+    // console.log(idAreaWidget);
+    var activeAreaWidget = document.getElementById(idAreaWidget);
+    var idAreaEl = this.createIdWithPrefix(index,"ael");
+    var activeLineEl = document.getElementById(idAreaEl);
     // console.log(activeLineWidget);
-    //
-    var bbox = this.parseBbox(linebbox);
-    var lineCanvas = document.createElement("canvas");
-    var imcanvas = document.getElementById("scene");
+
+    // get the drawing geojson object
+    var transGeojObj = this.getTranscriptionByDataId(drawnId);
+
+    // create the viewer canvas
+    var areaCanvas = document.createElement("canvas");
     console.log(bbox);
     // var aspratio = bbox.height / bbox.width; // aspect ratio
     // aspratio = aspratio * 100; // aspect ratio
     // var str = "padding-top: ".concat(aspratio);
     // str = str.concat("%;");
-    lineCanvas.id = "line-viewer";
+    areaCanvas.setAttribute("id","area-viewer");
     // NOTE change the width style based on the region type
     // character: square
     // column: 4x3
     // line: 2x4
-    lineCanvas.width = activeLineEl.clientWidth;
-    lineCanvas.height = activeLineEl.clientHeight;
-    var ctxt = lineCanvas.getContext('2d');
+    var imcanvas = document.getElementById("scene");
+    areaCanvas.width = activeLineEl.clientWidth;
+    areaCanvas.height = activeLineEl.clientHeight;
+    var ctxt = areaCanvas.getContext('2d');
     var nimage = this.image;
-    var cwidth = lineCanvas.width;
-    var cheight = lineCanvas.height;
+    var cwidth = areaCanvas.width;
+    var cheight = areaCanvas.height;
     // Get natural width and height of the drawn image
     var imnwidth = bbox.x2 - bbox.x1;
     var imnheight = bbox.y2 -bbox.y1;
@@ -2219,7 +2346,7 @@ TransColumn.prototype.drawLineOnCanvas =  function(event){
                    imnheight,
                   );
     // console.log(activeLineWidget);
-    activeLineWidget.appendChild(lineCanvas);
+    activeAreaWidget.appendChild(areaCanvas);
 };
 TransColumn.prototype.saveTranscription = function(){
     // Opens up a transcription window with
@@ -2531,6 +2658,7 @@ function showAllEverything(){
     }
     return;
 }
+
 // ------------- ends selector-options -------------------
 // ------------- ends selector-set ---------------------
 
@@ -2774,6 +2902,10 @@ function changeAddTTitle(event){
     // calling region type setter
     setRegionType2Selector(event);
     return;
+}
+
+function showTranscriptionArea(event){
+    transcription.drawAreaOnCanvas(event);
 }
 // Canvas Related functions
 
