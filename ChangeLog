@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Almost everything done except slider
 * Geojson not done yet. Deletion and addition is not done yet
 * Textarea styles are done, color-schemes are implemented
 * A lot of stuff not yet done
