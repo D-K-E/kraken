@@ -69,12 +69,21 @@
                                id="original-size-cbox"
                                onchange="loadOriginalSize(event)"/>
                     </label>
+                    <br/>
+                    <label class="lbl-showtools">
+                        Show Toolbox
+                        <input type="checkbox"
+                               id="showtoolbox-checkbox"
+                               onchange="showToolBox(event)"
+                               class="showtoolbox-checkbox"/>
+                    </label>
                 </nav>
             </section>
             <section id="viewer">
                 <h2 id="viewer-title"
                     class="section-title">Viewer</h2>
                 <div id="image-col">
+                    <div id="hide-tools-viewer">
                     <fieldset id="viewer-tools">
                         <legend>Viewer Tools</legend>
                         <label>
@@ -318,6 +327,10 @@
                             </table>
                         </fieldset> <!-- ends color set -->
                     </fieldset> <!-- ends viewer tools set -->
+                    </div>
+                    <button id="slideBtnViewer" onclick="slideFncViewer(event)">
+                        <img src="icons/slideDown.svg"/>
+                    </button>
                     <canvas id="scene"
                             onmouseup="setSceneMouseUp(event)"
                             onmousemove="setSceneMouseMove(event)"
@@ -329,7 +342,7 @@
                 <h2 id="transcripter-title"
                     class="section-title">Transcripter</h2>
                 <div class="transcription-col">
-                    <div id="hide-tools">
+                    <div id="hide-tools-transcripter">
                         <fieldset id="toolbox-set">
                             <legend>Tools</legend>
                             <fieldset id="button-set">
@@ -453,13 +466,9 @@
                             </label>
                         </fieldset> <!-- Ends options -->
                     </div>
-                    <label class="lbl-showtools">
-                        Show Toolbox
-                        <input type="checkbox"
-                               id="showtoolbox-checkbox"
-                               onchange="showToolBox(event)"
-                               class="showtoolbox-checkbox"/>
-                    </label>
+                    <button id="slideBtnTranscripter" onclick="slideFncTranscripter(event)">
+                        <img src="icons/slideDown.svg" alt="slide button"/>
+                    </button>
                     <ol id="text-area-list">
                         <li class="item-group" id="ig-">
                             <!-- Should depend the children of

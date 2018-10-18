@@ -388,6 +388,7 @@ CanvasRelated.prototype.drawRectangle = function(mouseX2, // destination x2
     //
     rectUpdate["hratio"] = hratio;
     rectUpdate["vratio"] = vratio;
+    rectUpdate["ratio"] = Math.min(hratio, vratio);
     //
     rectUpdate["x1_real"] = Math.floor(x_real);
     rectUpdate["y1_real"] = Math.floor(y_real);
@@ -630,6 +631,79 @@ CanvasRelated.prototype.drawSelection = function(event){
     }
     return [context, this.drawnObject];
 };
+CanvasRelated.prototype.drawDetection = function(detection, context){
+    // draw detection based on its region type
+
+    var fillColor = this.detectionOptions.fillColor;
+    var fillOpacity = this.detectionOptions.fillOpacity;
+    var strokeColor = this.detectionOptions.strokeColor;
+
+    // set context style
+    if(fillColor === ""){
+        fillColor = "50,50,50";
+        this.detectionOptions.fillColor = fillColor;
+    }
+    if(fillOpacity === ""){
+        fillOpacity = "0.1";
+        this.detectionOptions.fillOpacity = fillOpacity;
+    }
+    if(strokeColor === ""){
+        strokeColor = "0,0,0";
+        this.detectionOptions.strokeColor = strokeColor;
+    }
+    context.strokeStyle = "rgb(" + strokeColor + ")";
+
+    var rgbastr = "rgba(";
+    // console.log("strokestyle");
+    // console.log(this.detectionOptions.strokeColor);
+    rgbastr = rgbastr.concat(fillColor); // rgb value ex: 255,0,0
+    rgbastr = rgbastr.concat(",");
+    rgbastr = rgbastr.concat(fillOpacity);
+    rgbastr = rgbastr.concat(")");
+    context.fillStyle = rgbastr;
+
+    // set display related properties to detection object
+    detection["properties"]["displayRelated"]["fillColor"] = fillColor;
+    detection["properties"]["displayRelated"]["fillOpacity"] = fillOpacity;
+    detection["properties"]["displayRelated"]["strokeColor"] = strokeColor;
+
+    var ratio = detection["properties"]["displayRelated"]["drawingRatio"];
+    if(detection["properties"]["regionShape"] === "rectangle"){
+        var width = detection["properties"]["interfaceCoordinates"]["width_real"] * ratio;
+        var height = detection["properties"]["interfaceCoordinates"]["height_real"] * ratio;
+        var x1 = detection["properties"]["interfaceCoordinates"]["x1_real"] * ratio;
+        detection["properties"]["interfaceCoordinates"]["x1"] = x1;
+        var y1 = detection["properties"]["interfaceCoordinates"]["y1_real"] * ratio;
+        detection["properties"]["interfaceCoordinates"]["y1"] = y1;
+        var x2 = x1 + width;
+        var y2 = y1 + height;
+
+        // draw the rectangle
+        context.beginPath();
+        context.rect(x1,y1,width,height);
+        context.stroke();
+        context.fill();
+        context.closePath();
+    }
+
+    return [context, detection];
+};
+CanvasRelated.prototype.drawDetectionOnScene = function(detection // geojson flavor
+                                                       ){
+    // Draws the given detection on scene
+    this.clearScene();
+    var imcanvas = document.getElementById("scene");
+    var context = imcanvas.getContext('2d');
+
+    var canvasOffsetX = imcanvas.offsetLeft;
+    var canvasOffsetY = imcanvas.offsetTop;
+    context = this.redrawImage(this.image["id"],
+                               this.image.ratio,
+                               context);
+    var funcThis = this;
+    var contextDetectionList = funcThis.drawDetection(detection, context);
+    return contextDetectionList;
+};
 // Draw Line Bounding Boxes
 CanvasRelated.prototype.drawDetectionBounds = function(event){
     // makes the line bounding box
@@ -655,8 +729,8 @@ CanvasRelated.prototype.drawDetectionBounds = function(event){
     var canvasOffsetX = imcanvas.offsetLeft;
     var canvasOffsetY = imcanvas.offsetTop;
     context = this.redrawImage(this.image["id"],
-                                   this.image.ratio,
-                                   context);
+                               this.image.ratio,
+                               context);
     // ratio
     var hratio = this.image["hratio"];
     var vratio = this.image["vratio"];
@@ -672,52 +746,11 @@ CanvasRelated.prototype.drawDetectionBounds = function(event){
     var detection =  funcThis.getDetectionBound(mouseX2Trans,
                                                 mouseY2Trans);
     // console.log(detection);
-    var width = detection["properties"]["interfaceCoordinates"]["width_real"] * ratio;
-    var height = detection["properties"]["interfaceCoordinates"]["height_real"] * ratio;
-    var x1 = detection["properties"]["interfaceCoordinates"]["x1_real"] * ratio;
-    detection["properties"]["interfaceCoordinates"]["x1"] = x1;
-    var y1 = detection["properties"]["interfaceCoordinates"]["y1_real"] * ratio;
-    detection["properties"]["interfaceCoordinates"]["y1"] = y1;
-    var x2 = x1 + width;
-    var y2 = y1 + height;
-
+    var contextDetectionList = funcThis.drawDetection(detection, context);
     // set context style options
     // set context stroke color
-    var fillColor = this.detectionOptions.fillColor;
-    var fillOpacity = this.detectionOptions.fillOpacity;
-    var strokeColor = this.detectionOptions.strokeColor;
 
-    if(fillColor === ""){
-        fillColor = "50,50,50";
-        this.detectionOptions.fillColor = fillColor;
-    }
-    if(fillOpacity === ""){
-        fillOpacity = "0.1";
-        this.detectionOptions.fillOpacity = fillOpacity;
-    }
-    if(strokeColor === ""){
-        strokeColor = "0,0,0";
-        this.detectionOptions.strokeColor = strokeColor;
-    }
-    context.strokeStyle = "rgb(" + strokeColor + ")";
-    var rgbastr = "rgba(";
-    // console.log("strokestyle");
-    // console.log(this.detectionOptions.strokeColor);
-    rgbastr = rgbastr.concat(fillColor); // rgb value ex: 255,0,0
-    rgbastr = rgbastr.concat(",");
-    rgbastr = rgbastr.concat(fillOpacity);
-    rgbastr = rgbastr.concat(")");
-    context.fillStyle = rgbastr;
-
-    //
-    // draw the rectangle
-    context.beginPath();
-    context.rect(x1,y1,width,height);
-    context.stroke();
-    context.fill();
-    context.closePath();
-
-    return [context, detection];
+    return contextDetectionList;
 }; // TODO debug code
 // -------------- Redrawing Methods -------------------
 CanvasRelated.prototype.redrawImage = function(imageId, // image identifer
@@ -1044,11 +1077,12 @@ CanvasRelated.prototype.setSelectionCoordinates = function(event){
             console.log('in polygon selector branch');
         }
         this.poly["pointlist"].push({"x" : xcoord,
-                                  "x_real" : xreal,
-                                  "y_real" : yreal,
-                                  "y" : ycoord});
+                                     "x_real" : xreal,
+                                     "y_real" : yreal,
+                                     "y" : ycoord});
         this.poly["hratio"] = this.image["hratio"];
         this.poly["vratio"] = this.image["vratio"];
+        this.poly["ratio"] = this.image["ratio"];
         this.poly["imageId"] = this.image["id"];
         if(this.debug === true){
             console.log('mousedown polygon state');
@@ -1064,6 +1098,7 @@ CanvasRelated.prototype.setSelectionCoordinates = function(event){
         this.rect["y1_real"] = yreal;
         this.rect["hratio"] = this.image["hratio"];
         this.rect["vratio"] = this.image["vratio"];
+        this.rect["ratio"] = this.image["ratio"];
         this.rect["imageId"] = this.image["id"];
         if(this.debug === true){
             console.log('mousedown rect state');
@@ -1102,6 +1137,7 @@ CanvasRelated.prototype.convertObj2Geojson = function(drawnObj){
     geoobj["properties"]["displayRelated"] = {};
     geoobj["properties"]["displayRelated"]["hratio"] = drawnObj["hratio"];
     geoobj["properties"]["displayRelated"]["vratio"] = drawnObj["vratio"];
+    geoobj["properties"]["displayRelated"]["drawingRatio"] = drawnObj["ratio"];
     geoobj["properties"]["displayRelated"]["strokeColor"] = drawnObj["strokeColor"];
     geoobj["properties"]["displayRelated"]["fillColor"] = drawnObj["fillColor"];
     geoobj["properties"]["displayRelated"]["fillOpacity"] = drawnObj["fillOpacity"];
@@ -1459,6 +1495,7 @@ TransColumn.prototype.loadTranscription = function(event){
     // get id from the image link
     this.clearTranscription();
     var imtag = event.target;
+    this.image = imtag;
     var pageid = imtag.getAttribute("id");
     pageid = pageid.replace("image-page-","");
 
@@ -1545,6 +1582,7 @@ TransColumn.prototype.convert2Geojson = function(detection){
     geoobj["properties"]["displayRelated"] = {};
     geoobj["properties"]["displayRelated"]["hratio"] = this.hratio;
     geoobj["properties"]["displayRelated"]["vratio"] = this.vratio;
+    geoobj["properties"]["displayRelated"]["drawingRatio"] = this.ratio;
     if(detection.hasOwnProperty("strokeColor")){
         geoobj["properties"]["displayRelated"]["strokeColor"] = detection["strokeColor"];
     }
@@ -2031,6 +2069,46 @@ TransColumn.prototype.getTranscriptionTopCoord = function(geoj){
     }
     return tcoord; // null object
 };
+TransColumn.prototype.selectXY = function(maxcoord, y1_real,
+                                          y2_real,
+                                          x1_real,
+                                          x2_real,
+                                          y1,y2,x1,x2,
+                                          direction // x,y
+                                         ){
+    // get select coordinate point based on max coord
+    var fncx_real, fncx, fncy, fncy_real;
+    if(direction === "y"){
+        if(maxcoord === y1_real){
+            fncy_real = y1_real;
+            fncx = x1;
+            fncy = y1;
+            fncx_real = x1_real;
+        }else{
+            fncy_real = y2_real;
+            fncx = x2;
+            fncy = y2;
+            fncx_real = x2_real;
+        }
+    }else{
+        if(maxcoord === x1_real){
+            fncy_real = y1_real;
+            fncx = x1;
+            fncy = y1;
+            fncx_real = x1_real;
+
+        }else{
+            fncy_real = y2_real;
+            fncx = x2;
+            fncy = y2;
+            fncx_real = x2_real;
+        }
+    }
+    var point = {"x_real" : fncx_real,
+                 "y_real" : fncy_real,
+                 "x" : fncx,
+                 "y" : fncy};
+};
 TransColumn.prototype.getDrawnExtremePoint = function(geoj,  // geojson object
                                                       fnctype, // min, max
                                                       thresh, // -infinity, infinity
@@ -2044,6 +2122,7 @@ TransColumn.prototype.getDrawnExtremePoint = function(geoj,  // geojson object
         // TODO: finds top point continue refactoring for finding all extreme points
         // initialize points
         var y1_real, y2_real, y1, y2, x1, x1_real, x2, x2_real;
+
         y1_real = geoj["properties"]["interfaceCoordinates"]["y1_real"];
         y2_real = geoj["properties"]["interfaceCoordinates"]["y2_real"];
         y1 = geoj["properties"]["interfaceCoordinates"]["y1"];
@@ -2054,23 +2133,36 @@ TransColumn.prototype.getDrawnExtremePoint = function(geoj,  // geojson object
         x1 = geoj["properties"]["interfaceCoordinates"]["x1"];
         x2 = geoj["properties"]["interfaceCoordinates"]["x2"];
 
-        var maxy_real = Math.max(y1_real,
-                                 y2_real);
-        var maxx_real, maxx, maxy;
-        if(maxy_real === y1_real){
-            maxx_real = x1_real;
-            maxx = x1;
-            maxy = y1;
-        }else{
-            maxx_real = x2_real;
-            maxx = x2;
-            maxy = y2;
+        var fncx_real, fncx, fncy, fncy_real;
+        if((fnctype === "min") && (direction === "y")){
+            var min_coord = Math.min(y1_real,
+                                     y2_real);
+            epoint = this.selectXY(min_coord,
+                                   y1_real, y2_real, x1_real, x2_real,
+                                   y1,y2,x1,x2,
+                                   direction);
+        }else if((fnctype === "max") && (direction === "y")){
+            var max_coord = Math.max(y1_real,
+                                     y2_real);
+            epoint = this.selectXY(max_coord,
+                                   y1_real, y2_real, x1_real, x2_real,
+                                   y1,y2,x1,x2,
+                                   direction);
+        }else if((fnctype === "min") && (direction === "x")){
+            var min_coordx = Math.min(x1_real,
+                                     x2_real);
+            epoint = this.selectXY(min_coordx,
+                                   y1_real, y2_real, x1_real, x2_real,
+                                   y1,y2,x1,x2,
+                                   direction);
+        }else if((fnctype === "min") && (direction === "x")){
+            var max_coordx = Math.max(x1_real,
+                                      x2_real);
+            epoint = this.selectXY(max_coordx,
+                                   y1_real, y2_real, x1_real, x2_real,
+                                   y1,y2,x1,x2,
+                                   direction);
         }
-        epoint = {"x_real" : maxx_real,
-                  "y_real" : maxy_real,
-                  "x" : maxx,
-                  "y" : maxy};
-
         // console.log('top point');
         // console.log(tcoord);
 
@@ -2078,16 +2170,58 @@ TransColumn.prototype.getDrawnExtremePoint = function(geoj,  // geojson object
     }else if(geoj["properties"]["regionShape"] === "polygon"){
         //
         var pointlist = geoj["properties"]["interfaceCoordinates"]["pointlist"];
-        var tpointCoordy_real = 0;
-        var tpointCoordx, tpointCoordy, tpointCoordx_real;
-        for(var i=0; i < pointlist.length; i++){
-            var point = pointlist[i];
-            var py = parseInt(point["y_real"], 10);
-            if(py > tpointCoordy){
-                tpointCoordy_real = py;
-                tpointCoordx = parseInt(point["x"], 10);
-                tpointCoordy = parseInt(point["y"], 10);
-                tpointCoordx_real = parseInt(point["x_real"], 10);
+        var tpointCoordx, tpointCoordy, tpointCoordx_real, tpointCoordy_real;
+        if((fnctype === "max") && (direction === "y")){
+            tpointCoordy_real = -Infinitiy;
+            for(var i=0; i < pointlist.length; i++){
+                var point = pointlist[i];
+                var py = parseInt(point["y_real"], 10);
+                var px = parseInt(point["x_real"], 10);
+                if(py > tpointCoordy_real){
+                    tpointCoordy_real = py;
+                    tpointCoordx = parseInt(point["x"], 10);
+                    tpointCoordy = parseInt(point["y"], 10);
+                    tpointCoordx_real = parseInt(point["x_real"], 10);
+                }
+            }
+        }else if((fnctype === "min") && (direction === "y")){
+            tpointCoordy_real = Infinity;
+            for(var i=0; i < pointlist.length; i++){
+                var point = pointlist[i];
+                var py = parseInt(point["y_real"], 10);
+                var px = parseInt(point["x_real"], 10);
+                if(py < tpointCoordy_real){
+                    tpointCoordy_real = py;
+                    tpointCoordx = parseInt(point["x"], 10);
+                    tpointCoordy = parseInt(point["y"], 10);
+                    tpointCoordx_real = parseInt(point["x_real"], 10);
+                }
+            }
+        }else if((fnctype === "max") && (direction === "x")){
+            tpointCoordx_real = -Infinitiy;
+            for(var i=0; i < pointlist.length; i++){
+                var point = pointlist[i];
+                var py = parseInt(point["y_real"], 10);
+                var px = parseInt(point["x_real"], 10);
+                if(px > tpointCoordy_real){
+                    tpointCoordx_real = px;
+                    tpointCoordx = parseInt(point["x"], 10);
+                    tpointCoordy = parseInt(point["y"], 10);
+                    tpointCoordx_real = parseInt(point["x_real"], 10);
+                }
+            }
+        }else if((fnctype === "min") && (direction === "x")){
+            tpointCoordx_real = Infinitiy;
+            for(var i=0; i < pointlist.length; i++){
+                var point = pointlist[i];
+                var py = parseInt(point["y_real"], 10);
+                var px = parseInt(point["x_real"], 10);
+                if(px < tpointCoordy_real){
+                    tpointCoordx_real = px;
+                    tpointCoordx = parseInt(point["x"], 10);
+                    tpointCoordy = parseInt(point["y"], 10);
+                    tpointCoordx_real = parseInt(point["x_real"], 10);
+                }
             }
         }
         epoint = {"x" : tpointCoordx,
@@ -2096,11 +2230,10 @@ TransColumn.prototype.getDrawnExtremePoint = function(geoj,  // geojson object
                   "y_real" : tpointCoordy_real};
         // console.log('top point');
         // console.log(tcoord);
-        return tpoint;
+        return epoint;
     }
-    return tpoint; // null object
-
-}
+    return epoint; // null object
+};
 TransColumn.prototype.getTranscriptionTopPoint = function(geoj){
     // get transcription top point
     var tpoint;
@@ -2273,9 +2406,9 @@ TransColumn.prototype.getScaleFactor = function(destWidth,
 };
 TransColumn.prototype.removeViewer = function(){
     // remove the line viewer from dom
-    var oldviewer = document.getElementById("line-viewer");
+    var oldviewer = document.getElementById("area-viewer");
     if (oldviewer != null){
-        document.getElementById("line-viewer").remove();
+        document.getElementById("area-viewer").remove();
     }
     return;
 };
@@ -2295,6 +2428,10 @@ TransColumn.prototype.drawAreaOnCanvas =  function(event){
     // remove old viewer
     this.removeViewer();
 
+    // create viewer
+    var areaCanvas = document.createElement("canvas");
+    areaCanvas.setAttribute("id","area-viewer");
+
     // Get identifiers
     var textArea = event.target;
     var drawnId = textArea.getAttribute("data-drawn-id");
@@ -2303,50 +2440,55 @@ TransColumn.prototype.drawAreaOnCanvas =  function(event){
 
     // get the corresponding area widget and area element
     var idAreaWidget = this.createIdWithPrefix(index, "aw");
-    // console.log(idAreaWidget);
     var activeAreaWidget = document.getElementById(idAreaWidget);
     var idAreaEl = this.createIdWithPrefix(index,"ael");
     var activeLineEl = document.getElementById(idAreaEl);
-    // console.log(activeLineWidget);
 
-    // get the drawing geojson object
-    var transGeojObj = this.getTranscriptionByDataId(drawnId);
-
-    // create the viewer canvas
-    var areaCanvas = document.createElement("canvas");
-    console.log(bbox);
-    // var aspratio = bbox.height / bbox.width; // aspect ratio
-    // aspratio = aspratio * 100; // aspect ratio
-    // var str = "padding-top: ".concat(aspratio);
-    // str = str.concat("%;");
-    areaCanvas.setAttribute("id","area-viewer");
-    // NOTE change the width style based on the region type
-    // character: square
-    // column: 4x3
-    // line: 2x4
-    var imcanvas = document.getElementById("scene");
+    // set width and height to viewer
     areaCanvas.width = activeLineEl.clientWidth;
     areaCanvas.height = activeLineEl.clientHeight;
     var ctxt = areaCanvas.getContext('2d');
-    var nimage = this.image;
-    var cwidth = areaCanvas.width;
-    var cheight = areaCanvas.height;
-    // Get natural width and height of the drawn image
-    var imnwidth = bbox.x2 - bbox.x1;
-    var imnheight = bbox.y2 -bbox.y1;
-    //
-    var ratiolist  = this.getScaleFactor(cwidth, //dest width
-                                         cheight, // dest height
-                                         imnwidth, // src width
-                                         imnheight); // src height
-    ctxt.drawImage(nimage,
-                   // 0,0,
-                   bbox.x1, bbox.y1, // source coordinate
-                   imnwidth,
-                   imnheight,
-                  );
-    // console.log(activeLineWidget);
-    activeAreaWidget.appendChild(areaCanvas);
+
+
+    // get the drawing geojson object
+    var transGeojObj = this.getTranscriptionByDataId(drawnId);
+    var bbox;
+    console.log(transGeojObj);
+    if(transGeojObj["properties"]["regionShape"] === "rectangle"){
+        bbox = this.parseBbox(transGeojObj["properties"]["interfaceCoordinates"]["bbox"]);
+        console.log(bbox);
+        var nimage = this.image;
+        var cwidth = areaCanvas.width;
+        var cheight = areaCanvas.height;
+        // Get natural width and height of the drawn image
+        var imnwidth = bbox.x2 - bbox.x1;
+        var imnheight = bbox.y2 - bbox.y1;
+        console.log(`cwidth ${cwidth} cheight ${cheight}`);
+        console.log(`imnwidth ${imnwidth} imnheight ${imnheight}`);
+        console.log(`image ${nimage}`);
+        //
+        var ratiolist  = this.getScaleFactor(cwidth, //dest width
+                                             cheight, // dest height
+                                             imnwidth, // src width
+                                             imnheight); // src height
+        var ratio = ratiolist[2];
+        var scaledWidth = ratio * imnwidth;
+        var scaledHeight = ratio * imnheight;
+        areaCanvas.setAttribute("width", scaledWidth);
+        areaCanvas.setAttribute("height", scaledHeight);
+
+        ctxt.drawImage(nimage,
+                       // 0,0,
+                       bbox.x1, bbox.y1, // source coordinate
+                       imnwidth,
+                       imnheight,
+                       0,0,
+                       scaledWidth, scaledHeight
+                      );
+        // console.log(activeLineWidget);
+        activeLineEl.prepend(areaCanvas);
+    }
+    return transGeojObj;
 };
 TransColumn.prototype.saveTranscription = function(){
     // Opens up a transcription window with
@@ -2726,35 +2868,37 @@ function setSceneMouseDown(event){
         }else if(selectorType === "rectangle-selector"){
             // reset the rectangle if the selector is a rectangle
             canvasDraw.rect = {"x1" : "",
-                                "shape" : "rectangle",
-                                "regionType" : "",
-                                "y1" : "",
-                                "x1_real" : "",
-                                "y1_real" : "",
-                                "width" : "",
-                                "width_real" : "",
-                                "height" : "",
-                                "height_real" : "",
-                                "imageId" : "",
-                                "hratio" : "",
-                                "vratio" : "",
-                                "fillColor" : "",
-                                "strokeColor" : "",
-                                "fillOpacity" : "",
-                                "id" : ""};
+                               "shape" : "rectangle",
+                               "regionType" : "",
+                               "y1" : "",
+                               "x1_real" : "",
+                               "y1_real" : "",
+                               "width" : "",
+                               "width_real" : "",
+                               "height" : "",
+                               "height_real" : "",
+                               "imageId" : "",
+                               "hratio" : "",
+                               "ratio" : "",
+                               "vratio" : "",
+                               "fillColor" : "",
+                               "strokeColor" : "",
+                               "fillOpacity" : "",
+                               "id" : ""};
             canvasDraw.setRectId();
         }else if(selectorType === "polygon-selector"){
             // reset the polygon if the selector is a polygon
             canvasDraw.poly = {"pointlist" : [],
-                                "id" : "",
-                                "shape" : "polygon",
-                                "regionType" : "",
-                                "hratio" : "",
-                                "vratio" : "",
-                                "fillColor" : "",
-                                "strokeColor" : "",
-                                "fillOpacity" : "",
-                                "imageId" : ""};
+                               "id" : "",
+                               "shape" : "polygon",
+                               "regionType" : "",
+                               "hratio" : "",
+                               "ratio" : "",
+                               "vratio" : "",
+                               "fillColor" : "",
+                               "strokeColor" : "",
+                               "fillOpacity" : "",
+                               "imageId" : ""};
             canvasDraw.setPolyId();
         }
 
@@ -2799,15 +2943,36 @@ function setSceneMouseMove(event){
 
 window.onkeyup = globalKeyFuncs;
 
-function showToolBox(event){
-    var cbox = document.getElementById("showtoolbox-checkbox");
-    var fset = document.getElementById("hide-tools");
-    if(cbox.checked === true){
-        fset.setAttribute("style", "height: 20%;");
-    }else{
-        fset.setAttribute("style", "height: 0%;");
+function hideDisplayContainer(container){
+    // hide or display container using css
+    if(container.getAttribute("style") != "display: none;") {
+        /** Show the container. */
+    	  container.setAttribute("style", "display: none;");
+
+    }else if(container.getAttribute("style") === "display: none;"){
+    	  container.setAttribute("style", "display: block;");
     }
 }
+
+function slideFncTranscripter(event){
+    var container = document.getElementById("hide-tools-transcripter");
+    hideDisplayContainer(container);
+}
+
+function slideFncViewer(event){
+    var container = document.getElementById("hide-tools-viewer");
+    hideDisplayContainer(container);
+}
+
+function showToolBox(event){
+    var container = document.getElementById("hide-tools-transcripter");
+    hideDisplayContainer(container);
+    container = document.getElementById("hide-tools-viewer");
+    hideDisplayContainer(container);
+}
+
+
+
 
 function activateViewer(){
     var cbox = document.getElementById("activateViewer-checkbox");
@@ -2826,7 +2991,8 @@ function deleteBoxes(){
 }
 
 function viewLine(event){
-    transcription.drawLineOnCanvas(event);
+    var transGeoj = transcription.drawAreaOnCanvas(event);
+    canvasDraw.drawDetectionOnScene(transGeoj);
 }
 
 function undoDeletion(){

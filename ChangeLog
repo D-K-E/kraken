@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+* Started dynamic canvas and added some code for finding extreme points
+* New icons for left to right, right to left added
 * Almost everything done except slider
 * Geojson not done yet. Deletion and addition is not done yet
 * Textarea styles are done, color-schemes are implemented
