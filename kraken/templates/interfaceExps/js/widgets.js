@@ -684,6 +684,8 @@ CanvasRelated.prototype.drawDetection = function(detection, context){
         context.stroke();
         context.fill();
         context.closePath();
+    }else if(detection["properties"]["regionShape"] === "polygon"){
+        
     }
 
     return [context, detection];
@@ -2069,7 +2071,7 @@ TransColumn.prototype.getTranscriptionTopCoord = function(geoj){
     }
     return tcoord; // null object
 };
-TransColumn.prototype.selectXY = function(maxcoord, y1_real,
+TransColumn.prototype.selectXYrect = function(maxcoord, y1_real,
                                           y2_real,
                                           x1_real,
                                           x2_real,
@@ -2109,9 +2111,70 @@ TransColumn.prototype.selectXY = function(maxcoord, y1_real,
                  "x" : fncx,
                  "y" : fncy};
 };
+TransColumn.prototype.selectXYpoly = function(pointlist, // {x,y,x_real,y_real}
+                                              direction, // [x,y]
+                                              fnctype  // [max, min]
+                                             ){
+    // select points from pointlist based on direction and fnctype
+
+    var tpointCoordx, tpointCoordy, tpointCoordx_real, tpointCoordy_real;
+    if((fnctype === "max") && (direction === "y")){
+        tpointCoordy_real = Number.NEGATIVE_INFINITY;
+        for(var i=0; i < pointlist.length; i++){
+            var point = pointlist[i];
+            var py = parseInt(point["y_real"], 10);
+            if(py > tpointCoordy_real){
+                tpointCoordy_real = py;
+                tpointCoordx = parseInt(point["x"], 10);
+                tpointCoordy = parseInt(point["y"], 10);
+                tpointCoordx_real = parseInt(point["x_real"], 10);
+            }
+        }
+    }else if((fnctype === "min") && (direction === "y")){
+        tpointCoordy_real = Number.POSITIVE_INFINITY;
+        for(var i=0; i < pointlist.length; i++){
+            var point = pointlist[i];
+            var py = parseInt(point["y_real"], 10);
+            if(py < tpointCoordy_real){
+                tpointCoordy_real = py;
+                tpointCoordx = parseInt(point["x"], 10);
+                tpointCoordy = parseInt(point["y"], 10);
+                tpointCoordx_real = parseInt(point["x_real"], 10);
+            }
+        }
+    }else if((fnctype === "max") && (direction === "x")){
+        tpointCoordx_real = Number.NEGATIVE_INFINITY;
+        for(var i=0; i < pointlist.length; i++){
+            var point = pointlist[i];
+            var px = parseInt(point["x_real"], 10);
+            if(px > tpointCoordx_real){
+                tpointCoordx_real = px;
+                tpointCoordy_real = parseInt(point["y_real"], 10);
+                tpointCoordx = parseInt(point["x"], 10);
+                tpointCoordy = parseInt(point["y"], 10);
+            }
+        }
+    }else if((fnctype === "min") && (direction === "x")){
+        tpointCoordx_real = Number.POSITIVE_INFINITY;
+        for(var i=0; i < pointlist.length; i++){
+            var point = pointlist[i];
+            var px = parseInt(point["x_real"], 10);
+            if(px < tpointCoordx_real){
+                tpointCoordx_real = px;
+                tpointCoordy_real = parseInt(point["y_real"], 10);
+                tpointCoordx = parseInt(point["x"], 10);
+                tpointCoordy = parseInt(point["y"], 10);
+            }
+        }
+    }
+    var epoint = {"x" : tpointCoordx,
+                  "y" : tpointCoordy,
+                  "x_real" : tpointCoordx_real,
+                  "y_real" : tpointCoordy_real};
+    return epoint;
+};
 TransColumn.prototype.getDrawnExtremePoint = function(geoj,  // geojson object
                                                       fnctype, // min, max
-                                                      thresh, // -infinity, infinity
                                                       direction  // [x, y]
                                                      ){
     // finds extreme points based on the given criteria
@@ -2137,31 +2200,31 @@ TransColumn.prototype.getDrawnExtremePoint = function(geoj,  // geojson object
         if((fnctype === "min") && (direction === "y")){
             var min_coord = Math.min(y1_real,
                                      y2_real);
-            epoint = this.selectXY(min_coord,
-                                   y1_real, y2_real, x1_real, x2_real,
-                                   y1,y2,x1,x2,
-                                   direction);
+            epoint = this.selectXYrect(min_coord,
+                                       y1_real, y2_real, x1_real, x2_real,
+                                       y1,y2,x1,x2,
+                                       direction);
         }else if((fnctype === "max") && (direction === "y")){
             var max_coord = Math.max(y1_real,
                                      y2_real);
-            epoint = this.selectXY(max_coord,
-                                   y1_real, y2_real, x1_real, x2_real,
-                                   y1,y2,x1,x2,
-                                   direction);
+            epoint = this.selectXYrect(max_coord,
+                                       y1_real, y2_real, x1_real, x2_real,
+                                       y1,y2,x1,x2,
+                                       direction);
         }else if((fnctype === "min") && (direction === "x")){
             var min_coordx = Math.min(x1_real,
                                      x2_real);
-            epoint = this.selectXY(min_coordx,
-                                   y1_real, y2_real, x1_real, x2_real,
-                                   y1,y2,x1,x2,
-                                   direction);
+            epoint = this.selectXYrect(min_coordx,
+                                       y1_real, y2_real, x1_real, x2_real,
+                                       y1,y2,x1,x2,
+                                       direction);
         }else if((fnctype === "min") && (direction === "x")){
             var max_coordx = Math.max(x1_real,
                                       x2_real);
-            epoint = this.selectXY(max_coordx,
-                                   y1_real, y2_real, x1_real, x2_real,
-                                   y1,y2,x1,x2,
-                                   direction);
+            epoint = this.selectXYrect(max_coordx,
+                                       y1_real, y2_real, x1_real, x2_real,
+                                       y1,y2,x1,x2,
+                                       direction);
         }
         // console.log('top point');
         // console.log(tcoord);
@@ -2171,68 +2234,31 @@ TransColumn.prototype.getDrawnExtremePoint = function(geoj,  // geojson object
         //
         var pointlist = geoj["properties"]["interfaceCoordinates"]["pointlist"];
         var tpointCoordx, tpointCoordy, tpointCoordx_real, tpointCoordy_real;
+
         if((fnctype === "max") && (direction === "y")){
-            tpointCoordy_real = -Infinitiy;
-            for(var i=0; i < pointlist.length; i++){
-                var point = pointlist[i];
-                var py = parseInt(point["y_real"], 10);
-                var px = parseInt(point["x_real"], 10);
-                if(py > tpointCoordy_real){
-                    tpointCoordy_real = py;
-                    tpointCoordx = parseInt(point["x"], 10);
-                    tpointCoordy = parseInt(point["y"], 10);
-                    tpointCoordx_real = parseInt(point["x_real"], 10);
-                }
-            }
+            epoint = this.selectXYpoly(pointlist, direction, fnctype);
         }else if((fnctype === "min") && (direction === "y")){
-            tpointCoordy_real = Infinity;
-            for(var i=0; i < pointlist.length; i++){
-                var point = pointlist[i];
-                var py = parseInt(point["y_real"], 10);
-                var px = parseInt(point["x_real"], 10);
-                if(py < tpointCoordy_real){
-                    tpointCoordy_real = py;
-                    tpointCoordx = parseInt(point["x"], 10);
-                    tpointCoordy = parseInt(point["y"], 10);
-                    tpointCoordx_real = parseInt(point["x_real"], 10);
-                }
-            }
+            epoint = this.selectXYpoly(pointlist, direction, fnctype);
         }else if((fnctype === "max") && (direction === "x")){
-            tpointCoordx_real = -Infinitiy;
-            for(var i=0; i < pointlist.length; i++){
-                var point = pointlist[i];
-                var py = parseInt(point["y_real"], 10);
-                var px = parseInt(point["x_real"], 10);
-                if(px > tpointCoordy_real){
-                    tpointCoordx_real = px;
-                    tpointCoordx = parseInt(point["x"], 10);
-                    tpointCoordy = parseInt(point["y"], 10);
-                    tpointCoordx_real = parseInt(point["x_real"], 10);
-                }
-            }
+            epoint = this.selectXYpoly(pointlist, direction, fnctype);
         }else if((fnctype === "min") && (direction === "x")){
-            tpointCoordx_real = Infinitiy;
-            for(var i=0; i < pointlist.length; i++){
-                var point = pointlist[i];
-                var py = parseInt(point["y_real"], 10);
-                var px = parseInt(point["x_real"], 10);
-                if(px < tpointCoordy_real){
-                    tpointCoordx_real = px;
-                    tpointCoordx = parseInt(point["x"], 10);
-                    tpointCoordy = parseInt(point["y"], 10);
-                    tpointCoordx_real = parseInt(point["x_real"], 10);
-                }
-            }
+            epoint = this.selectXYpoly(pointlist, direction, fnctype);
         }
-        epoint = {"x" : tpointCoordx,
-                  "y" : tpointCoordy,
-                  "x_real" : tpointCoordx_real,
-                  "y_real" : tpointCoordy_real};
         // console.log('top point');
         // console.log(tcoord);
         return epoint;
     }
     return epoint; // null object
+};
+TransColumn.prototype.getDrawnExtremePoints = function(geoj){
+    // get extreme points of the geoj flavored object
+    var fncthis = this;
+    var topPoint = fncthis.getDrawnExtremePoint(geoj, "min", "y");
+    var bottomPoint = fncthis.getDrawnExtremePoint(geoj, "max", "y");
+    var rightPoint = fncthis.getDrawnExtremePoint(geoj, "max", "x");
+    var leftPoint = fncthis.getDrawnExtremePoint(geoj, "min", "x");
+    return {"top" : topPoint, "bottom" : bottomPoint,
+            "right" : rightPoint, "left" : leftPoint};
 };
 TransColumn.prototype.getTranscriptionTopPoint = function(geoj){
     // get transcription top point
@@ -2342,6 +2368,21 @@ TransColumn.prototype.sortOnTopCoordinate = function(a, b){
     //
     return geoobj1y - geoobj2y;
 };
+TransColumn.prototype.getBboxFromExtremePoints = function(extremePoints){
+    // get bbox from extreme points
+    var topLeft, bottomRight;
+    var topP = extremePoints["top"];
+    var leftP = extremePoints["left"];
+    var bottomP = extremePoints["bottom"];
+    var rightP = extremePoints["right"];
+
+    var bbox = {"x1" : leftP["x_real"],
+                "y1" : topP["y_real"],
+                "x2" : rightP["x_real"],
+                "y2" : bottomP["y_real"]};
+
+    return bbox;
+};
 TransColumn.prototype.parseBbox = function(bbox){
     // Parse the bbox values
     var bboxsplit = bbox.split(",");
@@ -2412,6 +2453,33 @@ TransColumn.prototype.removeViewer = function(){
     }
     return;
 };
+TransColumn.prototype.drawBbox = function(areaCanvas,
+                                          image, cwidth,
+                                          cheight, context,
+                                          bbox){
+    // Draw bbox on context
+    var imnwidth = bbox.x2 - bbox.x1;
+    var imnheight = bbox.y2 - bbox.y1;
+    var ratiolist  = this.getScaleFactor(cwidth, //dest width
+                                         cheight, // dest height
+                                         imnwidth, // src width
+                                         imnheight); // src height
+    var ratio = ratiolist[2];
+    var scaledWidth = ratio * imnwidth;
+    var scaledHeight = ratio * imnheight;
+    areaCanvas.setAttribute("width", scaledWidth);
+    areaCanvas.setAttribute("height", scaledHeight);
+
+    context.drawImage(image,
+                      // 0,0,
+                      bbox.x1, bbox.y1, // source coordinate
+                      imnwidth,
+                      imnheight,
+                      0,0,
+                      scaledWidth, scaledHeight
+                     );
+    return [areaCanvas, context];
+};
 TransColumn.prototype.drawAreaOnCanvas =  function(event){
     /*
       Draw the line on a canvas for selected transcription area
@@ -2449,43 +2517,41 @@ TransColumn.prototype.drawAreaOnCanvas =  function(event){
     areaCanvas.height = activeLineEl.clientHeight;
     var ctxt = areaCanvas.getContext('2d');
 
+    // get canvas width / height, image
+    var nimage = this.image;
+    var cwidth = areaCanvas.width;
+    var cheight = areaCanvas.height;
 
     // get the drawing geojson object
     var transGeojObj = this.getTranscriptionByDataId(drawnId);
     var bbox;
-    console.log(transGeojObj);
+    // console.log(transGeojObj);
     if(transGeojObj["properties"]["regionShape"] === "rectangle"){
         bbox = this.parseBbox(transGeojObj["properties"]["interfaceCoordinates"]["bbox"]);
-        console.log(bbox);
-        var nimage = this.image;
-        var cwidth = areaCanvas.width;
-        var cheight = areaCanvas.height;
-        // Get natural width and height of the drawn image
-        var imnwidth = bbox.x2 - bbox.x1;
-        var imnheight = bbox.y2 - bbox.y1;
-        console.log(`cwidth ${cwidth} cheight ${cheight}`);
-        console.log(`imnwidth ${imnwidth} imnheight ${imnheight}`);
-        console.log(`image ${nimage}`);
-        //
-        var ratiolist  = this.getScaleFactor(cwidth, //dest width
-                                             cheight, // dest height
-                                             imnwidth, // src width
-                                             imnheight); // src height
-        var ratio = ratiolist[2];
-        var scaledWidth = ratio * imnwidth;
-        var scaledHeight = ratio * imnheight;
-        areaCanvas.setAttribute("width", scaledWidth);
-        areaCanvas.setAttribute("height", scaledHeight);
+        var fncthis = this;
+        var areaContextList = fncthis.drawBbox(areaCanvas,
+                                               nimage,
+                                               cwidth,
+                                               cheight,
+                                               ctxt,
+                                               bbox);
+        areaCanvas = areaContextList[0];
+        ctxt = areaContextList[1];
 
-        ctxt.drawImage(nimage,
-                       // 0,0,
-                       bbox.x1, bbox.y1, // source coordinate
-                       imnwidth,
-                       imnheight,
-                       0,0,
-                       scaledWidth, scaledHeight
-                      );
-        // console.log(activeLineWidget);
+        activeLineEl.prepend(areaCanvas);
+    }else if(transGeojObj["properties"]["regionShape"] === "polygon"){
+        var expoints = this.getDrawnExtremePoints(transGeojObj);
+        bbox = this.getBboxFromExtremePoints(expoints);
+        var fncthis = this;
+        var areaContextList = fncthis.drawBbox(areaCanvas,
+                                               nimage,
+                                               cwidth,
+                                               cheight,
+                                               ctxt,
+                                               bbox);
+        areaCanvas = areaContextList[0];
+        ctxt = areaContextList[1];
+
         activeLineEl.prepend(areaCanvas);
     }
     return transGeojObj;
@@ -2992,6 +3058,7 @@ function deleteBoxes(){
 
 function viewLine(event){
     var transGeoj = transcription.drawAreaOnCanvas(event);
+    console.log(transGeoj);
     canvasDraw.drawDetectionOnScene(transGeoj);
 }
 
@@ -3077,24 +3144,6 @@ function showTranscriptionArea(event){
 
 function resetRect(){
     canvasDraw.resetRect();
-}
-
-function canvasMouseDown(event){
-    canvasDraw.canvasMouseDown(event);
-}
-
-function canvasMouseUp(event){
-    canvasDraw.canvasMouseUp(event);
-}
-
-function canvasMouseMove(event){
-    if(allLinesCheck === true){
-        return;
-    }else{
-        transcription.currentRect = canvasDraw.image.currentRect;
-        canvasDraw.canvasMouseMove(event);
-        transcription.emphTransRegion(canvasDraw.image.hoveringRect);
-    }
 }
 
 function saveCoordinates(){
