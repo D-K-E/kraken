@@ -350,6 +350,17 @@ CanvasRelated.prototype.setPolyId = function(){
     this.poly.id = polyid;
     return;
 }; // TODO: debugging code
+CanvasRelated.prototype.setDisplayProperty = function(propertyName,
+                                                      detection){
+    var propertyValue;
+    if(detection["properties"]["displayRelated"].hasOwnProperty(propertyName)){
+        propertyValue = detection[propertyName];
+    }else{
+        propertyValue = this.detectionOptions[propertyName];
+    }
+    return propertyValue;
+};
+// => propertyValue
 
 // ----------- Drawing Methods ----------------------
 CanvasRelated.prototype.drawRectangle = function(mouseX2, // destination x2
@@ -410,6 +421,8 @@ CanvasRelated.prototype.drawRectangle = function(mouseX2, // destination x2
     context.closePath();
     return context;
 }; // TODO: debugging code
+// => context
+
 CanvasRelated.prototype.drawPolygon = function(mouseX2, // destination x2
                                                mouseY2, // destination y2
                                                hratio,  // horizontal ratio
@@ -453,6 +466,8 @@ CanvasRelated.prototype.drawPolygon = function(mouseX2, // destination x2
     context.fill();
     return context;
 }; // TODO: debug code
+// => context
+
 CanvasRelated.prototype.drawPolygonFill = function(context, // drawing context
                                                    polyObj // drawer object
                                                   ){
@@ -486,6 +501,8 @@ CanvasRelated.prototype.drawPolygonFill = function(context, // drawing context
     context.fill();
     return context;
 }; // TODO: debug code
+// => context
+
 CanvasRelated.prototype.drawSelection = function(event){
     // drawing event manager
     if(this.debug === true){
@@ -631,12 +648,16 @@ CanvasRelated.prototype.drawSelection = function(event){
     }
     return [context, this.drawnObject];
 };
+// => [context, this.drawnObject]
+
 CanvasRelated.prototype.drawDetection = function(detection, context){
     // draw detection based on its region type
 
-    var fillColor = this.detectionOptions.fillColor;
-    var fillOpacity = this.detectionOptions.fillOpacity;
-    var strokeColor = this.detectionOptions.strokeColor;
+    var fillColor, fillOpacity, strokeColor;
+    var functhis = this;
+    fillColor = functhis.setDisplayProperty("fillColor", detection);
+    fillOpacity = functhis.setDisplayProperty("fillOpacity", detection);
+    strokeColor = functhis.setDisplayProperty("strokeColor", detection);
 
     // set context style
     if(fillColor === ""){
@@ -672,40 +693,20 @@ CanvasRelated.prototype.drawDetection = function(detection, context){
         var width = detection["properties"]["interfaceCoordinates"]["width_real"] * ratio;
         var height = detection["properties"]["interfaceCoordinates"]["height_real"] * ratio;
         var x1 = detection["properties"]["interfaceCoordinates"]["x1_real"] * ratio;
-        detection["properties"]["interfaceCoordinates"]["x1"] = x1;
         var y1 = detection["properties"]["interfaceCoordinates"]["y1_real"] * ratio;
+        detection["properties"]["interfaceCoordinates"]["x1"] = x1;
         detection["properties"]["interfaceCoordinates"]["y1"] = y1;
-        var x2 = x1 + width;
-        var y2 = y1 + height;
-
-        // draw the rectangle
-        context.beginPath();
-        context.rect(x1,y1,width,height);
-        context.stroke();
-        context.fill();
-        context.closePath();
+        detection["properties"]["interfaceCoordinates"]["width"] = width;
+        detection["properties"]["interfaceCoordinates"]["height"] = height;
+        context = this.redrawRectObj(context, detection);
     }else if(detection["properties"]["regionShape"] === "polygon"){
-        
+        context = this.redrawPolygonObj(context, detection);
     }
 
     return [context, detection];
 };
-CanvasRelated.prototype.drawDetectionOnScene = function(detection // geojson flavor
-                                                       ){
-    // Draws the given detection on scene
-    this.clearScene();
-    var imcanvas = document.getElementById("scene");
-    var context = imcanvas.getContext('2d');
+// => [context, detection]
 
-    var canvasOffsetX = imcanvas.offsetLeft;
-    var canvasOffsetY = imcanvas.offsetTop;
-    context = this.redrawImage(this.image["id"],
-                               this.image.ratio,
-                               context);
-    var funcThis = this;
-    var contextDetectionList = funcThis.drawDetection(detection, context);
-    return contextDetectionList;
-};
 // Draw Line Bounding Boxes
 CanvasRelated.prototype.drawDetectionBounds = function(event){
     // makes the line bounding box
@@ -747,13 +748,20 @@ CanvasRelated.prototype.drawDetectionBounds = function(event){
     var funcThis = this;
     var detection =  funcThis.getDetectionBound(mouseX2Trans,
                                                 mouseY2Trans);
-    // console.log(detection);
+    if(this.debug === true){
+        console.log("in bounds");
+        console.log(detection);
+    }
     var contextDetectionList = funcThis.drawDetection(detection, context);
     // set context style options
     // set context stroke color
+    context = contextDetectionList[0];
+    detection = contextDetectionList[1];
 
-    return contextDetectionList;
+    return [context, detection];
 }; // TODO debug code
+// => [context, detection]
+
 // -------------- Redrawing Methods -------------------
 CanvasRelated.prototype.redrawImage = function(imageId, // image identifer
                                                ratio, // ratio for canvas
@@ -785,6 +793,8 @@ CanvasRelated.prototype.redrawImage = function(imageId, // image identifer
     context.closePath();
     return context;
 };
+// => context
+
 CanvasRelated.prototype.resetCanvasState = function(byeDrawnObject,
                                                     byeDrawnObjects,
                                                     byeHeldObjects,
@@ -813,6 +823,8 @@ CanvasRelated.prototype.resetCanvasState = function(byeDrawnObject,
                      this.image.ratio, context);
 
 };
+// => null
+
 CanvasRelated.prototype.resetScene = function(){
     // redraw page image without the drawn objects
     // get canvas and context
@@ -824,41 +836,8 @@ CanvasRelated.prototype.resetScene = function(){
                             );
     return;
 };
-CanvasRelated.prototype.redrawDetection = function(context,
-                                                   detection, // geojObj
-                                                   setStyle){
-    // redraw a detection object
-    var hratio = this.image["hratio"];
-    var vratio = this.image["vratio"];
-    var ratio = this.image["ratio"];
-    // console.log(detection);
-    var width = detection["properties"]["interfaceCoordinates"]["width_real"] * ratio;
-    var height = detection["properties"]["interfaceCoordinates"]["height_real"] * ratio;
-    var x1 = detection["properties"]["interfaceCoordinates"]["x1_real"] * ratio;
-    var y1 = detection["properties"]["interfaceCoordinates"]["y1_real"] * ratio;
+// => null
 
-    // set context style options
-    // set context stroke color
-    if(setStyle === true){
-        context.strokeStyle = "rgb(" + this.detectionOptions.strokeColor + ")";
-        var rgbastr = "rgba(";
-        var fillColor = this.detectionOptions.fillColor;
-        var fillOpacity = this.detectionOptions.fillOpacity;
-        rgbastr = rgbastr.concat(fillColor); // rgb value ex: 255,0,0
-        rgbastr = rgbastr.concat(",");
-        rgbastr = rgbastr.concat(fillOpacity);
-        rgbastr = rgbastr.concat(")");
-        context.fillStyle = rgbastr;
-    }
-    //
-    // draw the rectangle
-    context.beginPath();
-    context.rect(x1,y1, width, height);
-    context.closePath();
-    context.stroke();
-    context.fill();
-    return context;
-};
 CanvasRelated.prototype.redrawRectObj = function(context, // drawing context
                                                  rectObj // drawer object
                                                 ){
@@ -890,6 +869,8 @@ CanvasRelated.prototype.redrawRectObj = function(context, // drawing context
     context.closePath();
     return context;
 };
+// => context
+
 CanvasRelated.prototype.redrawPolygonObj = function(context, // drawing context
                                                     polyObj // drawer object
                                                    ){
@@ -922,6 +903,28 @@ CanvasRelated.prototype.redrawPolygonObj = function(context, // drawing context
     context.fill();
     return context;
 };
+// => context
+
+CanvasRelated.prototype.redrawDetection = function(detection // geojson flavor
+                                                  ){
+    // Draws the given detection on scene
+    this.clearScene();
+    var imcanvas = document.getElementById("scene");
+    var context = imcanvas.getContext('2d');
+
+    var canvasOffsetX = imcanvas.offsetLeft;
+    var canvasOffsetY = imcanvas.offsetTop;
+    context = this.redrawImage(this.image["id"],
+                               this.image.ratio,
+                               context);
+    var funcThis = this;
+    // console.log("in redraw");
+    // console.log(detection);
+    context = funcThis.drawDetection(detection, context);
+    return [context, detection];
+};
+// => [context, detection]
+
 CanvasRelated.prototype.redrawDrawnObjects = function(drawnObjects, context){
     // Redraw all drawn objects
     for(var i=0; i < drawnObjects["features"].length; i++){
@@ -938,6 +941,8 @@ CanvasRelated.prototype.redrawDrawnObjects = function(drawnObjects, context){
     }
     return context;
 };
+// => context
+
 CanvasRelated.prototype.redrawAllDrawnObjects = function(){
     // redraw all the objects in the drawnObjects stack
     // get context and the scene
@@ -956,11 +961,14 @@ CanvasRelated.prototype.redrawAllDrawnObjects = function(){
     context = fncthis.redrawDrawnObjects(this.drawnObjects, context);
     return;
 };
+// => null
+
 CanvasRelated.prototype.redrawDetections = function(detections, // geojObj
                                                     context){
     // redraw detections
+    var dobj;
     for(var i=0; i < detections["features"].length; i++){
-        var dobj = detections["features"][i];
+        dobj = detections["features"][i];
         if(this.debug === true){
             console.log("drawn object");
             console.log(dobj);
@@ -973,12 +981,17 @@ CanvasRelated.prototype.redrawDetections = function(detections, // geojObj
             context.fillStyle = "rgba(127,0,0,0.2)";
         }
         // console.log(dobj);
-        context = this.redrawDetection(context, dobj,
-                                       false // setStyle check
-                                      );
+        var contextDetection;
+        contextDetection = this.drawDetection(dobj, context
+                                     // false // setStyle check
+                                    );
+        context = contextDetection[0];
+        dobj = contextDetection[1];
     }
     return context;
 };
+// => context
+
 CanvasRelated.prototype.redrawAllDetectedObjects = function(){
     // redraw all the objects in the detections stack
     // get context and the scene
@@ -997,6 +1010,8 @@ CanvasRelated.prototype.redrawAllDetectedObjects = function(){
     context = fncthis.redrawDetections(this.detections, context);
     return;
 };
+// => null
+
 CanvasRelated.prototype.redrawEverything = function(){
     // Combines redraw detections and selections
     var scene = document.getElementById("scene");
@@ -1015,6 +1030,8 @@ CanvasRelated.prototype.redrawEverything = function(){
     context = fncthis.redrawDrawnObjects(this.drawnObjects, context);
     return context;
 };
+// => context
+
 CanvasRelated.prototype.removeFeatureById = function(features, filterId){
     // filter out the filterid from features array
     var narray = [];
@@ -1026,6 +1043,8 @@ CanvasRelated.prototype.removeFeatureById = function(features, filterId){
     }
     return narray;
 };
+// => narray
+
 CanvasRelated.prototype.removeDrawnObject = function(drawnObj){
     // remove drawn object from detection/drawnObjects
     // if it exist in detections
@@ -1040,6 +1059,8 @@ CanvasRelated.prototype.removeDrawnObject = function(drawnObj){
 
     return;
 };
+// => null
+
 CanvasRelated.prototype.removeDrawnObjects = function(drawnObjList){
     // remove drawn objects from canvas memory
     for(var i=0; i<drawnObjList.length; i++){
@@ -1048,6 +1069,8 @@ CanvasRelated.prototype.removeDrawnObjects = function(drawnObjList){
         fncthis.removeDrawnObject(drawnObjList[i]);
     }
 };
+// => null
+
 //
 // ------------- Methods for Managing Drawing Event -------
 CanvasRelated.prototype.setSelectionCoordinates = function(event){
@@ -1110,6 +1133,8 @@ CanvasRelated.prototype.setSelectionCoordinates = function(event){
     }
     return;
 };
+// => null
+
 CanvasRelated.prototype.setContextOptions2Object = function(dobj, // drawer object
                                                             strokeColor,
                                                             fillColor, // ex 255,0,0
@@ -1120,8 +1145,10 @@ CanvasRelated.prototype.setContextOptions2Object = function(dobj, // drawer obje
     dobj["strokeColor"] = strokeColor;
     dobj["fillColor"] = fillColor;
     dobj["fillOpacity"] = fillOpacity;
+
     return dobj;
 };
+// => dobj
 
 
 // ------------ Convert Drawn Objects to Geojson -----------
@@ -1176,6 +1203,7 @@ CanvasRelated.prototype.convertObj2Geojson = function(drawnObj){
         var y2_real = y1_real + height_real;
         var x2 = x1 + width;
         var y2 = y1 + height;
+        var bbox = x1_real + "," + y1_real + "," + x2_real + "," + y2_real;
         geoobj["properties"]["interfaceCoordinates"]["x1"] = x1;
         geoobj["properties"]["interfaceCoordinates"]["y1"] = y1;
         geoobj["properties"]["interfaceCoordinates"]["x2"] = x2;
@@ -1190,6 +1218,7 @@ CanvasRelated.prototype.convertObj2Geojson = function(drawnObj){
         geoobj["properties"]["interfaceCoordinates"]["height"] = height;
         geoobj["properties"]["interfaceCoordinates"]["width_real"] = width_real;
         geoobj["properties"]["interfaceCoordinates"]["height_real"] = height_real;
+        geoobj["properties"]["interfaceCoordinates"]["bbox"] = bbox;
         //
         geoobj["geometry"]["type"] = "MultiLineString";
         var topside = [[x1_real, y1_real], [x2_real, y1_real]];
@@ -1201,6 +1230,8 @@ CanvasRelated.prototype.convertObj2Geojson = function(drawnObj){
     }
     return geoobj;
 };
+// => geojson object
+
 CanvasRelated.prototype.addSingleDrawnObject = function(){
     // add drawn object to drawn objects stack
     // make a copy of drawn object
@@ -1226,6 +1257,8 @@ CanvasRelated.prototype.addSingleDrawnObject = function(){
     // console.log(this.drawnObjects);
     return geoj;
 };
+// => geojson object
+
 CanvasRelated.prototype.getDrawnById = function(index, drawStack){
     // gives the transcription (feature) using data id
     var retobj;
@@ -1238,26 +1271,8 @@ CanvasRelated.prototype.getDrawnById = function(index, drawStack){
     }
     return retobj;
 };
+// => geojson object
 
-//
-CanvasRelated.prototype.getLine = function(lineObj){
-    // get line coordinates from line object
-    var leftInt = parseInt(lineObj.x1, 10);
-    leftInt = Math.floor(leftInt);
-    var topInt = parseInt(lineObj.y1, 10);
-    topInt = Math.floor(topInt);
-    var widthInt = parseInt(lineObj.width, 10);
-    widthInt = Math.floor(widthInt);
-    var heightInt = parseInt(lineObj.height, 10);
-    heightInt = Math.floor(heightInt);
-    //
-    var line = {};
-    line.x1 = leftInt;
-    line.y1 = topInt;
-    line.width = widthInt;
-    line.height = heightInt;
-    return line;
-};
 //
 // Event handlers
 // Checks for event locations
@@ -1300,6 +1315,7 @@ CanvasRelated.prototype.checkDetectionBound = function(mX, // real coordinate no
     }
     return check;
 };
+// => bool
 //
 CanvasRelated.prototype.checkEventRectBound = function(event,
                                                        rectName,
@@ -1330,30 +1346,8 @@ CanvasRelated.prototype.checkEventRectBound = function(event,
         eventBool=true;
     }
 };
+// => null
 //
-CanvasRelated.prototype.checkRectContained = function(rect1, rect2){
-    // Check if rect1 contains rect2
-    var rect1_x1 = rect1["x1"];
-    var rect1_y1 = rect1["x1"];
-    var rect1_x2 = rect1["x2"];
-    var rect1_y2 = rect1["y2"];
-    //
-    var rect2_x1 = rect2["x1"];
-    var rect2_y1 = rect2["x1"];
-    var rect2_x2 = rect2["x2"];
-    var rect2_y2 = rect2["y2"];
-    //
-    var check = false;
-    //
-    if((rect2_x1 > rect1_x1) ||
-       (rect2_x2 < rect1_x2) ||
-       (rect2_y1 > rect1_y1) ||
-       (rect2_y2 < rect1_y2)
-      ){
-        check = true;
-    }
-    return check;
-};
 // Get lines based on event locations
 CanvasRelated.prototype.getDetectionBound = function(mXcoord,
                                                      mYcoord){
@@ -1379,16 +1373,7 @@ CanvasRelated.prototype.getDetectionBound = function(mXcoord,
     //
     return detection;
 };
-CanvasRelated.prototype.saveCoordinates = function(){
-    // opens up a window with line coordinates in it
-    var lines = this.image.lines;
-    var strjson = JSON.stringify(lines);
-    window.open("data:application/json; charset=utf-8," + strjson);
-};
-CanvasRelated.prototype.getCoordinates = function(){
-    // gets lines which contain coordinates
-    return this.image.lines;
-};
+// => detection(geojson object)
 
 // Transcription Column Related
 
@@ -1421,6 +1406,8 @@ TransColumn.prototype.clearTranscription = function(){
     this.transcriptions["features"] = [];
     return;
 };
+// => null
+
 TransColumn.prototype.createTranscriptionField = function(index,
                                                           makeBbox,
                                                           geojObject){
@@ -1454,6 +1441,9 @@ TransColumn.prototype.createTranscriptionField = function(index,
             areaWidget, cboxLabel, acbox];
 
 };
+// => [listItem, ulList, transLine, ael,
+//     areaWidget, cboxLabel, acbox]
+
 TransColumn.prototype.setBbox2Textarea = function(bbox, index){
     // set data-bbox attribute of a given textarea in the given index
     var taId = this.createIdWithPrefix(index, "ta");
@@ -1463,6 +1453,8 @@ TransColumn.prototype.setBbox2Textarea = function(bbox, index){
     return;
 
 };
+// => null
+
 TransColumn.prototype.addDetected2TranscriptionArea = function(detected // geojObject
                                                               ){
     // adds the detected area 2 transcription area
@@ -1491,6 +1483,8 @@ TransColumn.prototype.addDetected2TranscriptionArea = function(detected // geojO
     fncthis.setBbox2Textarea(bbox, index);
     // this.sortLines();
 };
+// => null
+
 TransColumn.prototype.loadTranscription = function(event){
     // loads the transcription of the image associated
     // to the link
@@ -1528,6 +1522,8 @@ TransColumn.prototype.loadTranscription = function(event){
     }
     return;
 }; // TODO: debug code
+// => null
+
 TransColumn.prototype.getTranscription = function(transObj){
     // get information from transcribed object
     var leftInt = parseInt(transObj["x1_real"], 10);
@@ -1552,6 +1548,8 @@ TransColumn.prototype.getTranscription = function(transObj){
     transcription["shape"] = transObj["shape"];
     return transcription;
 };
+// => transcription object
+
 TransColumn.prototype.convert2Geojson = function(detection){
     // convert detection object to geojson
     var geoobj = {};
@@ -1628,7 +1626,8 @@ TransColumn.prototype.convert2Geojson = function(detection){
                                          bottomside, leftside];
     return geoobj;
 };
-//
+// => geojson object
+
 TransColumn.prototype.getLineById = function(idstr){
     var index = idstr.replace(/[^0-9]/g, '');
     var result;
@@ -1640,7 +1639,8 @@ TransColumn.prototype.getLineById = function(idstr){
     }
     return result;
 };
-//
+// => geojson object
+
 TransColumn.prototype.createItemId = function(){
     // creates the id of item group based on the
     // the number of elements the text-area-list has
@@ -1657,12 +1657,15 @@ TransColumn.prototype.createItemId = function(){
     var newId = childArray.length + 1;
     return newId;
 };
+// => newId
+
 TransColumn.prototype.createIdWithPrefix = function(index, prefix){
     // creates the id with the necessary prefix
     var id = prefix.concat("-");
     var prefixId = id.concat(index);
     return prefixId;
 };
+// => prefixId (string)
 //
 TransColumn.prototype.checkRectangle = function(){
     // check if the selection rectangle is empty
@@ -1673,6 +1676,7 @@ TransColumn.prototype.checkRectangle = function(){
     //
     return result;
 };
+// => result(bool)
 //
 TransColumn.prototype.createIGroup = function(idstr){
     // create the list element that will hold the group
@@ -2071,13 +2075,14 @@ TransColumn.prototype.getTranscriptionTopCoord = function(geoj){
     }
     return tcoord; // null object
 };
-TransColumn.prototype.selectXYrect = function(maxcoord, y1_real,
-                                          y2_real,
-                                          x1_real,
-                                          x2_real,
-                                          y1,y2,x1,x2,
-                                          direction // x,y
-                                         ){
+TransColumn.prototype.selectXYrect = function(maxcoord,
+                                              y1_real,
+                                              y2_real,
+                                              x1_real,
+                                              x2_real,
+                                              y1,y2,x1,x2,
+                                              direction // x,y
+                                             ){
     // get select coordinate point based on max coord
     var fncx_real, fncx, fncy, fncy_real;
     if(direction === "y"){
@@ -2525,11 +2530,12 @@ TransColumn.prototype.drawAreaOnCanvas =  function(event){
     // get the drawing geojson object
     var transGeojObj = this.getTranscriptionByDataId(drawnId);
     var bbox;
-    // console.log(transGeojObj);
+    var fncthis = this;
+    var areaContextList;
     if(transGeojObj["properties"]["regionShape"] === "rectangle"){
+        console.log(transGeojObj);
         bbox = this.parseBbox(transGeojObj["properties"]["interfaceCoordinates"]["bbox"]);
-        var fncthis = this;
-        var areaContextList = fncthis.drawBbox(areaCanvas,
+        areaContextList= fncthis.drawBbox(areaCanvas,
                                                nimage,
                                                cwidth,
                                                cheight,
@@ -2542,8 +2548,7 @@ TransColumn.prototype.drawAreaOnCanvas =  function(event){
     }else if(transGeojObj["properties"]["regionShape"] === "polygon"){
         var expoints = this.getDrawnExtremePoints(transGeojObj);
         bbox = this.getBboxFromExtremePoints(expoints);
-        var fncthis = this;
-        var areaContextList = fncthis.drawBbox(areaCanvas,
+        areaContextList = fncthis.drawBbox(areaCanvas,
                                                nimage,
                                                cwidth,
                                                cheight,
@@ -3058,8 +3063,8 @@ function deleteBoxes(){
 
 function viewLine(event){
     var transGeoj = transcription.drawAreaOnCanvas(event);
-    console.log(transGeoj);
-    canvasDraw.drawDetectionOnScene(transGeoj);
+    // console.log(transGeoj);
+    canvasDraw.redrawDetection(transGeoj);
 }
 
 function undoDeletion(){
@@ -3146,9 +3151,6 @@ function resetRect(){
     canvasDraw.resetRect();
 }
 
-function saveCoordinates(){
-    canvasDraw.saveCoordinates();
-}
 
 function saveEverything(){
     // Saves the lines for transcribed coordinates
