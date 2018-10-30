@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+* Most of the interface is done
+* Dynamic canvas done
+* Most of the old functionality is restored to current interface
 * Started dynamic canvas and added some code for finding extreme points
 * New icons for left to right, right to left added
 * Almost everything done except slider

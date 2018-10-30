@@ -374,8 +374,8 @@ CanvasRelated.prototype.drawRectangle = function(mouseX2, // destination x2
     // get rectangle width
     var x1coord = rectUpdate["x1"];
     var y1coord = rectUpdate["y1"];
-    var rectW = mouseX2 - x1coord;
-    var rectH = mouseY2 - y1coord;
+    var rectW = Math.abs(mouseX2 - x1coord);
+    var rectH = Math.abs(mouseY2 - y1coord);
 
     // get real coordinate values
     var x_real = x1coord / hratio;
@@ -1330,8 +1330,8 @@ CanvasRelated.prototype.checkEventRectBound = function(event,
     var context = imcanvas.getContext('2d');
     var canvasOffsetX = imcanvas.offsetLeft;
     var canvasOffsetY = imcanvas.offsetTop;
-    var mouseX2=parseInt(event.layerX - canvasOffsetX);
-    var mouseY2=parseInt(event.layerY - canvasOffsetY);
+    var mouseX2 = parseInt(event.layerX - canvasOffsetX);
+    var mouseY2 = parseInt(event.layerY - canvasOffsetY);
     var mouseX2Trans = (mouseX2) / this.image.hratio; // real coordinates
     var mouseY2Trans = (mouseY2) / this.image.vratio; // real coordinates
     //
@@ -1383,6 +1383,7 @@ var TransColumn = function(){
     obj.image = pageImage;
     obj.viewerCheck = false;
     obj.drawnObject = {};
+    obj.originalSize = false;
     obj.hratio = "";
     obj.vratio = "";
     obj.ratio = "";
@@ -1424,8 +1425,8 @@ TransColumn.prototype.createTranscriptionField = function(index,
                                      makeBbox);
 
     // create list element that contains text area
-    var aelId = this.createIdWithPrefix(index, "ael");
-    var ael = this.createAreaElement(aelId);
+    var aelId = this.createIdWithPrefix(index, "ac");
+    var ac = this.createAreaContainer(aelId);
 
     //
     var awId = this.createIdWithPrefix(index, "aw");
@@ -1437,11 +1438,11 @@ TransColumn.prototype.createTranscriptionField = function(index,
     var acboxId = this.createIdWithPrefix(index, "acbox");
     var acbox = this.createAreaCbox(acboxId);
 
-    return [listItem, ulList, transLine, ael,
+    return [listItem, ulList, transLine, ac,
             areaWidget, cboxLabel, acbox];
 
 };
-// => [listItem, ulList, transLine, ael,
+// => [listItem, ulList, transLine, ac,
 //     areaWidget, cboxLabel, acbox]
 
 TransColumn.prototype.setBbox2Textarea = function(bbox, index){
@@ -1753,11 +1754,11 @@ TransColumn.prototype.createAreaCboxLabel = function(idstr){
     // labelContainer.appendChild(spanElement);
     return labelContainer;
 };
-TransColumn.prototype.createAreaElement = function(idstr){
+TransColumn.prototype.createAreaContainer = function(idstr){
     // create area element li
-    var ael = document.createElement("li");
+    var ael = document.createElement("div");
     ael.setAttribute("id", idstr);
-    ael.setAttribute("class", "area-element");
+    ael.setAttribute("class", "area-container");
     return ael;
 };
 //
@@ -1772,11 +1773,12 @@ TransColumn.prototype.createAreaWidget = function(idstr){
 };
 TransColumn.prototype.fillItemGroupBody = function(fieldItems){
     // create text-area-list body
-    var itemGroup, itemList, transLine, textAreaLine, areaWidget, cboxLabel, areaCbox;
+    var itemGroup, itemList, transLine, textAreaContainer;
+    var areaWidget, cboxLabel, areaCbox;
     itemGroup = fieldItems[0]; // item group
     itemList = fieldItems[1];  // ulList
     transLine = fieldItems[2];  // textarea
-    textAreaLine = fieldItems[3];  // area Element - ael
+    textAreaContainer = fieldItems[3];  // area container - ac
     areaWidget = fieldItems[4]; // area widget
     cboxLabel = fieldItems[5]; // cbox label
     areaCbox = fieldItems[6]; // cbox
@@ -1785,15 +1787,17 @@ TransColumn.prototype.fillItemGroupBody = function(fieldItems){
     // cbox goes into cboxlabel
     cboxLabel.prepend(areaCbox);
 
-    // cboxlabel goes into linewidget
+    // cboxlabel goes into area widget
     areaWidget.appendChild(cboxLabel);
 
-    // textarea goes into line element
-    textAreaLine.appendChild(transLine);
+    // textarea goes into area container
+    textAreaContainer.appendChild(transLine);
+
+    // container goes into area widget
+    areaWidget.appendChild(textAreaContainer);
 
     // transline and linewidget goes into ullist
     itemList.appendChild(areaWidget);
-    itemList.appendChild(textAreaLine);
 
     // ul list goes into list item
     itemGroup.appendChild(itemList);
@@ -2417,11 +2421,11 @@ TransColumn.prototype.checkBbox = function(bbox, drawnObject){
 };
 TransColumn.prototype.resetTextareaStyle = function(){
     // resets the class of all textareas to transcription-textarea
-    var areaElements = document.getElementsByClassName("area-element");
+    var areaElements = document.getElementsByClassName("area-container");
     for(var i=0; i<areaElements.length; i++){
         var tarea = areaElements[i].firstElementChild;
         var tclass = tarea.getAttribute("class");
-        if(tclass === "onfocus-transcription-textarea"){
+        if(tclass === "hovering-transcription-textarea"){
             tarea.setAttribute("class","transcription-textarea");
         }
     }
@@ -2436,7 +2440,7 @@ TransColumn.prototype.emphTransRegion = function(drawnObject){
     var taId = "ta-".concat(drawnObject["properties"]["id"]);
     var taType = drawnObject["properties"]["type"];
     var textarea = document.getElementById(taId);
-    textarea.setAttribute("class", "onfocus-transcription-textarea");
+    textarea.setAttribute("class", "hovering-transcription-textarea");
     return;
 };
 TransColumn.prototype.getScaleFactor = function(destWidth,
@@ -2450,11 +2454,23 @@ TransColumn.prototype.getScaleFactor = function(destWidth,
     //
     return [hratio, vratio, ratio];
 };
-TransColumn.prototype.removeViewer = function(){
+TransColumn.prototype.removeInlineCanvas = function(){
     // remove the line viewer from dom
     var oldviewer = document.getElementById("area-viewer");
     if (oldviewer != null){
         document.getElementById("area-viewer").remove();
+    }
+    var viewerContainer = document.getElementById("area-viewer-container");
+    if(viewerContainer != null){
+        viewerContainer.parentNode.removeChild(viewerContainer);
+    }
+    var onfocusIG = document.querySelector("li.onfocus-item-group");
+    if (onfocusIG != null){
+        onfocusIG.setAttribute("class", "item-group");
+    }
+    var onfocusTA = document.querySelector("textarea.onfocus-transcription-textarea");
+    if(onfocusTA != null){
+        onfocusTA.setAttribute("class", "transcription-textarea");
     }
     return;
 };
@@ -2463,8 +2479,8 @@ TransColumn.prototype.drawBbox = function(areaCanvas,
                                           cheight, context,
                                           bbox){
     // Draw bbox on context
-    var imnwidth = bbox.x2 - bbox.x1;
-    var imnheight = bbox.y2 - bbox.y1;
+    var imnwidth = Math.abs(bbox.x2 - bbox.x1);
+    var imnheight = Math.abs(bbox.y2 - bbox.y1);
     var ratiolist  = this.getScaleFactor(cwidth, //dest width
                                          cheight, // dest height
                                          imnwidth, // src width
@@ -2495,11 +2511,15 @@ TransColumn.prototype.drawAreaOnCanvas =  function(event){
       on canvas
     */
     if(this.viewerCheck === false){
-        this.removeViewer();
+        this.removeInlineCanvas();
         return;
     }
     // remove old viewer
-    this.removeViewer();
+    this.removeInlineCanvas();
+
+    // create viewer container
+    var viewerContainer = document.createElement("li");
+    viewerContainer.setAttribute("id", "area-viewer-container");
 
     // create viewer
     var areaCanvas = document.createElement("canvas");
@@ -2512,14 +2532,48 @@ TransColumn.prototype.drawAreaOnCanvas =  function(event){
     var index = domid.replace(/[^0-9]/g, '');
 
     // get the corresponding area widget and area element
-    var idAreaWidget = this.createIdWithPrefix(index, "aw");
-    var activeAreaWidget = document.getElementById(idAreaWidget);
-    var idAreaEl = this.createIdWithPrefix(index,"ael");
-    var activeLineEl = document.getElementById(idAreaEl);
+    // and the item group
+    var idAreaEl = this.createIdWithPrefix(index,"ac");
+    var areaElement = document.getElementById(idAreaEl);
+
+    var idItemGroup = this.createIdWithPrefix(index, "ig");
+    var itemGroup = document.getElementById(idItemGroup);
+
+    var idItemList = this.createIdWithPrefix(index, "il");
+    var itemList = document.getElementById(idItemList);
+
+    // get the drawing geojson object with bbox
+
+    // get the drawing geojson object
+    var transGeojObj = this.getTranscriptionByDataId(drawnId);
+
+    // get the bbox
+    var bbox;
+    var fncthis = this;
+    var areaContextList;
+    if(transGeojObj["properties"]["regionShape"] === "rectangle"){
+        // console.log(transGeojObj);
+        bbox = this.parseBbox(transGeojObj["properties"]["interfaceCoordinates"]["bbox"]);
+    }else if(transGeojObj["properties"]["regionShape"] === "polygon"){
+        var expoints = this.getDrawnExtremePoints(transGeojObj);
+        bbox = this.getBboxFromExtremePoints(expoints);
+    }
 
     // set width and height to viewer
-    areaCanvas.width = activeLineEl.clientWidth;
-    areaCanvas.height = activeLineEl.clientHeight;
+
+    // if original size is checked viewer is sized
+    // according to image else we use the parent widget
+    if(this.originalSize === false){
+        areaCanvas.width = areaElement.clientWidth;
+        areaCanvas.height = areaElement.clientHeight;
+    }else{
+        areaCanvas.width = Math.abs(bbox.x2 - bbox.x1);
+        areaCanvas.height = Math.abs(bbox.y2 - bbox.y1);
+
+        // add the necessary styling attributes
+        itemGroup.setAttribute("class", "onfocus-item-group");
+        viewerContainer.setAttribute("class", "onfocus-viewer-container");
+    }
     var ctxt = areaCanvas.getContext('2d');
 
     // get canvas width / height, image
@@ -2527,40 +2581,23 @@ TransColumn.prototype.drawAreaOnCanvas =  function(event){
     var cwidth = areaCanvas.width;
     var cheight = areaCanvas.height;
 
-    // get the drawing geojson object
-    var transGeojObj = this.getTranscriptionByDataId(drawnId);
-    var bbox;
-    var fncthis = this;
-    var areaContextList;
-    if(transGeojObj["properties"]["regionShape"] === "rectangle"){
-        console.log(transGeojObj);
-        bbox = this.parseBbox(transGeojObj["properties"]["interfaceCoordinates"]["bbox"]);
-        areaContextList= fncthis.drawBbox(areaCanvas,
-                                               nimage,
-                                               cwidth,
-                                               cheight,
-                                               ctxt,
-                                               bbox);
-        areaCanvas = areaContextList[0];
-        ctxt = areaContextList[1];
+    areaContextList= fncthis.drawBbox(areaCanvas,
+                                      nimage,
+                                      cwidth,
+                                      cheight,
+                                      ctxt,
+                                      bbox);
+    areaCanvas = areaContextList[0];
+    ctxt = areaContextList[1];
 
-        activeLineEl.prepend(areaCanvas);
-    }else if(transGeojObj["properties"]["regionShape"] === "polygon"){
-        var expoints = this.getDrawnExtremePoints(transGeojObj);
-        bbox = this.getBboxFromExtremePoints(expoints);
-        areaContextList = fncthis.drawBbox(areaCanvas,
-                                               nimage,
-                                               cwidth,
-                                               cheight,
-                                               ctxt,
-                                               bbox);
-        areaCanvas = areaContextList[0];
-        ctxt = areaContextList[1];
+    // add the area to corresponding area element
+    viewerContainer.appendChild(areaCanvas);
+    itemList.prepend(viewerContainer);
 
-        activeLineEl.prepend(areaCanvas);
-    }
     return transGeojObj;
 };
+// => transGeojObj / null
+
 TransColumn.prototype.saveTranscription = function(){
     // Opens up a transcription window with
     // transcription text in it.
@@ -2584,21 +2621,24 @@ TransColumn.prototype.saveTranscription = function(){
     window.open('data:application/json; charset=utf-8,' + stringfied);
     window.open('data:text/.txt; charset=utf-8,' + texts);
 };
+// => null
 
 TransColumn.prototype.setTranscriptionText = function(){
     // gets the text in transcription column
-    var transAreaList = document.getElementsByClassName("transcription-textarea");
-    for(var i=0; i < transAreaList.length; i++){
-        var transArea = transAreaList[i];
-        var drawnid = transArea.getAttribute("data-drawn-id");
+    var areaElements = document.getElementsByClassName("area-container");
+    for(var i=0; i<areaElements.length; i++){
+        var tarea = areaElements[i].firstElementChild;
+        var drawnid = tarea.getAttribute("data-drawn-id");
         var transObjCp = this.getTranscriptionByDataId(drawnid);
         this.transcriptions["features"] = this.removeFeatureById(
-            this.transcriptions["features"], drawnid);
-        transObjCp["properties"]["text"] = transArea.value;
+            this.transcriptions["features"], drawnid
+        );
+        transObjCp["properties"]["text"] = tarea.value;
         this.transcriptions["features"].push(transObjCp);
     }
     return;
 };
+// => null
 
 
 // Done Classes
@@ -2637,7 +2677,8 @@ function globalKeyFuncs(event){
 function loadOriginalSize(event){
     // change the value of the original size check
     var selectval = document.getElementById("original-size-cbox");
-    canvasDraw.originalSize = selectval.checked;
+    // canvasDraw.originalSize = selectval.checked;
+    transcription.originalSize = selectval.checked;
     return;
 }
 
@@ -2695,8 +2736,28 @@ function setSelectorType(event){
     var rbuttons = document.querySelector("input[name='selector-rbutton']:checked");
     var rbtnval = rbuttons.value;
     canvasDraw.selectorOptions.type = rbtnval;
+    if(rbtnval === "none-selector"){
+        setSelectionProcess(false);
+    }else{
+        setSelectionProcess(true);
+    }
     return;
 }
+function setSelectionProcess(boolvar){
+    // set selection process to viewer
+    canvasDraw.selectInProcess=boolvar;
+    if(boolvar === true){
+        // if the selection is ongoing
+        // detections that are already drawn should be
+        // removed unless hold check is enabled
+        // also we should reset the textarea style
+        transcription.resetTextareaStyle();
+        canvasDraw.resetScene();
+    }
+    return boolvar;
+}
+
+
 // ------------- ends selector-types -------------------
 
 // ------------- selector-options -------------------
@@ -2757,7 +2818,7 @@ function setDetectionFillColor(event){
 
 function setDetectionFillOpacity(event){
     // set detection fill opacity to viewer
-    var selectedValue = document.getElementById("detection-fill-opacity-list").value;
+    var selectedValue = document.getElementById("detection-fill-opacity-range").value;
     canvasDraw.detectionOptions.fillOpacity = parseFloat(selectedValue, 10);
     return;
 }
@@ -2826,21 +2887,6 @@ function setColorScheme(event){
         // break;
     }
     return;
-}
-
-function setSelectionProcess(event){
-    // set selection process to viewer
-    var selectval = document.getElementById("selector-active-cbox");
-    canvasDraw.selectInProcess=selectval.checked;
-    if(selectval.checked === true){
-        // if the selection is ongoing
-        // detections that are already drawn should be
-        // removed unless hold check is enabled
-        // also we should reset the textarea style
-        transcription.resetTextareaStyle();
-        canvasDraw.resetScene();
-    }
-    return selectval;
 }
 
 
@@ -3047,7 +3093,7 @@ function showToolBox(event){
 
 function activateViewer(){
     var cbox = document.getElementById("activateViewer-checkbox");
-    transcription.removeViewer();
+    transcription.removeInlineCanvas();
     transcription.viewerCheck = cbox.checked;
 }
 
@@ -3170,6 +3216,16 @@ function saveEverything(){
     // }
     transcription.setTranscriptionText();
     var stringfied = JSON.stringify(transcription.transcriptions, null, 4);
+
+    // Download stringified json
+    var dlink = document.createElement("a");
+    dlink.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(stringfied));
+    dlink.setAttribute("download", "coordinatesAndText.json");
+    dlink.setAttribute("style", "display: none;");
+    document.body.appendChild(dlink);
+    dlink.click();
+    document.body.removeChild(dlink);
+
     var w = window.innerWidth.toString();
     var h = window.innerHeight.toString();
     w = "width=".concat(w);
@@ -3184,5 +3240,18 @@ function saveEverything(){
 //
 // Upload json file
 // toolbox goes to top section above the image viewer and the transcription column
-// Highlight transcription line on image when transcribing
 //
+
+// Telecharger image
+// telecharger geojson
+// traduire 19 colonnes à geojson
+// manipuler hovering rectangle pour corriger directement la detection
+// click on hovering rectangle and align the transcription to it in the window
+// Set Selectors Colors -> Colors for Human ROI
+// Set Detector Colors -> Colors for Computer ROI
+// Set Selector - Set Detector
+// Opacity needs a slider not comboBox
+// Distribute showEverything to show lines
+// icon for uploading geojson as well
+// resetScene -> deleteAllRegion with are you sure ?
+

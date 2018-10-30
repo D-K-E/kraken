@@ -30,13 +30,82 @@ section#transcripter {
     float: left;
 }
 
+@media only screen and (max-width: 1950px) {
+    ol#text-area-list{
+        height: 700px;
+        overflow-y: scroll;
+    }
+    canvas#scene {
+        height: auto;
+    }
+    li.onfocus-viewer-container {
+        height: 200px;
+        width: 700px;
+        overflow: scroll;
+    }
+    textarea.transcription-textarea{
+        width: 100%;
+        overflow-y: auto;
+    }
+
+    textarea.hovering-transcription-textarea{
+        width: 100%;
+        border-color: purple;
+        border-style: dashed;
+        /* position: fixed; */
+    }
+    textarea.onfocus-transcription-textarea{
+        width: 100%;
+        /* position: absolute; */
+        bottom: 0px;
+        left: 0px;
+        overflow: auto;
+    }
+
+}
+
+@media only screen and (max-width: 768px) {
+    ol#text-area-list{
+        height: 400px;
+        overflow-y: scroll;
+    }
+    li.onfocus-item-group {
+        height: 50px;
+        width: 300px;
+        overflow: scroll;
+    }
+
+}
+
+@media only screen and (max-width: 600px) {
+    ol#text-area-list{
+        height: 300px;
+        overflow-y: scroll;
+    }
+}
+@media only screen and (max-width: 400px) {
+    ol#text-area-list{
+        height: 200px;
+        overflow-y: scroll;
+    }
+}
+
+
+
+
+
+/* ol#text-area-list{
+     height: 200px;
+     overflow-y: scroll;} */
+
+
 h2.section-title{
     /* width: 100%; */
 }
 
 ul.item-list{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     /* width: 100%; */
     position: relative;
@@ -44,19 +113,30 @@ ul.item-list{
 }
 
 li.area-widget{
-    width: 10%;
-    float: left;
+    width: 100%;
+    flex-direction: row;
 }
 
-li.area-element{
+div.area-container{
     width: 90%;
     float: left;
 }
+label.cbox-container{
+    width: 8%;
+    float: left;
+}
+
 textarea.transcription-textarea{
     width: 100%;
+    overflow-y: auto;
 }
-textarea.onfocus-transcription-textarea{
+
+textarea.hovering-transcription-textarea{
     width: 100%;
     border-color: purple;
     border-style: dashed;
+    overflow-y: auto;
+    /* position: fixed; */
 }
+
+

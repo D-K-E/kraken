@@ -11,4 +11,6 @@ echo "Build Done"
 python setup.py install
 echo "install done"
 cd $currentDir
+ketos transcribe image1nice.jpg image2hard.jpg viet1.jpg testimage.tif
+echo "transcription interface is ready for reuse"
 echo "all done"

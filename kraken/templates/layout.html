@@ -17,7 +17,7 @@
                 <nav id="image-paths"
                      onload="getImageLinks()">
                     <script type="text/javascript">
-                        var pages = [];
+                     var pages = [];
                     </script>
                     <ol id="image-list">
                         {% for page in pages %}
@@ -63,12 +63,6 @@
                         </script>
                         {% endfor %}
                     </ol>
-                    <label id="original-size-lbl">
-                        Load Original Size
-                        <input type="checkbox"
-                               id="original-size-cbox"
-                               onchange="loadOriginalSize(event)"/>
-                    </label>
                     <br/>
                     <label class="lbl-showtools">
                         Show Toolbox
@@ -80,253 +74,301 @@
                 </nav>
             </section>
             <section id="viewer">
-                <h2 id="viewer-title"
-                    class="section-title">Viewer</h2>
                 <div id="image-col">
                     <div id="hide-tools-viewer">
-                    <fieldset id="viewer-tools">
-                        <legend>Viewer Tools</legend>
-                        <label>
-                            Debug mode
-                            <input type="checkbox"
-                                   onchange="setDebug(event)"
-                                   id="debug-cbox"/>
-                        </label>
-                        <button id="resetScene"
-                                class="reset-scene-btn"
-                                onclick="resetScene()">
-                            Reset Scene
-                        </button>
-                        <fieldset id="selector-set">
-                            <fieldset id="selector-types">
-                                <legend>
-                                    Available Selectors
-                                </legend>
-                                <label class="poly-selector-lbl">
-                                    Polygon
-                                    <input type="radio"
-                                           value="polygon-selector"
-                                           name="selector-rbutton"
-                                           onchange="setSelectorType()"
-                                           id="poly-selector-rbutton"/>
-                                </label>
-                                <label class="rect-selector-lbl">
-                                    Rectangle
-                                    <input type="radio"
-                                           value="rectangle-selector"
-                                           name="selector-rbutton"
-                                           onchange="setSelectorType()"
-                                           id="rect-selector-rbutton"/>
-                                </label>
-                            </fieldset>
-                            <fieldset id="selector-options">
-                                <legend>Selector Options</legend>
-                                <label>
-                                    Activate Selector
+                        <fieldset id="viewer-tools">
+                            <legend>Viewer Tools</legend>
+                            <label>
+                                Debug mode
+                                <input type="checkbox"
+                                       onchange="setDebug(event)"
+                                       id="debug-cbox"/>
+                            </label>
+                            <button id="resetScene"
+                                    class="reset-scene-btn"
+                                    onclick="resetScene()">
+                                Reset Scene
+                            </button>
+                            <fieldset id="selector-set">
+                                <fieldset id="selector-types">
+                                    <legend>
+                                        Available Selectors
+                                    </legend>
+                                    <label class="poly-selector-lbl">
+                                        Polygon
+                                        <input type="radio"
+                                               value="polygon-selector"
+                                               name="selector-rbutton"
+                                               onchange="setSelectorType()"
+                                               id="poly-selector-rbutton"/>
+                                    </label>
+                                    <label class="rect-selector-lbl">
+                                        Rectangle
+                                        <input type="radio"
+                                               value="rectangle-selector"
+                                               name="selector-rbutton"
+                                               onchange="setSelectorType()"
+                                               id="rect-selector-rbutton"/>
+                                    </label>
+                                    <label class="none-selector-lbl">
+                                        None
+                                        <input type="radio"
+                                               value="none-selector"
+                                               name="selector-rbutton"
+                                               onchange="setSelectorType()"
+                                               id="none-selector-rbutton"/>
+                                    </label>
+
+                                </fieldset>
+                                <fieldset id="selector-options">
+                                    <legend>Selector Options</legend>
+                                    <label class="lbl-holdselection">
+                                        Hold Selections
+                                        <input type="checkbox"
+                                               id="selector-hold-cbox"
+                                               onchange="holdSelection()"
+                                               class="viewer-checkbox"/>
+                                    </label>
+                                </fieldset> <!-- ends selector options -->
+                                <fieldset id="box-set">
+                                    <legend>Selected Region Type</legend>
+
+                                    <label class="lbl-rbox-container">
+                                        Character
+                                        <input type="radio"
+                                               id="char-rbox"
+                                               value="character"
+                                               onclick="changeAddTTitle(event)"
+                                               name="selected-region-rbutton"/>
+                                    </label>
+                                    <label class="lbl-rbox-container">
+                                        Line
+                                        <input type="radio"
+                                               value="line"
+                                               onclick="changeAddTTitle(event)"
+                                               name="selected-region-rbutton""
+                                               id="line-rbox"/>
+                                    </label>
+                                    <label class="lbl-rbox-container">
+                                        Column
+                                        <input type="radio"
+                                               value="column"
+                                               onclick="changeAddTTitle(event)"
+                                               name="selected-region-rbutton""
+                                               id="column-rbox"/>
+                                    </label>
+                                    <label class="lbl-rbox-container">
+                                        Region
+                                        <input type="radio"
+                                               value="region"
+                                               onclick="changeAddTTitle(event)"
+                                               name="selected-region-rbutton""
+                                               id="region-rbox"/>
+                                    </label>
+                                </fieldset> <!-- ends boxset -->
+                            </fieldset> <!-- ends selector set -->
+                            <fieldset id="color-set">
+                                <legend>Color Options</legend>
+                                <table>
+                                    <legend>
+                                        Set Global Color Scheme
+                                    </legend>
+                                    <tbody id="color-scheme-table">
+                                        <tr>
+                                            <td>
+                                                Available Color Schemes
+                                            </td>
+                                            <td>
+                                                <select id="color-scheme-list"
+                                                        onload="setColorScheme(event)">
+                                                    <option value="red"
+                                                            class="color-scheme-color">Red</option>
+                                                    <option class="color-scheme-color"
+                                                            value="yellow">Yellow</option>
+                                                    <option class="color-scheme-color"
+                                                            value="green">Green</option>
+                                                    <option class="color-scheme-color"
+                                                            value="blue">Blue</option>
+                                                    <option class="color-scheme-color"
+                                                            value="blue">Purple</option>
+                                                    <option class="color-scheme-color"
+                                                            value="blue">Pink</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <table>
+                                    <legend>
+                                        Colors for Human ROI
+                                    </legend>
+                                    <tbody id="selector-color-table">
+                                        <tr>
+                                            <td>Stroke Color</td>
+                                            <td>
+                                                <select id="selector-stroke-color-list"
+                                                        onchange="setSelectorStrokeColor(event)">
+                                                    <option value="red"
+                                                            data-rgb="255,0,0"
+                                                            class="selector-stroke-color">Red</option>
+                                                    <option class="selector-stroke-color"
+                                                            data-rgb="127,0,0"
+                                                            value="yellow">Yellow</option>
+                                                    <option class="selector-stroke-color"
+                                                            data-rgb="0,255,0"
+                                                            value="green">Green</option>
+                                                    <option class="selector-stroke-color"
+                                                            data-rgb="0,0,255"
+                                                            value="blue">Blue</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fill Color</td>
+                                            <td>
+                                                <select id="selector-fill-color-list"
+                                                        onchange="setSelectorFillColor(event)">
+                                                    <option value="none"
+                                                            data-rgb="0,0,0"
+                                                            class="selector-fill-color">
+                                                        None
+                                                    </option>
+                                                    <option value="red"
+                                                            data-rgb="255,0,0"
+                                                            class="selector-fill-color">
+                                                        Red
+                                                    </option>
+                                                    <option class="selector-fill-color"
+                                                            data-rgb="127,0,0"
+                                                            value="yellow">
+                                                        Yellow
+                                                    </option>
+                                                    <option class="selector-fill-color"
+                                                            data-rgb="0,255,0"
+                                                            value="green">
+                                                        Green
+                                                    </option>
+                                                    <option class="selector-fill-color"
+                                                            data-rgb="0,0,255"
+                                                            value="blue">
+                                                        Blue
+                                                    </option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fill Opacity</td>
+                                            <td>
+                                                <input type="range"
+                                                       step="0.1"
+                                                       onchange="setSelectorFillOpacity(event)"
+                                                       min="0"
+                                                       value="0.1"
+                                                       max="1"
+                                                       id="detection-fill-opacity-range"/>
+
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <table>
+                                    <legend>
+                                        Colors for Computer ROI
+                                    </legend>
+                                    <tbody id="detection-color-table">
+                                        <tr>
+                                            <td>Stroke Color</td>
+                                            <td>
+                                                <select id="detection-stroke-color-list"
+                                                        onchange="setDetectionStrokeColor(event)">
+                                                    <option value="red"
+                                                            data-rgb="255,0,0"
+                                                            class="detection-stroke-color">Red</option>
+                                                    <option class="detection-stroke-color"
+                                                            data-rgb="127,0,0"
+                                                            value="yellow">Yellow</option>
+                                                    <option class="detection-stroke-color"
+                                                            data-rgb="0,255,0"
+                                                            value="green">Green</option>
+                                                    <option class="detection-stroke-color"
+                                                            data-rgb="0,0,255"
+                                                            value="blue">Blue</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fill Color</td>
+                                            <td>
+                                                <select id="detection-fill-color-list"
+                                                        onchange="setDetectionFillColor(event)">
+                                                    <option value="none"
+                                                            data-rgb="0,0,0"
+                                                            class="detection-fill-color">
+                                                        None
+                                                    </option>
+                                                    <option value="red"
+                                                            data-rgb="255,0,0"
+                                                            class="detection-fill-color">
+                                                        Red
+                                                    </option>
+                                                    <option class="detection-fill-color"
+                                                            data-rgb="127,0,0"
+                                                            value="yellow">
+                                                        Yellow
+                                                    </option>
+                                                    <option class="detection-fill-color"
+                                                            data-rgb="0,255,0"
+                                                            value="green">
+                                                        Green
+                                                    </option>
+                                                    <option class="detection-fill-color"
+                                                            data-rgb="0,0,255"
+                                                            value="blue">
+                                                        Blue
+                                                    </option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fill Opacity</td>
+                                            <td>
+                                                <input type="range"
+                                                       step="0.1"
+                                                       onchange="setDetectionFillOpacity(event)"
+                                                       min="0"
+                                                       value="0.1"
+                                                       max="1"
+                                                       id="detection-fill-opacity-range" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </fieldset> <!-- ends color set -->
+                            <fieldset>
+                                <legend>Options</legend>
+                                <label class="lbl-showall">
+                                    Show All Detected Lines
                                     <input type="checkbox"
-                                           onchange="setSelectionProcess(event)"
-                                           id="selector-active-cbox"/>
+                                           id="showall-detected-cbox"
+                                           class="showall-checkbox"
+                                           onchange="showAllDetections(event)"/>
                                 </label>
-                                <label class="lbl-holdselection">
-                                    Hold Selections
+                                <label class="lbl-showall">
+                                    Show All Selected Lines
                                     <input type="checkbox"
-                                           id="selector-hold-cbox"
-                                           onchange="holdSelection()"
-                                           class="viewer-checkbox"/>
+                                           id="showall-selected-cbox"
+                                           class="showall-checkbox"
+                                           onchange="showAllSelections(event)"/>
                                 </label>
-                            </fieldset> <!-- ends selector options -->
-                        </fieldset> <!-- ends selector set -->
-                        <fieldset id="color-set">
-                            <legend>Color Options</legend>
-                            <table>
-                                <legend>
-                                    Set Global Color Scheme
-                                </legend>
-                                <tbody id="color-scheme-table">
-                                    <tr>
-                                        <td>
-                                            Available Color Schemes
-                                        </td>
-                                        <td>
-                                            <select id="color-scheme-list"
-                                                onload="setColorScheme(event)">
-                                            <option value="red"
-                                                    class="color-scheme-color">Red</option>
-                                            <option class="color-scheme-color"
-                                                    value="yellow">Yellow</option>
-                                            <option class="color-scheme-color"
-                                                    value="green">Green</option>
-                                            <option class="color-scheme-color"
-                                                    value="blue">Blue</option>
-                                            <option class="color-scheme-color"
-                                                    value="blue">Purple</option>
-                                            <option class="color-scheme-color"
-                                                    value="blue">Pink</option>
-                                        </select>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <table>
-                                <legend>
-                                    Set Selector Colors
-                                </legend>
-                                <tbody id="selector-color-table">
-                                    <tr>
-                                        <td>Selector Stroke Color</td>
-                                        <td>
-                                            <select id="selector-stroke-color-list"
-                                                    onchange="setSelectorStrokeColor(event)">
-                                                <option value="red"
-                                                        data-rgb="255,0,0"
-                                                        class="selector-stroke-color">Red</option>
-                                                <option class="selector-stroke-color"
-                                                        data-rgb="127,0,0"
-                                                        value="yellow">Yellow</option>
-                                                <option class="selector-stroke-color"
-                                                        data-rgb="0,255,0"
-                                                        value="green">Green</option>
-                                                <option class="selector-stroke-color"
-                                                        data-rgb="0,0,255"
-                                                        value="blue">Blue</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Selector Fill Color</td>
-                                        <td>
-                                            <select id="selector-fill-color-list"
-                                                    onchange="setSelectorFillColor(event)">
-                                                <option value="none"
-                                                        data-rgb="0,0,0"
-                                                        class="selector-fill-color">
-                                                    None
-                                                </option>
-                                                <option value="red"
-                                                        data-rgb="255,0,0"
-                                                        class="selector-fill-color">
-                                                    Red
-                                                </option>
-                                                <option class="selector-fill-color"
-                                                        data-rgb="127,0,0"
-                                                        value="yellow">
-                                                    Yellow
-                                                </option>
-                                                <option class="selector-fill-color"
-                                                        data-rgb="0,255,0"
-                                                        value="green">
-                                                    Green
-                                                </option>
-                                                <option class="selector-fill-color"
-                                                        data-rgb="0,0,255"
-                                                        value="blue">
-                                                    Blue
-                                                </option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Selector Fill Opacity</td>
-                                        <td>
-                                            <select id="selector-fill-opacity-list"
-                                                onchange="setSelectorFillOpacity(event)">
-                                                <option value="0">0</option>
-                                                <option value="0.1">0.1</option>
-                                                <option value="0.2">0.2</option>
-                                                <option value="0.3">0.3</option>
-                                                <option value="0.4">0.4</option>
-                                                <option value="0.5">0.5</option>
-                                                <option value="0.6">0.6</option>
-                                                <option value="0.7">0.7</option>
-                                                <option value="0.8">0.8</option>
-                                                <option value="0.9">0.9</option>
-                                                <option value="1">1</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <table>
-                                <legend>
-                                    Set Detection Colors
-                                </legend>
-                                <tbody id="detection-color-table">
-                                    <tr>
-                                        <td>Detection Stroke Color</td>
-                                        <td>
-                                            <select id="detection-stroke-color-list"
-                                                    onchange="setDetectionStrokeColor(event)">
-                                                <option value="red"
-                                                        data-rgb="255,0,0"
-                                                        class="detection-stroke-color">Red</option>
-                                                <option class="detection-stroke-color"
-                                                        data-rgb="127,0,0"
-                                                        value="yellow">Yellow</option>
-                                                <option class="detection-stroke-color"
-                                                        data-rgb="0,255,0"
-                                                        value="green">Green</option>
-                                                <option class="detection-stroke-color"
-                                                        data-rgb="0,0,255"
-                                                        value="blue">Blue</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Detection Fill Color</td>
-                                        <td>
-                                            <select id="detection-fill-color-list"
-                                                    onchange="setDetectionFillColor(event)">
-                                                <option value="none"
-                                                        data-rgb="0,0,0"
-                                                        class="detection-fill-color">
-                                                    None
-                                                </option>
-                                                <option value="red"
-                                                        data-rgb="255,0,0"
-                                                        class="detection-fill-color">
-                                                    Red
-                                                </option>
-                                                <option class="detection-fill-color"
-                                                        data-rgb="127,0,0"
-                                                        value="yellow">
-                                                    Yellow
-                                                </option>
-                                                <option class="detection-fill-color"
-                                                        data-rgb="0,255,0"
-                                                        value="green">
-                                                    Green
-                                                </option>
-                                                <option class="detection-fill-color"
-                                                        data-rgb="0,0,255"
-                                                        value="blue">
-                                                    Blue
-                                                </option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Detection Fill Opacity</td>
-                                        <td>
-                                            <select id="detection-fill-opacity-list"
-                                                onchange="setDetectionFillOpacity(event)">
-                                                <option value="0">0</option>
-                                                <option value="0.1">0.1</option>
-                                                <option value="0.2">0.2</option>
-                                                <option value="0.3">0.3</option>
-                                                <option value="0.4">0.4</option>
-                                                <option value="0.5">0.5</option>
-                                                <option value="0.6">0.6</option>
-                                                <option value="0.7">0.7</option>
-                                                <option value="0.8">0.8</option>
-                                                <option value="0.9">0.9</option>
-                                                <option value="1">1</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </fieldset> <!-- ends color set -->
-                    </fieldset> <!-- ends viewer tools set -->
+                                <label class="lbl-showall">
+                                    Show Everything
+                                    <input type="checkbox"
+                                           id="showall-cbox"
+                                           class="showall-checkbox"
+                                           onchange="showAllEverything(event)"/>
+                                </label>
+                            </fieldset> <!-- Ends options -->
+                        </fieldset> <!-- ends viewer tools set -->
                     </div>
                     <button id="slideBtnViewer" onclick="slideFncViewer(event)">
                         <img src="icons/slideDown.svg"/>
@@ -339,12 +381,10 @@
                 </div> <!-- ends image-col -->
             </section>
             <section id="transcripter">
-                <h2 id="transcripter-title"
-                    class="section-title">Transcripter</h2>
                 <div class="transcription-col">
                     <div id="hide-tools-transcripter">
                         <fieldset id="toolbox-set">
-                            <legend>Tools</legend>
+                            <legend>Transcription Tools</legend>
                             <fieldset id="button-set">
                                 <button onclick="deleteBoxes()"
                                         value="" id="deleteButton"
@@ -389,119 +429,76 @@
                                          alt="Right align button"/>
                                 </button>
                             </fieldset>
-                            <fieldset id="box-set">
-                                <legend>Selected Region Type</legend>
-                                <label class="lbl-rbox-container">
-                                    Character
-                                    <input type="radio"
-                                           id="char-rbox"
-                                           value="character"
-                                           onclick="changeAddTTitle(event)"
-                                           name="selected-region-rbutton"/>
-                                </label>
-                                <label class="lbl-rbox-container">
-                                    Line
-                                    <input type="radio"
-                                           value="line"
-                                           onclick="changeAddTTitle(event)"
-                                           name="selected-region-rbutton""
-                                           id="line-rbox"/>
-                                </label>
-                                <label class="lbl-rbox-container">
-                                    Column
-                                    <input type="radio"
-                                           value="column"
-                                           onclick="changeAddTTitle(event)"
-                                           name="selected-region-rbutton""
-                                           id="column-rbox"/>
-                                </label>
-                                <label class="lbl-rbox-container">
-                                    Region
-                                    <input type="radio"
-                                           value="region"
-                                           onclick="changeAddTTitle(event)"
-                                           name="selected-region-rbutton""
-                                           id="region-rbox"/>
-                                </label>
-                            </fieldset> <!-- ends boxset -->
+                            
                         </fieldset> <!-- ends toolbox -->
-                        <fieldset>
-                            <legend>Options</legend>
-                            <label class="lbl-showall">
-                                Show All Detected Lines
-                                <input type="checkbox"
-                                       id="showall-detected-cbox"
-                                       class="showall-checkbox"
-                                       onchange="showAllDetections(event)"/>
-                            </label>
-                            <label class="lbl-showall">
-                                Show All Selected Lines
-                                <input type="checkbox"
-                                       id="showall-selected-cbox"
-                                       class="showall-checkbox"
-                                       onchange="showAllSelections(event)"/>
-                            </label>
-                            <label class="lbl-showall">
-                                Show Everything
-                                <input type="checkbox"
-                                       id="showall-cbox"
-                                       class="showall-checkbox"
-                                       onchange="showAllEverything(event)"/>
-                            </label>
-
-
+                        
+                    </div>
+                    <button id="slideBtnTranscripter" onclick="slideFncTranscripter(event)">
+                        <img src="icons/slideDown.svg" alt="slide button"/>
+                    </button>
+                    <div title="activate inline viewer"
+                         class="showviewer-container">
+                        <img src="icons/inline-viewer.svg"
+                             alt="inline viewer checkbox"/>
+                        <label class="lbl-showviewer">
+                            <input type="checkbox"
+                                   id="activateViewer-checkbox"
+                                   onchange="activateViewer()"
+                                   class="viewer-checkbox"/>
+                        </label>
+                    </div>
+                    <label id="original-size-lbl">
+                        Load Original Size
+                        <input type="checkbox"
+                               id="original-size-cbox"
+                               onchange="loadOriginalSize(event)"/>
+                    </label>
+                    <ul id="text-area-container-list">
+                        <li id="text-area-widget">
                             <label class="lbl-selectall">
-                                Select/Deselect All Lines
                                 <input type="checkbox"
                                        id="selectAllLines-checkbox"
                                        onchange="selectAllLines()"
                                        class="selectAllLines-checkbox"/>
                             </label>
-                            <label class="lbl-showviewer">
-                                Activate Viewer
-                                <input type="checkbox"
-                                       id="activateViewer-checkbox"
-                                       onchange="activateViewer()"
-                                       class="viewer-checkbox"/>
-                            </label>
-                        </fieldset> <!-- Ends options -->
-                    </div>
-                    <button id="slideBtnTranscripter" onclick="slideFncTranscripter(event)">
-                        <img src="icons/slideDown.svg" alt="slide button"/>
-                    </button>
-                    <ol id="text-area-list">
-                        <li class="item-group" id="ig-">
-                            <!-- Should depend the children of
-                                 text-area-list for index number -->
-                            <ul class="item-list" id="il-">
-                                <!-- Should depend on the id coming from
-                                     detection and its type -->
-                                <li class="area-widget" id="aw-">
-                                    <label class="cbox-container" id="cbc-">
-                                        <input type="checkbox"
-                                               id="acbox-"
-                                               class="area-cbox"/>
-                                    </label>
-                                </li>
 
-                                <li id="ael-" class="area-element">
-                                    <textarea id="ta-"
-                                              spellcheck="true"
-                                              rows="2"
-                                              cols="100"
-                                              data-bbox=""
-                                              onfocus="viewLine(event)"
-                                              data-region-type=""
-                                              data-drawn-id=""
-                                              placeholder="Enter text for area"
-                                              class="transcription-textarea">
-                                    </textarea>
-                                    <!-- Instead of data-region-type field,
-                                         that info should be in id -->
-                                </li>
-                            </ul>
                         </li>
-                    </ol>
+                        <li id="text-area-element">
+                            <ol id="text-area-list">
+                                <li class="item-group" id="ig-">
+                                    <!-- Should depend the children of
+                                         text-area-list for index number -->
+
+                                    <ul class="item-list" id="il-">
+                                        <!-- Should depend on the id coming from
+                                             detection and its type -->
+                                        <li class="area-widget" id="aw-">
+                                            <label class="cbox-container" id="cbc-">
+                                                <input type="checkbox"
+                                                       id="acbox-"
+                                                       class="area-cbox"/>
+                                            </label>
+                                            <div id="ac-" class="area-container">
+                                                <textarea id="ta-"
+                                                          spellcheck="true"
+                                                          rows="2"
+                                                          cols="100"
+                                                          data-bbox=""
+                                                          onfocus="viewLine(event)"
+                                                          data-region-type=""
+                                                          data-drawn-id=""
+                                                          placeholder="Enter text for area"
+                                                          class="transcription-textarea">
+                                                </textarea>
+                                                <!-- Instead of data-region-type field,
+                                                     that info should be in id -->
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ol> <!-- text area list -->
+                        </li> <!-- ends text-area-element -->
+                    </ul> <!-- ends textarea container list -->
                 </div> <!-- Ends transcription col -->
             </section> <!-- Ends transcription section -->
         </article>
